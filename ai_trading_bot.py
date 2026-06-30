@@ -94,7 +94,7 @@ TRAINING_UNIVERSE = [
 TV_EXCHANGE = {
     # Watchlist
     'NVDA': 'NASDAQ', 'PANW': 'NASDAQ', 'AVGO': 'NASDAQ',
-    'SOFI': 'NASDAQ', 'PLTR': 'NYSE',
+    'SOFI': 'NASDAQ', 'PLTR': 'NASDAQ',
     # Training universe extras
     'AMD':  'NASDAQ', 'CRWD': 'NASDAQ', 'PYPL': 'NASDAQ',
     'SNOW': 'NYSE',   'TSLA': 'NASDAQ', 'MSTR': 'NASDAQ',
@@ -136,7 +136,7 @@ data_client  = StockHistoricalDataClient(API_KEY, SECRET_KEY)
 
 # Google Gemini — free AI (aistudio.google.com)
 genai.configure(api_key=GEMINI_KEY)
-gemini = genai.GenerativeModel('gemini-1.5-flash')
+gemini = genai.GenerativeModel('gemini-2.0-flash')
 
 
 # ══════════════════════════════════════════════════════════

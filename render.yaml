@@ -1,0 +1,15 @@
+services:
+  - type: worker
+    name: ai-paper-trading-bot
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python ai_trading_bot.py
+    autoDeploy: true
+    envVars:
+      - key: ALPACA_API_KEY
+        sync: false
+      - key: ALPACA_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

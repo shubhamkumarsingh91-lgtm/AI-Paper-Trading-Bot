@@ -80,7 +80,7 @@ TRAINING_UNIVERSE = [
     # Cybersecurity (same sector as PANW)
     'PANW', 'CRWD',
     # Fintech / High-beta (same sector as SOFI)
-    'SOFI', 'SQ',
+    'SOFI', 'PYPL',
     # Data / AI Software (same sector as PLTR)
     'PLTR', 'SNOW',
     # High-volatility — teaches extreme overbought/oversold patterns
@@ -96,7 +96,7 @@ TV_EXCHANGE = {
     'NVDA': 'NASDAQ', 'PANW': 'NASDAQ', 'AVGO': 'NASDAQ',
     'SOFI': 'NASDAQ', 'PLTR': 'NYSE',
     # Training universe extras
-    'AMD':  'NASDAQ', 'CRWD': 'NASDAQ', 'SQ':   'NYSE',
+    'AMD':  'NASDAQ', 'CRWD': 'NASDAQ', 'PYPL': 'NASDAQ',
     'SNOW': 'NYSE',   'TSLA': 'NASDAQ', 'MSTR': 'NASDAQ',
     'SPY':  'AMEX',   'QQQ':  'NASDAQ', 'SOXX': 'NASDAQ',
 }

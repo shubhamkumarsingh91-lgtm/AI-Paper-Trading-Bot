@@ -5,6 +5,10 @@
 ║   ─────────────────────────────────────────────────────  ║
 ║   XGBoost ML  ·  TradingView TA  ·  Gemini AI Brief     ║
 ║   Alpaca Paper $100,000  ·  Retrains Every Night        ║
+║                                                          ║
+║   49-FEATURE MODEL — World's Best Trading Strategies:   ║
+║   Weinstein · Minervini · O'Neil · Darvas · PTJ          ║
+║   Raschke · L.Williams · Bollinger · Donchian           ║
 ╚══════════════════════════════════════════════════════════╝
 
 DEPLOY ON RENDER as Background Worker.
@@ -140,48 +144,110 @@ gemini = genai.GenerativeModel('gemini-2.0-flash')
 
 
 # ══════════════════════════════════════════════════════════
-# FEATURE ENGINEERING  (30 features)
+# FEATURE ENGINEERING  (49 features)
+#
+# Encodes strategies from the world's best traders:
+#   Stan Weinstein   — Stage Analysis (150-SMA trend gate)
+#   Mark Minervini   — SEPA / VCP (EMA stack, ATR contraction)
+#   William O'Neil   — CAN SLIM (volume quality: up vs down days)
+#   Nicolas Darvas   — Box Theory (Donchian channel breakout)
+#   Paul Tudor Jones — 200-SMA trend + slope
+#   Linda Raschke    — ADX + mean-reversion oversold signal
+#   Larry Williams   — Williams %R + temporal patterns
+#   John Bollinger   — BB width + lower-band bounce
+#   Richard Donchian — 20-bar channel position + breakout
 # ══════════════════════════════════════════════════════════
 FEATURES = [
-    # Returns
-    'ret_1', 'ret_5', 'ret_10', 'ret_30',
-    # Trend / EMAs
+    # ── Returns ──────────────────────────────────────────
+    'ret_1', 'ret_3', 'ret_5', 'ret_10', 'ret_30',
+    # ── Trend / EMAs ─────────────────────────────────────
     'ema9_20x', 'ema20_50x', 'above_ema50', 'above_ema200',
-    # Momentum — RSI
+    # ── STAN WEINSTEIN — Stage Analysis ──────────────────
+    'above_sma150',    # price above 150-period SMA = Stage 2
+    'sma150_rising',   # 150-SMA slope positive = uptrend confirmed
+    # ── PAUL TUDOR JONES — 200-SMA Trend ─────────────────
+    'trend_strength_200',  # (price − SMA200) / SMA200
+    'ma200_slope',         # +1 rising, -1 falling
+    # ── MARK MINERVINI — SEPA / VCP ──────────────────────
+    'ema_stack',       # EMA9 > EMA20 > EMA50 > EMA200 (full bullish alignment)
+    'pct_from_high',   # distance from 20-bar high (negative = below peak)
+    'atr_contracting', # ATR shrinking vs 20 bars ago (VCP coiling)
+    # ── Momentum — RSI ───────────────────────────────────
     'rsi', 'rsi_overbought', 'rsi_oversold',
-    # Momentum — MACD
+    # ── Momentum — MACD ──────────────────────────────────
     'macd_hist', 'macd_cross',
-    # Mean-reversion — Bollinger Bands
+    # ── JOHN BOLLINGER — Bands ───────────────────────────
     'bb_pct', 'bb_squeeze',
-    # Volatility — ATR
+    'bb_width',        # raw band width (low = coiling before explosion)
+    'bb_at_lower',     # price near lower band (bounce candidate)
+    # ── Volatility — ATR ─────────────────────────────────
     'atr_pct', 'atr_expanding',
-    # Volume
+    # ── LARRY WILLIAMS — Williams %R + Temporal ──────────
+    'williams_r',      # -100 (oversold) to 0 (overbought)
+    'day_of_week',     # 0=Mon … 4=Fri (Friday effect)
+    'is_month_end',    # last 3 trading days of month (window dressing)
+    # ── RICHARD DONCHIAN / DARVAS — Channel Breakout ─────
+    'donchian_pct',    # position in 20-bar price channel (0=low, 1=high)
+    'donchian_break',  # price breaks above prior 20-bar high
+    # ── LINDA RASCHKE — ADX + Mean Reversion ─────────────
+    'adx',             # trend strength (> 25 = trending)
+    'adx_trending',    # binary: ADX > 25
+    'oversold_trend',  # RSI < 35 AND ADX > 25 = bounce in trend (Raschke signal)
+    # ── WILLIAM O'NEIL — Volume Quality ──────────────────
+    'vol_up_vs_down',  # volume on up-candles / volume on down-candles
+    # ── Volume ───────────────────────────────────────────
     'vol_ratio', 'vol_surge',
-    # Candlestick
+    # ── Candlestick ──────────────────────────────────────
     'body', 'candle_dir', 'upper_wick', 'lower_wick', 'doji',
-    # Stochastic
+    # ── Stochastic Oscillator ────────────────────────────
     'stoch_k', 'stoch_d', 'stoch_golden',
-    # Session
+    # ── Session ──────────────────────────────────────────
     'hour', 'is_morning', 'is_power_hour',
 ]
 
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute all 30 technical indicator features from OHLCV data."""
+    """
+    Compute all 49 technical indicator features from OHLCV data.
+
+    Combines strategies from 9 legendary traders into a single
+    feature set that XGBoost learns to weight automatically.
+    """
     d = df.copy()
     c = d['close']
 
     # ── Price returns ─────────────────────────────────────
-    for n in [1, 5, 10, 30]:
+    for n in [1, 3, 5, 10, 30]:
         d[f'ret_{n}'] = c.pct_change(n)
 
     # ── Exponential Moving Averages ───────────────────────
     for n in [9, 20, 50, 200]:
         d[f'ema{n}'] = c.ewm(span=n, adjust=False).mean()
-    d['ema9_20x']     = (d['ema9'] - d['ema20']) / (d['ema20'] + 1e-9)
-    d['ema20_50x']    = (d['ema20'] - d['ema50']) / (d['ema50'] + 1e-9)
+    d['ema9_20x']     = (d['ema9']  - d['ema20'])  / (d['ema20']  + 1e-9)
+    d['ema20_50x']    = (d['ema20'] - d['ema50'])  / (d['ema50']  + 1e-9)
     d['above_ema50']  = (c > d['ema50']).astype(int)
     d['above_ema200'] = (c > d['ema200']).astype(int)
+
+    # ── STAN WEINSTEIN — Stage Analysis ──────────────────
+    # 150-period SMA on 15-min bars ≈ medium-term trend line.
+    # Stage 2 (buy zone) = price above rising 150-SMA.
+    d['sma150']        = c.rolling(150).mean()
+    d['above_sma150']  = (c > d['sma150']).astype(int)
+    d['sma150_rising'] = (d['sma150'] > d['sma150'].shift(10)).astype(int)
+
+    # ── PAUL TUDOR JONES — 200-SMA Trend ─────────────────
+    # PTJ rule #1: never hold a position below the 200-day MA.
+    d['sma200']             = c.rolling(200).mean()
+    d['trend_strength_200'] = (c - d['sma200']) / (d['sma200'] + 1e-9)
+    d['ma200_slope']        = np.sign(d['sma200'] - d['sma200'].shift(20)).astype(float)
+
+    # ── MARK MINERVINI — SEPA: EMA Stack Alignment ───────
+    # All 4 EMAs in perfect bullish order = highest-probability entry.
+    d['ema_stack'] = (
+        (d['ema9'] > d['ema20']) &
+        (d['ema20'] > d['ema50']) &
+        (d['ema50'] > d['ema200'])
+    ).astype(int)
 
     # ── RSI ───────────────────────────────────────────────
     def _rsi(s, n=14):
@@ -190,7 +256,7 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
         loss  = -delta.where(delta < 0, 0.0).rolling(n).mean()
         return 100 - 100 / (1 + gain / (loss + 1e-9))
 
-    d['rsi']           = _rsi(c, 14)
+    d['rsi']            = _rsi(c, 14)
     d['rsi_overbought'] = (d['rsi'] > 70).astype(int)
     d['rsi_oversold']   = (d['rsi'] < 30).astype(int)
 
@@ -202,13 +268,15 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
         np.sign(d['macd_hist']) != np.sign(d['macd_hist'].shift(1))
     ).astype(int)
 
-    # ── Bollinger Bands ───────────────────────────────────
+    # ── JOHN BOLLINGER — Bands + Width ───────────────────
     bm   = c.rolling(20).mean()
     bstd = c.rolling(20).std()
     bu, bl = bm + 2 * bstd, bm - 2 * bstd
-    bw   = (bu - bl) / (bm + 1e-9)
-    d['bb_pct']     = (c - bl) / (bu - bl + 1e-9)
-    d['bb_squeeze'] = (bw < bw.rolling(50).mean()).astype(int)
+    bw      = (bu - bl) / (bm + 1e-9)
+    d['bb_pct']      = (c - bl) / (bu - bl + 1e-9)
+    d['bb_squeeze']  = (bw < bw.rolling(50).mean()).astype(int)
+    d['bb_width']    = bw                                    # low width = coiling
+    d['bb_at_lower'] = (d['bb_pct'] < 0.2).astype(int)     # near lower band = bounce zone
 
     # ── ATR (Average True Range) ──────────────────────────
     tr = pd.concat([
@@ -216,9 +284,51 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
         (d['high'] - c.shift(1)).abs(),
         (d['low']  - c.shift(1)).abs(),
     ], axis=1).max(axis=1)
-    d['atr']          = tr.rolling(14).mean()
-    d['atr_pct']      = d['atr'] / (c + 1e-9)
+    d['atr']           = tr.rolling(14).mean()
+    d['atr_pct']       = d['atr'] / (c + 1e-9)
     d['atr_expanding'] = (d['atr'] > d['atr'].rolling(20).mean()).astype(int)
+
+    # ── MARK MINERVINI — VCP (Volatility Contraction) ─────
+    # ATR shrinking = stock coiling before breakout.
+    d['atr_contracting'] = (d['atr'] < d['atr'].shift(20)).astype(int)
+    # Distance from 20-bar high (negative = below peak — tighter = better setup)
+    high_20 = d['high'].rolling(20).max()
+    d['pct_from_high'] = (c - high_20) / (high_20 + 1e-9)
+
+    # ── LINDA RASCHKE — ADX (Average Directional Index) ──
+    # ADX > 25 = strong trend; oversold in a trend = high-probability bounce.
+    up_move = d['high'] - d['high'].shift(1)
+    dn_move = d['low'].shift(1) - d['low']
+    dm_pos  = up_move.where((up_move > dn_move) & (up_move > 0), 0.0)
+    dm_neg  = dn_move.where((dn_move > up_move) & (dn_move > 0), 0.0)
+    atr14   = tr.rolling(14).mean()
+    di_pos  = 100 * dm_pos.rolling(14).mean() / (atr14 + 1e-9)
+    di_neg  = 100 * dm_neg.rolling(14).mean() / (atr14 + 1e-9)
+    dx      = 100 * (di_pos - di_neg).abs() / (di_pos + di_neg + 1e-9)
+    d['adx']           = dx.rolling(14).mean()
+    d['adx_trending']  = (d['adx'] > 25).astype(int)
+    d['oversold_trend'] = (
+        (d['rsi'] < 35) & (d['adx'] > 25)
+    ).astype(int)
+
+    # ── LARRY WILLIAMS — Williams %R ─────────────────────
+    # Computed after stochastic (shares hi14/lo14 window)
+    lo14 = d['low'].rolling(14).min()
+    hi14 = d['high'].rolling(14).max()
+    d['williams_r'] = -100 * (hi14 - c) / (hi14 - lo14 + 1e-9)
+
+    # ── RICHARD DONCHIAN / DARVAS — Channel Breakout ─────
+    # Darvas Box = price breaks above 20-bar high on strength.
+    dc_hi = d['high'].rolling(20).max()
+    dc_lo = d['low'].rolling(20).min()
+    d['donchian_pct']   = (c - dc_lo) / (dc_hi - dc_lo + 1e-9)
+    d['donchian_break'] = (c >= dc_hi.shift(1)).astype(int)
+
+    # ── WILLIAM O'NEIL — Volume Quality ──────────────────
+    # More volume on up-days vs down-days = institutional accumulation.
+    up_vol   = d['volume'].where(c > d['open'], 0.0).rolling(10).sum()
+    dn_vol   = d['volume'].where(c <= d['open'], 0.0).rolling(10).sum()
+    d['vol_up_vs_down'] = up_vol / (dn_vol + 1)
 
     # ── Volume ────────────────────────────────────────────
     vol_avg = d['volume'].rolling(20).mean()
@@ -231,26 +341,28 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     d['body']       = (c - d['open']).abs() / (d['open'] + 1e-9)
     d['candle_dir'] = np.sign(c - d['open'])
     d['upper_wick'] = (d['high'] - hi_body) / (d['open'] + 1e-9)
-    d['lower_wick'] = (lo_body - d['low'])  / (d['open'] + 1e-9)
+    d['lower_wick'] = (lo_body - d['low'])   / (d['open'] + 1e-9)
     d['doji']       = (d['body'] < 0.001).astype(int)
 
     # ── Stochastic Oscillator ─────────────────────────────
-    lo14 = d['low'].rolling(14).min()
-    hi14 = d['high'].rolling(14).max()
-    d['stoch_k']    = 100 * (c - lo14) / (hi14 - lo14 + 1e-9)
-    d['stoch_d']    = d['stoch_k'].rolling(3).mean()
+    d['stoch_k']     = 100 * (c - lo14) / (hi14 - lo14 + 1e-9)
+    d['stoch_d']     = d['stoch_k'].rolling(3).mean()
     d['stoch_golden'] = (
         (d['stoch_k'] > d['stoch_d']) &
         (d['stoch_k'].shift(1) <= d['stoch_d'].shift(1))
     ).astype(int)
 
-    # ── Session features ──────────────────────────────────
+    # ── Session + LARRY WILLIAMS Temporal ────────────────
     try:
-        d['hour'] = d.index.hour
+        d['hour']         = d.index.hour
+        d['day_of_week']  = d.index.dayofweek          # 0=Mon … 4=Fri
+        d['is_month_end'] = (d.index.day >= 28).astype(int)  # window dressing
     except AttributeError:
-        d['hour'] = 12
-    d['is_morning']    = (d['hour'] == 9).astype(int)   # open hour
-    d['is_power_hour'] = (d['hour'] == 15).astype(int)  # power hour
+        d['hour']         = 12
+        d['day_of_week']  = 2
+        d['is_month_end'] = 0
+    d['is_morning']    = (d['hour'] == 9).astype(int)
+    d['is_power_hour'] = (d['hour'] == 15).astype(int)
 
     return d
 
@@ -406,7 +518,7 @@ def ml_predict(symbol: str, sym_id: int = None) -> dict:
     if model is None:
         return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
     try:
-        df = fetch_bars(symbol, bars=600)
+        df = fetch_bars(symbol, bars=800)   # 800 bars needed for SMA200 + long lookbacks
         if len(df) < 250:
             log.warning(f'  {symbol}: not enough bars ({len(df)})')
             return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
@@ -642,11 +754,23 @@ CLAUDE'S EDGE FOR TODAY: [One insight that a human might miss — patterns in th
 Be precise and data-driven. Reference specific indicator values from the signals above."""
 
     try:
-        response = gemini.generate_content(prompt)
-        morning_brief_text = response.text
+        # Retry up to 3 times with backoff — handles Gemini free-tier 429 rate limits
+        response = None
+        for attempt in range(3):
+            try:
+                response = gemini.generate_content(prompt)
+                break
+            except Exception as e:
+                if '429' in str(e) and attempt < 2:
+                    wait = 60 * (attempt + 1)   # 60s, 120s
+                    log.warning(f'Gemini rate limited — retrying in {wait}s (attempt {attempt+1}/3)...')
+                    time.sleep(wait)
+                else:
+                    raise
 
+        morning_brief_text = response.text
         sep = '═' * 60
-        log.info(f'\n{sep}\n🧠 CLAUDE MORNING BRIEF — {datetime.now().strftime("%b %d %Y")}\n{sep}\n{morning_brief_text}\n{sep}')
+        log.info(f'\n{sep}\n🧠 MORNING BRIEF — {datetime.now().strftime("%b %d %Y")}\n{sep}\n{morning_brief_text}\n{sep}')
 
         BRIEF_FILE.write_text(
             f"Generated: {datetime.now().isoformat()}\n"
@@ -654,7 +778,7 @@ Be precise and data-driven. Reference specific indicator values from the signals
             f"{'─'*60}\n{morning_brief_text}"
         )
     except Exception as e:
-        log.warning(f'Claude API error: {e}')
+        log.warning(f'Gemini API error: {e}')
         morning_brief_text = f'[Brief unavailable: {e}]'
 
 

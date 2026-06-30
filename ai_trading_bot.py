@@ -67,10 +67,38 @@ API_KEY     = os.environ.get('ALPACA_API_KEY',    'YOUR_PAPER_KEY')
 SECRET_KEY  = os.environ.get('ALPACA_SECRET_KEY', 'YOUR_PAPER_SECRET')
 GEMINI_KEY  = os.environ.get('GEMINI_API_KEY',    'YOUR_GEMINI_KEY')
 
+# ── Trading watchlist — bot only BUYS/SELLS these 5 ─────
 WATCHLIST = ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+
+# ── Training universe — 14 diverse stocks for a robust model
+# Covers: AI chips, cyber, fintech, data/AI, mega-cap tech,
+#         high-volatility, and market benchmarks (ETFs).
+# Model learns universal patterns here, applies them to WATCHLIST.
+TRAINING_UNIVERSE = [
+    # AI / Semiconductors (high correlation with NVDA/AVGO)
+    'NVDA', 'AMD', 'AVGO',
+    # Cybersecurity (same sector as PANW)
+    'PANW', 'CRWD',
+    # Fintech / High-beta (same sector as SOFI)
+    'SOFI', 'SQ',
+    # Data / AI Software (same sector as PLTR)
+    'PLTR', 'SNOW',
+    # High-volatility — teaches extreme overbought/oversold patterns
+    'TSLA', 'MSTR',
+    # Market benchmarks — cleanest technical patterns of all
+    'SPY', 'QQQ',
+    # Semiconductor ETF — smoothed chip-sector signal
+    'SOXX',
+]
+
 TV_EXCHANGE = {
+    # Watchlist
     'NVDA': 'NASDAQ', 'PANW': 'NASDAQ', 'AVGO': 'NASDAQ',
-    'SOFI': 'NASDAQ', 'PLTR': 'NYSE',   'SPY':  'AMEX',
+    'SOFI': 'NASDAQ', 'PLTR': 'NYSE',
+    # Training universe extras
+    'AMD':  'NASDAQ', 'CRWD': 'NASDAQ', 'SQ':   'NYSE',
+    'SNOW': 'NYSE',   'TSLA': 'NASDAQ', 'MSTR': 'NASDAQ',
+    'SPY':  'AMEX',   'QQQ':  'NASDAQ', 'SOXX': 'NASDAQ',
 }
 
 # ── Risk Parameters ──────────────────────────────────────
@@ -271,10 +299,12 @@ def train_model(retrain: bool = False) -> None:
     """
     global model, model_accuracy, model_trained_at
     label = 'Nightly retrain' if retrain else 'Initial training'
-    log.info(f'🧠 {label} — fetching {TRAIN_DAYS} days × {len(WATCHLIST)} stocks...')
+    log.info(f'🧠 {label} — fetching {TRAIN_DAYS} days × {len(TRAINING_UNIVERSE)} stocks...')
+    log.info(f'   Training universe: {", ".join(TRAINING_UNIVERSE)}')
+    log.info(f'   Trading watchlist: {", ".join(WATCHLIST)}')
 
     frames = []
-    for i, sym in enumerate(WATCHLIST):
+    for i, sym in enumerate(TRAINING_UNIVERSE):
         try:
             df  = fetch_bars(sym, days=TRAIN_DAYS)
             df  = add_features(df)
@@ -364,7 +394,10 @@ def load_or_train() -> None:
     train_model()
 
 
-def ml_predict(symbol: str, sym_id: int) -> dict:
+def ml_predict(symbol: str, sym_id: int = None) -> dict:
+    # Use TRAINING_UNIVERSE index so sym_id is consistent with training
+    if sym_id is None:
+        sym_id = TRAINING_UNIVERSE.index(symbol) if symbol in TRAINING_UNIVERSE else 0
     """Run the trained model on the latest bars for a given symbol."""
     if model is None:
         return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
@@ -840,12 +873,12 @@ def scan() -> None:
     # ── Step 2: score every symbol ────────────────────────
     best_sym, best_score, best_state = None, 0.45, {}
 
-    for i, sym in enumerate(WATCHLIST):
+    for sym in WATCHLIST:
         if sym in positions:
             log.info(f'  {sym:5s}: HOLDING')
             continue
 
-        ml  = ml_predict(sym, i)
+        ml  = ml_predict(sym)   # sym_id auto-resolved from TRAINING_UNIVERSE
         tv  = get_tv_analysis(sym)
         sig = combined_signal(sym, ml, tv)
 

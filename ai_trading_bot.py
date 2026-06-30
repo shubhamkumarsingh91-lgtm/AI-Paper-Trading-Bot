@@ -346,6 +346,7 @@ def train_model(retrain: bool = False) -> None:
         reg_alpha=0.1,
         scale_pos_weight=(y == 0).sum() / ((y == 1).sum() + 1),
         eval_metric='logloss',
+        early_stopping_rounds=50,   # moved here for XGBoost 2.0+
         verbosity=0,
         n_jobs=-1,
         random_state=42,
@@ -353,7 +354,6 @@ def train_model(retrain: bool = False) -> None:
     model.fit(
         X_tr, y_tr,
         eval_set=[(X_va, y_va)],
-        early_stopping_rounds=50,
         verbose=False,
     )
 

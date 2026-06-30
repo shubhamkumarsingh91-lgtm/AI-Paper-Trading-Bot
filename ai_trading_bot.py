@@ -288,6 +288,10 @@ def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
     df  = raw.df
     if isinstance(df.index, pd.MultiIndex):
         df = df.xs(symbol, level='symbol')
+    # Flatten column names if MultiIndex (e.g. ('close', 'SQ') → 'close')
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    df.columns = [c.lower() for c in df.columns]
     df.index = pd.to_datetime(df.index, utc=True).tz_convert('America/New_York')
     return df.sort_index()
 

@@ -254,6 +254,7 @@ def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
         start=start,
         end=end,
         adjustment='all',
+        feed='iex',   # free data feed for paper accounts
     )
     raw = data_client.get_stock_bars(req)
     df  = raw.df

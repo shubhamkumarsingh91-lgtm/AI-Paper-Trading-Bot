@@ -518,7 +518,7 @@ def ml_predict(symbol: str, sym_id: int = None) -> dict:
     if model is None:
         return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
     try:
-        df = fetch_bars(symbol, bars=800)   # 800 bars needed for SMA200 + long lookbacks
+        df = fetch_bars(symbol, days=45)    # 45 calendar days ≈ 800+ 15-min bars (avoids weekend gaps)
         if len(df) < 250:
             log.warning(f'  {symbol}: not enough bars ({len(df)})')
             return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}

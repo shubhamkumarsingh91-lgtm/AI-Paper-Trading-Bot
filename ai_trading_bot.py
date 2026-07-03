@@ -154,10 +154,12 @@ TP_PCT        = 0.06   # take profit at +6%
 MAX_POSITIONS = 3      # max simultaneous open positions
 
 # ── Cooldown after selling — prevents churning ────────────
-# After TAKE_PROFIT: don't re-enter for 60 min (stock ran up, don't chase the top)
-# After STOP_LOSS:   don't re-enter for 2h   (stock falling, don't catch the knife)
-COOLDOWN_AFTER_TP   = 60    # minutes
-COOLDOWN_AFTER_STOP = 120   # minutes
+# Dip Confirmation — how many reversal signals needed before re-entry
+# After STOP_LOSS: require 2 signals (stock was falling — be strict)
+# After TAKE_PROFIT/TREND: require 1 signal (stock was healthy — be lenient)
+DIP_SIGNALS_AFTER_STOP = 2
+DIP_SIGNALS_AFTER_TP   = 1
+DIP_MIN_WAIT_SEC       = 300   # always wait at least 5 min to avoid same-candle rebuy
 
 # ── Signal Weights ───────────────────────────────────────
 ML_WEIGHT    = 0.50    # XGBoost prediction
@@ -865,23 +867,224 @@ Be precise and data-driven. Reference specific indicator values from the signals
 
 
 # ══════════════════════════════════════════════════════════
-# COOLDOWN TRACKER  (prevents re-buying immediately after a sell)
+# DIP CONFIRMATION SYSTEM
 # ══════════════════════════════════════════════════════════
-cooldown_until: dict = {}   # symbol → datetime when cooldown expires
+#
+# Replaces fixed-time cooldowns with pattern-based re-entry.
+#
+# Instead of blindly waiting 120 minutes after a stop loss,
+# the bot WATCHES the stock every scan cycle and re-enters
+# the moment candle patterns confirm the dip has reversed.
+#
+# This means:
+#   • If the stock bottoms in 20 min → bot buys the bottom
+#   • If the stock keeps falling for 2h → bot stays out
+#   • Other watchlist stocks are ALWAYS scanned freely
+#
+# Signals checked each scan cycle:
+#   1. Hammer candle        — buyers pushed price back up from lows
+#   2. Bullish engulfing    — big green candle swallows the red candle
+#   3. RSI oversold + rising — momentum washed out, now recovering
+#   4. Bounce from low      — price lifted 0.5%+ off the dip low
+#   5. Volume capitulation  — big sell volume = everyone already sold
+#
+# ══════════════════════════════════════════════════════════
 
-def in_cooldown(symbol: str) -> bool:
-    """Return True if this symbol is still in its post-sale cooldown window."""
-    if symbol not in cooldown_until:
-        return False
-    if now_et() >= cooldown_until[symbol]:
-        del cooldown_until[symbol]
-        return False
-    return True
+dip_watch: dict = {}
+# Structure per symbol:
+# {
+#   'reason':       'STOP_LOSS' | 'TAKE_PROFIT' | 'TREND',
+#   'exit_price':   float,
+#   'exit_time':    datetime,
+#   'lowest_since': float,   ← tracked each scan to find the dip low
+# }
 
-def set_cooldown(symbol: str, reason: str) -> None:
-    minutes = COOLDOWN_AFTER_STOP if reason == 'STOP_LOSS' else COOLDOWN_AFTER_TP
-    cooldown_until[symbol] = now_et() + timedelta(minutes=minutes)
-    log.info(f'  ⏳ {symbol} cooldown {minutes} min [{reason}] — re-entry blocked until {cooldown_until[symbol].strftime("%H:%M ET")}')
+
+# ── Candle pattern detectors ──────────────────────────────
+
+def _rsi_from_close(close: pd.Series, period: int = 14) -> pd.Series:
+    """Lightweight RSI — used inside dip detection without full feature pipeline."""
+    delta = close.diff()
+    gain  = delta.clip(lower=0).ewm(com=period - 1, min_periods=period).mean()
+    loss  = (-delta.clip(upper=0)).ewm(com=period - 1, min_periods=period).mean()
+    rs    = gain / (loss.replace(0, 1e-9))
+    return 100 - (100 / (1 + rs))
+
+
+def _is_hammer(df: pd.DataFrame) -> bool:
+    """
+    Hammer: small body at the top, long lower shadow, tiny upper shadow.
+    Signals buyers absorbed all selling pressure — reversal likely.
+    """
+    c = df.iloc[-1]
+    body        = abs(c['close'] - c['open'])
+    total_range = c['high'] - c['low']
+    lower_wick  = min(c['close'], c['open']) - c['low']
+    upper_wick  = c['high'] - max(c['close'], c['open'])
+    if total_range < 1e-9:
+        return False
+    return (lower_wick >= body * 2.0          # long tail = buyers fought back
+            and lower_wick >= total_range * 0.5
+            and upper_wick <= body * 0.6       # small upper shadow
+            and c['close'] >= c['open'])       # green body preferred
+
+
+def _is_bullish_engulfing(df: pd.DataFrame) -> bool:
+    """
+    Bullish engulfing: big green candle completely swallows the previous red candle.
+    One of the strongest reversal signals — buyers overwhelmed sellers in one bar.
+    """
+    if len(df) < 2:
+        return False
+    prev = df.iloc[-2]
+    curr = df.iloc[-1]
+    prev_red   = prev['close'] < prev['open']
+    curr_green = curr['close'] > curr['open']
+    engulfs    = (curr['open']  <= prev['close']   # opens below or at prev close
+                  and curr['close'] >= prev['open'])  # closes above or at prev open
+    return prev_red and curr_green and engulfs
+
+
+def _is_doji(df: pd.DataFrame) -> bool:
+    """
+    Doji: open ≈ close — indecision candle.
+    At a dip low it signals the selling momentum has stalled.
+    """
+    c           = df.iloc[-1]
+    body        = abs(c['close'] - c['open'])
+    total_range = c['high'] - c['low']
+    return total_range > 1e-9 and (body / total_range) < 0.10
+
+
+def _rsi_oversold_recovery(df: pd.DataFrame) -> bool:
+    """
+    RSI was deeply oversold (< 35) recently and is now turning up.
+    Classic Raschke setup: oversold in a healthy stock = buying opportunity.
+    """
+    rsi = _rsi_from_close(df['close'])
+    if len(rsi) < 5:
+        return False
+    recent_low = rsi.iloc[-5:-1].min()
+    curr_rsi   = rsi.iloc[-1]
+    prev_rsi   = rsi.iloc[-2]
+    return (recent_low < 35              # was oversold
+            and curr_rsi > prev_rsi      # now rising
+            and curr_rsi < 50)           # not yet overbought
+
+
+def _volume_capitulation(df: pd.DataFrame) -> bool:
+    """
+    A big red candle on huge volume (2× average) followed by stabilization.
+    'Capitulation' = everyone who wanted to sell already sold.
+    After capitulation the path of least resistance is up.
+    """
+    if len(df) < 6:
+        return False
+    recent   = df.iloc[-5:]
+    vol_avg  = df['volume'].rolling(20).mean().iloc[-1]
+    for i in range(len(recent) - 1):
+        bar = recent.iloc[i]
+        if (bar['close'] < bar['open']           # red candle
+                and bar['volume'] > vol_avg * 2  # huge volume
+                and df.iloc[-1]['close'] >= df.iloc[-2]['close']):  # now stabilizing
+            return True
+    return False
+
+
+# ── Main dip confirmation gate ────────────────────────────
+
+def set_dip_watch(symbol: str, reason: str, exit_price: float) -> None:
+    """Called after every sell — puts the symbol into pattern-monitoring mode."""
+    dip_watch[symbol] = {
+        'reason':       reason,
+        'exit_price':   exit_price,
+        'exit_time':    now_et(),
+        'lowest_since': exit_price,
+    }
+    required = DIP_SIGNALS_AFTER_STOP if reason == 'STOP_LOSS' else DIP_SIGNALS_AFTER_TP
+    log.info(
+        f'  👁  {symbol} → dip watch [{reason}] '
+        f'— will re-enter when {required} reversal signal(s) appear'
+    )
+
+
+def check_dip_reversal(symbol: str) -> tuple:
+    """
+    Check if a stock in dip-watch has confirmed a reversal.
+
+    Returns (can_enter: bool, status_message: str)
+
+    Logic:
+      • Always waits 5 min minimum (avoids same-candle rebuy)
+      • Fetches last 3 days of bars and checks 5 pattern types
+      • After STOP_LOSS: needs 2 signals (strict — stock was falling)
+      • After TP/TREND:  needs 1 signal (lenient — stock was healthy)
+      • When signals reached: clears dip_watch and allows re-entry
+    """
+    if symbol not in dip_watch:
+        return True, ''
+
+    watch      = dip_watch[symbol]
+    elapsed    = (now_et() - watch['exit_time']).total_seconds()
+    exit_reason = watch['reason']
+
+    # Enforce minimum wait — never rebuy on the very same candle
+    if elapsed < DIP_MIN_WAIT_SEC:
+        remaining = int(DIP_MIN_WAIT_SEC - elapsed)
+        return False, f'min wait ({remaining}s)'
+
+    # Fetch recent bars for pattern analysis
+    try:
+        df = fetch_bars(symbol, days=3)
+        if len(df) < 10:
+            return False, 'not enough bars'
+
+        # Track the lowest price seen since exit
+        curr_price = float(df['close'].iloc[-1])
+        if curr_price < watch['lowest_since']:
+            watch['lowest_since'] = curr_price
+            dip_watch[symbol] = watch
+
+    except Exception as e:
+        return False, f'bar fetch error: {e}'
+
+    low = watch['lowest_since']
+
+    # ── Count active signals ──────────────────────────────
+    signals = []
+
+    if _is_hammer(df):
+        signals.append('hammer')
+
+    if _is_bullish_engulfing(df):
+        signals.append('bullish engulfing')
+
+    if _is_doji(df) and curr_price > low * 1.003:
+        signals.append('doji + bounce')
+
+    if _rsi_oversold_recovery(df):
+        signals.append('RSI recovery')
+
+    bounce_pct = (curr_price - low) / low if low > 0 else 0
+    if bounce_pct >= 0.005:
+        signals.append(f'bounce +{bounce_pct:.1%} from low')
+
+    if _volume_capitulation(df):
+        signals.append('vol capitulation')
+
+    # ── Verdict ───────────────────────────────────────────
+    required = DIP_SIGNALS_AFTER_STOP if exit_reason == 'STOP_LOSS' else DIP_SIGNALS_AFTER_TP
+
+    if len(signals) >= required:
+        log.info(
+            f'  ✅ {symbol} dip reversal CONFIRMED '
+            f'({", ".join(signals)}) — re-entry allowed'
+        )
+        del dip_watch[symbol]
+        return True, f'reversal: {", ".join(signals)}'
+
+    signal_str = ', '.join(signals) if signals else 'none yet'
+    return False, f'watching for reversal ({len(signals)}/{required} signals: {signal_str})'
 
 
 # ══════════════════════════════════════════════════════════
@@ -980,9 +1183,10 @@ def place_sell(symbol: str, pos, reason: str) -> None:
             f'🔴 SELL {qty:5.0f}×{symbol} @ ${current:8.2f} '
             f'| P&L: ${pnl:+8.2f} ({pct:+.1%}) [{reason}] {emoji}'
         )
-        # Start cooldown — prevents immediately re-buying at the wrong price
-        if reason in ('STOP_LOSS', 'TAKE_PROFIT'):
-            set_cooldown(symbol, reason)
+        # Enter dip watch — bot will re-buy when candle patterns confirm reversal
+        # (replaces fixed 60/120 min cooldown — smarter, pattern-driven)
+        if reason in ('STOP_LOSS', 'TAKE_PROFIT', 'TREND'):
+            set_dip_watch(symbol, reason, current)
         save_log({
             'action':      'SELL',
             'symbol':      symbol,
@@ -1590,10 +1794,10 @@ def scan() -> None:
             log.info(f'  {sym:5s}: HOLDING')
             continue
 
-        # Skip if in cooldown after a recent stop-loss or take-profit
-        if in_cooldown(sym):
-            remaining = int((cooldown_until[sym] - now_et()).seconds / 60)
-            log.info(f'  {sym:5s}: COOLDOWN ({remaining} min left — not chasing)')
+        # Check dip-watch: only re-enter if candle patterns confirm reversal
+        can_enter, dip_status = check_dip_reversal(sym)
+        if not can_enter:
+            log.info(f'  {sym:5s}: DIP WATCH — {dip_status}')
             continue
 
         ml  = ml_predict(sym)   # sym_id auto-resolved from TRAINING_UNIVERSE

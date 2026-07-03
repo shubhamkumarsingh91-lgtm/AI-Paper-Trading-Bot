@@ -31,6 +31,8 @@ How to get keys:
 """
 
 import os, json, logging, time, joblib, warnings
+import requests
+import xml.etree.ElementTree as XMLTree
 import pytz
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -46,7 +48,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockBarsRequest
+from alpaca.data.requests import StockBarsRequest, NewsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 warnings.filterwarnings('ignore')
@@ -71,8 +73,47 @@ API_KEY     = os.environ.get('ALPACA_API_KEY',    'YOUR_PAPER_KEY')
 SECRET_KEY  = os.environ.get('ALPACA_SECRET_KEY', 'YOUR_PAPER_SECRET')
 GEMINI_KEY  = os.environ.get('GEMINI_API_KEY',    'YOUR_GEMINI_KEY')
 
-# ── Trading watchlist — bot only BUYS/SELLS these 5 ─────
+# ── Trading watchlist — updated daily by News Intelligence ─
+# This list is DYNAMIC — replaced each morning by AI analysis.
+# Falls back to these 5 if news intelligence is unavailable.
 WATCHLIST = ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+FALLBACK_WATCHLIST = ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']  # always-on backup
+
+# ── News Intelligence Universe — stocks the news scanner considers ──
+# Bot scans this wider pool each morning, then picks the best 5.
+SCAN_UNIVERSE = [
+    # Core watchlist
+    'NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR',
+    # AI / Semiconductors
+    'AMD', 'QCOM', 'MRVL', 'INTC', 'ARM',
+    # Mega-cap tech
+    'MSFT', 'AAPL', 'GOOGL', 'META', 'AMZN',
+    # Fintech / Growth
+    'PYPL', 'COIN', 'HOOD', 'SQ', 'NU', 'AFRM',
+    # Cybersecurity
+    'CRWD', 'FTNT', 'ZS', 'S',
+    # Data / Cloud
+    'SNOW', 'CRM', 'DDOG', 'MDB',
+    # EV / Disruptive
+    'TSLA', 'RIVN',
+    # High-beta / speculative
+    'MSTR', 'RBLX', 'UBER',
+    # ETFs — macro context
+    'SPY', 'QQQ', 'SOXX', 'XLF',
+]
+
+# ── Catalyst importance weights (used in scoring) ────────
+CATALYST_WEIGHTS = {
+    'M&A':         1.00,  # merger/acquisition target = highest alpha
+    'REGULATORY':  0.90,  # FDA approval, gov contract, legal win
+    'EARNINGS':    0.80,  # earnings beat or revenue surprise
+    'CONTRACT':    0.75,  # major contract win
+    'PARTNERSHIP': 0.65,  # strategic alliance, JV
+    'INSIDER':     0.60,  # insider buying (Form 4 SEC filing)
+    'PRODUCT':     0.55,  # new product launch, feature release
+    'UPGRADE':     0.50,  # analyst upgrade, price target raise
+    'OTHER':       0.30,
+}
 
 # ── Training universe — 14 diverse stocks for a robust model
 # Covers: AI chips, cyber, fintech, data/AI, mega-cap tech,
@@ -133,6 +174,7 @@ EOD_MIN      = 50
 MODEL_FILE   = Path('ai_model.xgb')
 LOG_FILE     = Path('trade_log.json')
 BRIEF_FILE   = Path('morning_brief.txt')
+REPORT_FILE  = Path('daily_picks.json')   # today's AI stock picks with explanations
 TRAIN_DAYS   = 365
 
 TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
@@ -149,6 +191,19 @@ def now_et() -> datetime:
 # ══════════════════════════════════════════════════════════
 trade_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 data_client  = StockHistoricalDataClient(API_KEY, SECRET_KEY)
+
+# Alpaca News client — same credentials, no extra cost
+try:
+    from alpaca.data.historical import NewsClient as _NewsClientCls
+    news_client = _NewsClientCls(API_KEY, SECRET_KEY)
+except Exception:
+    # Older SDK versions: NewsClient lives elsewhere
+    try:
+        from alpaca.data import NewsClient as _NewsClientCls
+        news_client = _NewsClientCls(API_KEY, SECRET_KEY)
+    except Exception as _e:
+        news_client = None
+        log.warning(f'Alpaca News client not available: {_e}')
 
 # Google Gemini — optional AI morning brief
 # If key is missing or invalid, morning brief is simply skipped
@@ -1032,6 +1087,465 @@ def nightly_retrain() -> None:
 
 
 # ══════════════════════════════════════════════════════════
+# ██  NEWS INTELLIGENCE MODULE                            ██
+# ██  Runs at 8:30 AM ET — before the market opens       ██
+# ██                                                      ██
+# ██  Pipeline:                                           ██
+# ██  1. Fetch news: Alpaca · Yahoo RSS · SEC EDGAR       ██
+# ██  2. Gemini AI reads every article                    ██
+# ██  3. Score & rank all stocks                          ██
+# ██  4. Print "Why These 5" explanation panel            ██
+# ██  5. Update WATCHLIST dynamically for today           ██
+# ══════════════════════════════════════════════════════════
+
+def fetch_alpaca_news(hours: int = 20) -> list:
+    """
+    Fetch recent news from Alpaca's built-in news API.
+    Articles are already tagged with affected stock tickers — no parsing needed.
+    FREE with your existing Alpaca account.
+    """
+    if not news_client:
+        return []
+    try:
+        end   = datetime.now(timezone.utc)
+        start = end - timedelta(hours=hours)
+        req   = NewsRequest(
+            symbols=SCAN_UNIVERSE[:30],   # Alpaca request limit
+            start=start,
+            end=end,
+            limit=100,
+            sort='desc',
+        )
+        result   = news_client.get_news(req)
+        articles = []
+        for item in result.news:
+            articles.append({
+                'title':   item.headline,
+                'summary': (item.summary or '')[:300],
+                'symbols': list(item.symbols or []),
+                'source':  item.source,
+                'time':    str(item.created_at),
+            })
+        log.info(f'  Alpaca News:   {len(articles):3d} articles')
+        return articles
+    except Exception as e:
+        log.warning(f'  Alpaca news error: {e}')
+        return []
+
+
+def fetch_yahoo_rss(symbols: list) -> list:
+    """
+    Fetch Yahoo Finance RSS feed for a list of symbols.
+    No API key, no registration — completely free.
+    Great for earnings, analyst upgrades, and breaking company news.
+    """
+    articles = []
+    for sym in symbols[:14]:     # rate-limit: 14 symbols max
+        try:
+            url = f'https://feeds.finance.yahoo.com/rss/2.0/headline?s={sym}&region=US&lang=en-US'
+            r   = requests.get(url, timeout=8, headers={'User-Agent': 'Mozilla/5.0'})
+            root = XMLTree.fromstring(r.text)
+            for item in root.findall('./channel/item')[:4]:
+                title   = item.findtext('title', '') or ''
+                summary = item.findtext('description', '') or ''
+                articles.append({
+                    'title':   title,
+                    'summary': summary[:300],
+                    'symbols': [sym],
+                    'source':  'Yahoo Finance',
+                    'time':    item.findtext('pubDate', ''),
+                })
+        except Exception:
+            pass
+    log.info(f'  Yahoo Finance: {len(articles):3d} articles')
+    return articles
+
+
+def fetch_sec_8k(hours: int = 24) -> list:
+    """
+    Fetch SEC EDGAR 8-K filings — the MOST POWERFUL free data source.
+
+    Companies MUST file an 8-K within 4 business days of:
+      • Mergers & acquisitions (Item 1.01)
+      • Material agreements / contracts (Item 1.01)
+      • Bankruptcy / delisting (Item 1.03)
+      • CEO/CFO changes (Item 5.02)
+      • Earnings announcements (Item 2.02)
+
+    This catches M&A news BEFORE Wall Street Journal writes about it.
+    Gemini extracts the company name and maps it to a ticker.
+    """
+    try:
+        url = (
+            'https://www.sec.gov/cgi-bin/browse-edgar'
+            '?action=getcurrent&type=8-K&dateb=&owner=include'
+            '&count=40&search_text=&output=atom'
+        )
+        r    = requests.get(url, timeout=12, headers={
+            'User-Agent': 'ShubhamTradingBot/1.0 shubhamkumarsingh91@gmail.com'
+        })
+        root = XMLTree.fromstring(r.text)
+        ns   = {'atom': 'http://www.w3.org/2005/Atom'}
+        filings = []
+        for entry in root.findall('atom:entry', ns)[:30]:
+            title   = entry.findtext('atom:title',   '', ns)
+            summary = entry.findtext('atom:summary', '', ns)
+            updated = entry.findtext('atom:updated', '', ns)
+            filings.append({
+                'title':   title,
+                'summary': summary[:400],
+                'symbols': [],     # Gemini extracts the ticker from company name
+                'source':  'SEC EDGAR 8-K',
+                'time':    updated,
+            })
+        log.info(f'  SEC EDGAR 8-K: {len(filings):3d} filings')
+        return filings
+    except Exception as e:
+        log.warning(f'  SEC EDGAR error: {e}')
+        return []
+
+
+# ══════════════════════════════════════════════════════════
+# GEMINI ANALYSIS ENGINE
+# ══════════════════════════════════════════════════════════
+
+def analyze_news_with_gemini(articles: list) -> dict:
+    """
+    Send articles to Gemini Flash for deep analysis.
+
+    For each impacted stock, Gemini returns:
+      • sentiment     : -1.0 (very bearish) to +1.0 (very bullish)
+      • catalyst      : M&A / EARNINGS / CONTRACT / REGULATORY / etc.
+      • impact        : HIGH / MEDIUM / LOW
+      • weight        : 0.0–1.0 (how important is this catalyst)
+      • headline      : the exact news that drove the score
+      • reason        : plain English — WHY does this impact the stock?
+      • bullish_case  : one sentence — why a trader should buy
+      • risk          : one sentence — the main downside risk
+
+    Returns dict keyed by uppercase ticker symbol.
+    """
+    if not gemini or not articles:
+        return {}
+
+    batch_size  = 12
+    all_scores: dict = {}
+
+    for i in range(0, min(len(articles), 72), batch_size):
+        batch = articles[i : i + batch_size]
+        article_text = '\n'.join([
+            f"[{j+1}] SOURCE: {a['source']} | TICKERS: {','.join(a['symbols']) or 'unknown'}\n"
+            f"    HEADLINE: {a['title']}\n"
+            f"    SUMMARY: {a.get('summary', '')[:200]}"
+            for j, a in enumerate(batch)
+        ])
+
+        prompt = f"""You are a senior Wall Street analyst. Analyze these market news items and identify which specific stocks will be MOST IMPACTED today.
+
+NEWS ITEMS:
+{article_text}
+
+For each clearly impacted stock ticker, return a JSON object (valid JSON only, no extra text, no markdown):
+{{
+  "TICKER": {{
+    "sentiment":    <float -1.0 to 1.0, positive=bullish for that stock>,
+    "catalyst":     <exactly one of: "M&A" | "EARNINGS" | "CONTRACT" | "REGULATORY" | "UPGRADE" | "INSIDER" | "PRODUCT" | "OTHER">,
+    "impact":       <"HIGH" | "MEDIUM" | "LOW">,
+    "weight":       <float 0.0-1.0 based on how significant this catalyst is>,
+    "headline":     <exact headline text that drove this score>,
+    "reason":       <2-3 sentences in plain English: WHY does this news move this stock today? Include specific numbers if available>,
+    "bullish_case": <1 sentence: the clearest reason a trader should buy this stock today>,
+    "risk":         <1 sentence: the biggest reason NOT to buy, or main downside risk>
+  }}
+}}
+
+Rules:
+- M&A target company: sentiment +0.75 to +1.0 (stock pops on buyout premium)
+- M&A acquirer: sentiment -0.1 to +0.2 (depends on deal terms)
+- Earnings beat: +0.5 to +0.9 based on magnitude of beat
+- Analyst downgrade: sentiment -0.4 to -0.8
+- Only include stocks with HIGH confidence of price impact TODAY
+- For SEC EDGAR filings: extract the company name and map to its ticker symbol
+- Return ONLY valid JSON, no code blocks, no commentary"""
+
+        try:
+            resp = gemini.generate_content(prompt)
+            text = resp.text.strip()
+            # Strip markdown code fences if Gemini adds them
+            if '```' in text:
+                text = text.split('```')[1]
+                if text.startswith('json\n'):
+                    text = text[5:]
+            parsed = json.loads(text)
+            for sym, data in parsed.items():
+                sym = sym.upper().strip()
+                # Keep whichever score has stronger conviction
+                existing = all_scores.get(sym)
+                if not existing or abs(data.get('sentiment', 0)) > abs(existing.get('sentiment', 0)):
+                    all_scores[sym] = data
+        except Exception as e:
+            log.warning(f'  Gemini batch {i//batch_size + 1} parse error: {e}')
+
+    return all_scores
+
+
+def compute_news_score(sym: str, news_analysis: dict) -> float:
+    """
+    Final news score: sentiment × catalyst_weight × impact_multiplier.
+    Range: -1.0 (very bearish) to +1.0 (very bullish).
+    """
+    if sym not in news_analysis:
+        return 0.0
+    d         = news_analysis[sym]
+    sentiment = float(d.get('sentiment', 0))
+    weight    = float(d.get('weight', 0.5))
+    impact    = {'HIGH': 1.0, 'MEDIUM': 0.65, 'LOW': 0.35}.get(d.get('impact', 'LOW'), 0.35)
+    # Extra boost for highest-value catalysts (M&A, FDA, earnings)
+    cat_boost = CATALYST_WEIGHTS.get(d.get('catalyst', 'OTHER'), 0.30)
+    return round(sentiment * weight * impact * cat_boost, 3)
+
+
+def select_daily_watchlist(news_analysis: dict) -> list:
+    """
+    Score every candidate stock using a composite of three signals:
+
+      40% News Alpha    — Gemini sentiment × catalyst importance × impact level
+      35% ML Signal     — XGBoost 49-feature model (trained on 9 legend strategies)
+      25% Technicals    — Minervini Stage 2 check (above EMA50) + RSI health
+
+    Returns top 5 as [(symbol, score_dict), ...]
+    """
+    # Pool: stocks with notable news + always-on watchlist as safety net
+    pool = set(FALLBACK_WATCHLIST)
+    for sym, d in news_analysis.items():
+        if d.get('impact') in ('HIGH', 'MEDIUM') and float(d.get('sentiment', 0)) > 0.15:
+            pool.add(sym)
+
+    candidates = {}
+    for sym in pool:
+        news_s = compute_news_score(sym, news_analysis)
+
+        # ML prediction (use training universe index for consistent sym_id)
+        sym_id = TRAINING_UNIVERSE.index(sym) if sym in TRAINING_UNIVERSE else 0
+        ml     = ml_predict(sym, sym_id=sym_id)
+        ml_s   = float(ml.get('confidence', 0))
+
+        # Technical quality check
+        above_ema  = int(ml.get('above_ema50', 0))
+        rsi        = float(ml.get('rsi', 50))
+        rsi_ok     = 40 <= rsi <= 72
+        tech_s     = (0.5 if above_ema else 0.0) + (0.5 if rsi_ok else 0.0)
+
+        composite = (news_s * 0.40) + (ml_s * 0.35) + (tech_s * 0.25)
+
+        candidates[sym] = {
+            'composite':  round(composite, 4),
+            'news_score': news_s,
+            'ml_score':   ml_s,
+            'tech_score': tech_s,
+            'ml_data':    ml,
+            'news_data':  news_analysis.get(sym, {}),
+        }
+
+    ranked = sorted(candidates.items(), key=lambda x: -x[1]['composite'])
+    return ranked[:5]
+
+
+# ══════════════════════════════════════════════════════════
+# DAILY EXPLANATION REPORT  ← the "Why These 5" panel
+# ══════════════════════════════════════════════════════════
+
+def print_selection_report(ranked: list) -> None:
+    """
+    Print a detailed human-readable briefing explaining exactly WHY
+    each stock was chosen — catalyst, numbers, bull case, and risk.
+
+    This is the intelligence panel the user reads each morning to
+    understand what the market is doing and why the bot is trading it.
+    """
+    sep   = '═' * 66
+    today = now_et().strftime('%A  %B %d, %Y  ·  %I:%M %p ET')
+
+    log.info(f'\n{sep}')
+    log.info(f'  🎯  TODAY\'S AI STOCK SELECTION — {today}')
+    log.info(f'  Why the bot chose these 5 stocks for today\'s trading')
+    log.info(sep)
+
+    report_data = []
+
+    for rank, (sym, data) in enumerate(ranked, 1):
+        nd    = data['news_data']
+        ml    = data['ml_data']
+        price = float(ml.get('price', 0))
+        rsi   = float(ml.get('rsi', 0))
+        vol_r = float(ml.get('vol_ratio', 1))
+
+        catalyst    = nd.get('catalyst',     'TECHNICAL')
+        impact      = nd.get('impact',       '—')
+        reason      = nd.get('reason',       'Strong technical setup with high ML confidence')
+        headline    = nd.get('headline',     'No specific news — technicals-driven')
+        bull_case   = nd.get('bullish_case', 'ML model shows high buy probability')
+        risk_note   = nd.get('risk',         'Always manage with stop-loss')
+        sentiment   = float(nd.get('sentiment', 0))
+
+        stop_px   = round(price * (1 - STOP_PCT), 2) if price else 0
+        target_px = round(price * (1 + TP_PCT),   2) if price else 0
+        direction = '🟢 BULLISH' if sentiment >= 0 else '🔴 BEARISH'
+        sent_bar  = '█' * int(abs(sentiment) * 8)
+
+        # ── Header ──────────────────────────────────────────
+        log.info(f'\n  ┌── #{rank} · {sym} ─ {catalyst} · {impact} IMPACT ─ {direction}')
+
+        # ── Headline ────────────────────────────────────────
+        log.info(f'  │')
+        log.info(f'  │  📰 NEWS CATALYST')
+        log.info(f'  │     {headline[:70]}')
+
+        # ── Why it matters (word-wrapped) ───────────────────
+        log.info(f'  │')
+        log.info(f'  │  💡 WHY THIS MATTERS TO THE STOCK PRICE')
+        words, line, out_lines = reason.split(), '', []
+        for w in words:
+            if len(line) + len(w) + 1 > 62:
+                out_lines.append(line)
+                line = w
+            else:
+                line = (line + ' ' + w).strip()
+        if line:
+            out_lines.append(line)
+        for l in out_lines:
+            log.info(f'  │     {l}')
+
+        # ── Bull case & Risk ────────────────────────────────
+        log.info(f'  │')
+        log.info(f'  │  ✅ REASON TO BUY')
+        log.info(f'  │     {bull_case[:70]}')
+        log.info(f'  │')
+        log.info(f'  │  ⚠️  MAIN RISK')
+        log.info(f'  │     {risk_note[:70]}')
+
+        # ── Scores ──────────────────────────────────────────
+        log.info(f'  │')
+        log.info(f'  │  📊 SCORES')
+        log.info(f'  │     News    : {data["news_score"]:+.2f}  [{sent_bar:<8}] (catalyst × sentiment)')
+        log.info(f'  │     ML Model: {data["ml_score"]:.0%}  confidence (49-feature XGBoost)')
+        log.info(f'  │     Technical: {data["tech_score"]:.1f}/1.0  (Stage 2 + RSI health)')
+        log.info(f'  │     COMPOSITE: {data["composite"]:.3f}  ← final ranking score')
+
+        # ── Market data & levels ────────────────────────────
+        log.info(f'  │')
+        log.info(f'  │  📈 MARKET DATA')
+        log.info(f'  │     Price ${price:.2f}  ·  RSI {rsi:.0f}  ·  Volume {vol_r:.1f}× average')
+        if price:
+            log.info(f'  │     Stop-loss  → ${stop_px}  (-2%)   ← bot auto-exits here')
+            log.info(f'  │     Take-profit → ${target_px}  (+6%)   ← bot auto-exits here')
+            log.info(f'  │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)')
+        log.info(f'  └{"─" * 64}')
+
+        report_data.append({
+            'rank':        rank,
+            'symbol':      sym,
+            'catalyst':    catalyst,
+            'impact':      impact,
+            'headline':    headline,
+            'reason':      reason,
+            'bullish_case': bull_case,
+            'risk':        risk_note,
+            'sentiment':   sentiment,
+            'scores': {
+                'news':      data['news_score'],
+                'ml':        data['ml_score'],
+                'technical': data['tech_score'],
+                'composite': data['composite'],
+            },
+            'price':  price,
+            'stop':   stop_px,
+            'target': target_px,
+            'rsi':    rsi,
+            'vol_ratio': vol_r,
+        })
+
+    log.info(f'\n  📌 HOW TO READ THIS REPORT:')
+    log.info(f'     News score > 0.3  = strong catalyst driving price today')
+    log.info(f'     ML > 55%          = model sees historical pattern of a winning trade')
+    log.info(f'     Composite > 0.5   = bot will scan for entry trigger at market open')
+    log.info(f'\n{sep}\n')
+
+    # Save to JSON for external review (Render logs, dashboard, etc.)
+    try:
+        REPORT_FILE.write_text(json.dumps({
+            'date':        now_et().strftime('%Y-%m-%d'),
+            'generated':   now_et().isoformat(),
+            'watchlist':   [sym for sym, _ in ranked],
+            'picks':       report_data,
+        }, indent=2))
+        log.info(f'  📄 Full report saved → {REPORT_FILE}')
+    except Exception as e:
+        log.warning(f'  Could not save report file: {e}')
+
+
+# ══════════════════════════════════════════════════════════
+# NEWS INTELLIGENCE ORCHESTRATOR
+# ══════════════════════════════════════════════════════════
+
+def run_news_intelligence() -> None:
+    """
+    Master pipeline — called at 8:30 AM ET (30 min before market open).
+
+    Step 1: Gather news from three free sources
+    Step 2: Gemini AI analyzes every article
+    Step 3: Score and rank all stocks
+    Step 4: Print the "Why These 5" explanation report
+    Step 5: Update WATCHLIST for today's trading session
+    """
+    global WATCHLIST
+
+    sep = '─' * 66
+    log.info(f'\n{sep}')
+    log.info(f'  📡 NEWS INTELLIGENCE PIPELINE — {now_et().strftime("%I:%M %p ET")}')
+    log.info(sep)
+
+    # ── Step 1: Gather ──────────────────────────────────────
+    alpaca_news  = fetch_alpaca_news(hours=20)
+    yahoo_news   = fetch_yahoo_rss(
+        FALLBACK_WATCHLIST
+        + ['MSFT', 'AAPL', 'GOOGL', 'META', 'AMZN', 'TSLA', 'CRWD', 'AMD']
+    )
+    sec_news     = fetch_sec_8k(hours=24)
+    all_articles = alpaca_news + yahoo_news + sec_news
+
+    log.info(f'  Total items gathered: {len(all_articles)}')
+
+    if not all_articles:
+        log.warning('  ⚠️  No news available — keeping existing watchlist')
+        return
+
+    # ── Step 2: Gemini Analysis ──────────────────────────────
+    if gemini:
+        log.info('  🧠 Gemini analyzing all articles...')
+        news_analysis = analyze_news_with_gemini(all_articles)
+        log.info(f'  Gemini identified impact on {len(news_analysis)} stocks')
+    else:
+        log.warning('  ⚠️  Gemini not available — using technical signals only')
+        news_analysis = {}
+
+    # ── Step 3 & 4: Rank + Explain ──────────────────────────
+    ranked = select_daily_watchlist(news_analysis)
+
+    if not ranked:
+        log.warning('  ⚠️  Could not rank stocks — keeping existing watchlist')
+        return
+
+    print_selection_report(ranked)
+
+    # ── Step 5: Update Watchlist ─────────────────────────────
+    new_wl = [sym for sym, _ in ranked]
+    log.info(f'  📋 WATCHLIST: {WATCHLIST}  →  {new_wl}')
+    WATCHLIST = new_wl
+    log.info(f'  ✅ Bot will trade these 5 stocks today\n{sep}\n')
+
+
+# ══════════════════════════════════════════════════════════
 # MAIN SCAN LOOP
 # ══════════════════════════════════════════════════════════
 scan_count = 0
@@ -1136,21 +1650,30 @@ def main():
     # ── Schedule all recurring tasks ──────────────────────
     schedule.every(SCAN_EVERY).minutes.do(scan)
     schedule.every(1).minutes.do(check_eod)
-    # ── Schedule times are in UTC (Render servers run UTC) ──────────────
-    # 9:00 AM ET (EDT=UTC-4) = 13:00 UTC  |  12:05 AM ET = 04:05 UTC
+    # ── All times below are UTC (Render servers run UTC) ──
+    # Conversion: ET (EDT) = UTC - 4
+    #   8:30 AM ET = 12:30 UTC  ← News Intelligence (before open)
+    #   9:00 AM ET = 13:00 UTC  ← Gemini morning brief
+    #  12:05 AM ET = 04:05 UTC  ← Nightly retrain
+    schedule.every().day.at('12:30').do(run_news_intelligence)   # 8:30 AM ET
     schedule.every().day.at('13:00').do(generate_morning_brief)  # 9:00 AM ET
     schedule.every().day.at('04:05').do(nightly_retrain)         # 12:05 AM ET
 
     log.info(f'\n📅 SCHEDULE (all times Eastern):')
     log.info(f'  Every {SCAN_EVERY} min  → Market scan + signal evaluation')
-    log.info(f'  09:00 AM ET → Gemini morning brief (daily trading plan)')
-    log.info(f'  3:50 PM ET  → Close all positions (EOD) ← timezone-fixed')
-    log.info(f'  00:05 AM ET → Nightly XGBoost retrain (self-improvement)')
+    log.info(f'  08:30 AM ET → 📡 News Intelligence — picks today\'s 5 stocks')
+    log.info(f'  09:00 AM ET → 🧠 Gemini morning brief (optional)')
+    log.info(f'  03:50 PM ET → 🔴 Close all positions (EOD)')
+    log.info(f'  12:05 AM ET → 🌙 Nightly XGBoost retrain (self-learning)')
     log.info(f'\n🚀 Bot is live!\n{sep}')
 
     # ── Immediate startup tasks ───────────────────────────
-    # Only run morning brief on startup if market is about to open (9-10 AM ET)
-    et_hour = now_et().hour
+    et_now  = now_et()
+    et_hour = et_now.hour
+    # If starting between 8-9 AM ET, run news intelligence right now
+    if 8 <= et_hour < 9:
+        run_news_intelligence()
+    # Morning brief on startup between 9-10 AM ET
     if 9 <= et_hour <= 10 and GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
         generate_morning_brief()
     scan()

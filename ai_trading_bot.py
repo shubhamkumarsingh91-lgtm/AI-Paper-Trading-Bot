@@ -31,6 +31,7 @@ How to get keys:
 """
 
 import os, json, logging, time, joblib, warnings
+import pytz
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pandas as pd
@@ -39,7 +40,6 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score
 import schedule
-import google.generativeai as genai
 from tradingview_ta import TA_Handler, Interval
 
 from alpaca.trading.client import TradingClient
@@ -112,6 +112,12 @@ STOP_PCT      = 0.02   # stop loss at -2%
 TP_PCT        = 0.06   # take profit at +6%
 MAX_POSITIONS = 3      # max simultaneous open positions
 
+# ── Cooldown after selling — prevents churning ────────────
+# After TAKE_PROFIT: don't re-enter for 60 min (stock ran up, don't chase the top)
+# After STOP_LOSS:   don't re-enter for 2h   (stock falling, don't catch the knife)
+COOLDOWN_AFTER_TP   = 60    # minutes
+COOLDOWN_AFTER_STOP = 120   # minutes
+
 # ── Signal Weights ───────────────────────────────────────
 ML_WEIGHT    = 0.50    # XGBoost prediction
 TV_WEIGHT    = 0.35    # TradingView technical analysis
@@ -131,6 +137,12 @@ TRAIN_DAYS   = 365
 
 TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 
+ET = pytz.timezone('America/New_York')     # all time checks use ET, not UTC
+
+def now_et() -> datetime:
+    """Return current time in Eastern Time (handles EST/EDT automatically)."""
+    return datetime.now(ET)
+
 
 # ══════════════════════════════════════════════════════════
 # API CLIENTS
@@ -138,9 +150,16 @@ TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 trade_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 data_client  = StockHistoricalDataClient(API_KEY, SECRET_KEY)
 
-# Google Gemini — free AI (aistudio.google.com)
-genai.configure(api_key=GEMINI_KEY)
-gemini = genai.GenerativeModel('gemini-2.0-flash')
+# Google Gemini — optional AI morning brief
+# If key is missing or invalid, morning brief is simply skipped
+gemini = None
+if GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
+    try:
+        import google.generativeai as _genai
+        _genai.configure(api_key=GEMINI_KEY)
+        gemini = _genai.GenerativeModel('gemini-2.0-flash')
+    except Exception as e:
+        log.warning(f'Gemini init skipped: {e}')
 
 
 # ══════════════════════════════════════════════════════════
@@ -665,11 +684,19 @@ morning_brief_text: str = ''
 
 def generate_morning_brief() -> None:
     """
-    Ask Claude to analyse the morning setup and create a prioritised
-    trading plan for the day using live TV signals + recent performance.
+    Gemini AI morning brief — OPTIONAL.
+    Skipped automatically if GEMINI_API_KEY is not set or quota is exhausted.
+    The trading bot runs perfectly without this feature.
     """
     global morning_brief_text
-    log.info('🧠 Generating Claude morning brief...')
+
+    # Skip entirely if Gemini not initialised
+    if gemini is None:
+        log.info('⏭️  Morning brief skipped (Gemini not configured)')
+        morning_brief_text = '[Morning brief disabled — trading continues normally]'
+        return
+
+    log.info('🧠 Generating morning brief...')
 
     # ── Gather real-time context ─────────────────────────
     try:
@@ -706,7 +733,7 @@ def generate_morning_brief() -> None:
 
     prompt = f"""You are the AI intelligence layer for a self-learning paper trading bot running on Alpaca.
 
-TODAY: {datetime.now().strftime('%A, %B %d, %Y — %I:%M %p ET')}
+TODAY: {now_et().strftime('%A, %B %d, %Y — %I:%M %p ET')}
 
 ACCOUNT STATUS:
   Equity:        ${equity:>12,.2f}
@@ -770,16 +797,36 @@ Be precise and data-driven. Reference specific indicator values from the signals
 
         morning_brief_text = response.text
         sep = '═' * 60
-        log.info(f'\n{sep}\n🧠 MORNING BRIEF — {datetime.now().strftime("%b %d %Y")}\n{sep}\n{morning_brief_text}\n{sep}')
+        log.info(f'\n{sep}\n🧠 MORNING BRIEF — {now_et().strftime("%b %d %Y %I:%M %p ET")}\n{sep}\n{morning_brief_text}\n{sep}')
 
         BRIEF_FILE.write_text(
-            f"Generated: {datetime.now().isoformat()}\n"
+            f"Generated: {now_et().isoformat()}\n"
             f"Equity: ${equity:,.2f} | Model: {model_accuracy:.1%}\n"
             f"{'─'*60}\n{morning_brief_text}"
         )
     except Exception as e:
         log.warning(f'Gemini API error: {e}')
         morning_brief_text = f'[Brief unavailable: {e}]'
+
+
+# ══════════════════════════════════════════════════════════
+# COOLDOWN TRACKER  (prevents re-buying immediately after a sell)
+# ══════════════════════════════════════════════════════════
+cooldown_until: dict = {}   # symbol → datetime when cooldown expires
+
+def in_cooldown(symbol: str) -> bool:
+    """Return True if this symbol is still in its post-sale cooldown window."""
+    if symbol not in cooldown_until:
+        return False
+    if now_et() >= cooldown_until[symbol]:
+        del cooldown_until[symbol]
+        return False
+    return True
+
+def set_cooldown(symbol: str, reason: str) -> None:
+    minutes = COOLDOWN_AFTER_STOP if reason == 'STOP_LOSS' else COOLDOWN_AFTER_TP
+    cooldown_until[symbol] = now_et() + timedelta(minutes=minutes)
+    log.info(f'  ⏳ {symbol} cooldown {minutes} min [{reason}] — re-entry blocked until {cooldown_until[symbol].strftime("%H:%M ET")}')
 
 
 # ══════════════════════════════════════════════════════════
@@ -878,6 +925,9 @@ def place_sell(symbol: str, pos, reason: str) -> None:
             f'🔴 SELL {qty:5.0f}×{symbol} @ ${current:8.2f} '
             f'| P&L: ${pnl:+8.2f} ({pct:+.1%}) [{reason}] {emoji}'
         )
+        # Start cooldown — prevents immediately re-buying at the wrong price
+        if reason in ('STOP_LOSS', 'TAKE_PROFIT'):
+            set_cooldown(symbol, reason)
         save_log({
             'action':      'SELL',
             'symbol':      symbol,
@@ -891,7 +941,12 @@ def place_sell(symbol: str, pos, reason: str) -> None:
             'timestamp':   datetime.now().isoformat(),
         })
     except Exception as e:
-        log.error(f'Sell failed {symbol}: {e}')
+        err_str = str(e)
+        # "held_for_orders" means a sell order is already queued — not a real error
+        if 'held_for_orders' in err_str or '40310000' in err_str:
+            log.info(f'  {symbol}: sell order already pending — skipping duplicate')
+        else:
+            log.error(f'Sell failed {symbol}: {e}')
 
 
 def manage_open_positions() -> None:
@@ -926,12 +981,27 @@ def is_market_open() -> bool:
         return False
 
 
+eod_done_date: str = ''   # track which date EOD already ran — prevents repeated firing
+
 def check_eod() -> None:
-    now = datetime.now()
-    if now.hour == EOD_HOUR and now.minute >= EOD_MIN:
-        if get_positions():
-            log.info('🕑 EOD: closing all positions before market close')
-            close_all_positions('EOD')
+    global eod_done_date
+    now = now_et()   # ← must use ET, not UTC (Render servers run UTC)
+    today = now.strftime('%Y-%m-%d')
+
+    # Only fire once per day, only when market is actually open, only at EOD window
+    if now.hour != EOD_HOUR or now.minute < EOD_MIN:
+        return
+    if eod_done_date == today:
+        return   # already ran today — skip
+    if not is_market_open():
+        log.info('🕑 EOD check skipped — market is closed (holiday or weekend)')
+        eod_done_date = today   # mark done so it doesn't spam on holidays
+        return
+
+    eod_done_date = today
+    if get_positions():
+        log.info('🕑 EOD: closing all positions before market close')
+        close_all_positions('EOD')
 
 
 # ══════════════════════════════════════════════════════════
@@ -1006,6 +1076,12 @@ def scan() -> None:
             log.info(f'  {sym:5s}: HOLDING')
             continue
 
+        # Skip if in cooldown after a recent stop-loss or take-profit
+        if in_cooldown(sym):
+            remaining = int((cooldown_until[sym] - now_et()).seconds / 60)
+            log.info(f'  {sym:5s}: COOLDOWN ({remaining} min left — not chasing)')
+            continue
+
         ml  = ml_predict(sym)   # sym_id auto-resolved from TRAINING_UNIVERSE
         tv  = get_tv_analysis(sym)
         sig = combined_signal(sym, ml, tv)
@@ -1060,18 +1136,23 @@ def main():
     # ── Schedule all recurring tasks ──────────────────────
     schedule.every(SCAN_EVERY).minutes.do(scan)
     schedule.every(1).minutes.do(check_eod)
-    schedule.every().day.at('09:00').do(generate_morning_brief)  # morning brief
-    schedule.every().day.at('00:05').do(nightly_retrain)         # midnight retrain
+    # ── Schedule times are in UTC (Render servers run UTC) ──────────────
+    # 9:00 AM ET (EDT=UTC-4) = 13:00 UTC  |  12:05 AM ET = 04:05 UTC
+    schedule.every().day.at('13:00').do(generate_morning_brief)  # 9:00 AM ET
+    schedule.every().day.at('04:05').do(nightly_retrain)         # 12:05 AM ET
 
-    log.info(f'\n📅 SCHEDULE:')
+    log.info(f'\n📅 SCHEDULE (all times Eastern):')
     log.info(f'  Every {SCAN_EVERY} min  → Market scan + signal evaluation')
-    log.info(f'  09:00 AM ET → Claude morning brief (daily trading plan)')
-    log.info(f'  3:50 PM ET  → Close all positions (EOD)')
-    log.info(f'  00:05 AM    → Nightly XGBoost retrain (self-improvement)')
+    log.info(f'  09:00 AM ET → Gemini morning brief (daily trading plan)')
+    log.info(f'  3:50 PM ET  → Close all positions (EOD) ← timezone-fixed')
+    log.info(f'  00:05 AM ET → Nightly XGBoost retrain (self-improvement)')
     log.info(f'\n🚀 Bot is live!\n{sep}')
 
     # ── Immediate startup tasks ───────────────────────────
-    generate_morning_brief()
+    # Only run morning brief on startup if market is about to open (9-10 AM ET)
+    et_hour = now_et().hour
+    if 9 <= et_hour <= 10 and GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
+        generate_morning_brief()
     scan()
 
     # ── Main event loop ───────────────────────────────────

@@ -148,10 +148,30 @@ TV_EXCHANGE = {
 
 # ── Risk Parameters ──────────────────────────────────────
 RISK_PCT      = 0.02   # 2% of equity risked per trade
-POSITION_CAP  = 0.20   # max 20% of equity in one stock
+POSITION_CAP  = 0.12   # max 12% of equity in one stock (10-stock watchlist)
 STOP_PCT      = 0.02   # stop loss at -2%
-TP_PCT        = 0.06   # take profit at +6%
-MAX_POSITIONS = 3      # max simultaneous open positions
+TP_PCT        = 0.06   # hard take-profit fallback at +6%
+MAX_POSITIONS = 5      # max simultaneous open positions (10-stock watchlist)
+
+# ── Two-tier trailing stop ────────────────────────────────
+# Phase 1 (0% → +6%)  : normal stop-loss at -2%, no TP ceiling
+# Phase 2 (past +6%)  : trailing stop activates — rides the momentum
+#   trail = 5% below the running peak price (wide enough for volatile names)
+#   floor = hard minimum exit of +3% once trailing is active
+#           (so even a sharp reversal from +6% → still exit at +3%, not +0%)
+TRAIL_ACTIVATE_PCT = 0.06   # trailing kicks in once position is up +6%
+TRAIL_PCT          = 0.05   # trail 5% below the highest price seen
+TRAIL_FLOOR_PCT    = 0.03   # never exit below +3% once trailing is active
+
+# ── Profit Lock (ratcheting floor — 0% to +6% zone) ──────
+# Prevents giving back gains on the typical 1–5% intraday move.
+# Once peak reaches each level, the stop-loss floor ratchets up.
+#   +1.5% peak → floor moves to 0%   (breakeven — can never lose money)
+#   +4.0% peak → floor moves to +2%  (lock in half the gain)
+#   +6.0% peak → trailing stop takes over (above)
+LOCK_BREAKEVEN_AT  = 0.015  # activate breakeven stop once up +1.5%
+LOCK_PROFIT_AT     = 0.04   # activate +2% floor once up +4%
+LOCK_PROFIT_FLOOR  = 0.02   # the floor itself when LOCK_PROFIT_AT is reached
 
 # ── Cooldown after selling — prevents churning ────────────
 # Dip Confirmation — how many reversal signals needed before re-entry
@@ -890,10 +910,15 @@ Be precise and data-driven. Reference specific indicator values from the signals
 #
 # ══════════════════════════════════════════════════════════
 
+position_highs: dict = {}
+# Tracks the highest price seen for each open position since entry.
+# Used by the trailing stop logic in manage_open_positions().
+# Set on BUY, updated every scan, cleared on SELL.
+
 dip_watch: dict = {}
 # Structure per symbol:
 # {
-#   'reason':       'STOP_LOSS' | 'TAKE_PROFIT' | 'TREND',
+#   'reason':       'STOP_LOSS' | 'TAKE_PROFIT' | 'TREND' | 'NEWS_EXIT',
 #   'exit_price':   float,
 #   'exit_time':    datetime,
 #   'lowest_since': float,   ← tracked each scan to find the dip low
@@ -1073,7 +1098,9 @@ def check_dip_reversal(symbol: str) -> tuple:
         signals.append('vol capitulation')
 
     # ── Verdict ───────────────────────────────────────────
-    required = DIP_SIGNALS_AFTER_STOP if exit_reason == 'STOP_LOSS' else DIP_SIGNALS_AFTER_TP
+    # STOP_LOSS / NEWS_EXIT → strict (2 signals) — stock was in trouble
+    # TAKE_PROFIT / TRAILING_STOP / TREND → lenient (1 signal) — stock was healthy
+    required = DIP_SIGNALS_AFTER_STOP if exit_reason in ('STOP_LOSS', 'NEWS_EXIT') else DIP_SIGNALS_AFTER_TP
 
     if len(signals) >= required:
         log.info(
@@ -1122,6 +1149,7 @@ def get_positions() -> dict:
 
 def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
     """Calculate position size, place market buy, log trade."""
+    global position_highs
     pos = get_positions()
     if symbol in pos:
         return False  # already have this
@@ -1142,6 +1170,7 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
             side=OrderSide.BUY,
             time_in_force=TimeInForce.DAY,
         ))
+        position_highs[symbol] = price   # seed trailing stop tracker at entry price
         log.info(
             f'🟢 BUY  {qty:5d}×{symbol} @ ${price:8.2f} '
             f'| Score:{signal["score"]:+.3f} | {" | ".join(signal["reasons"])}'
@@ -1164,6 +1193,8 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
 
 def place_sell(symbol: str, pos, reason: str) -> None:
     """Market sell an open position, log the outcome."""
+    global position_highs
+    position_highs.pop(symbol, None)   # clear trailing stop tracker
     qty     = float(pos.qty)
     entry   = float(pos.avg_entry_price)
     current = float(pos.current_price)
@@ -1185,7 +1216,7 @@ def place_sell(symbol: str, pos, reason: str) -> None:
         )
         # Enter dip watch — bot will re-buy when candle patterns confirm reversal
         # (replaces fixed 60/120 min cooldown — smarter, pattern-driven)
-        if reason in ('STOP_LOSS', 'TAKE_PROFIT', 'TREND'):
+        if reason in ('STOP_LOSS', 'TAKE_PROFIT', 'TRAILING_STOP', 'PROFIT_LOCK', 'TREND', 'NEWS_EXIT'):
             set_dip_watch(symbol, reason, current)
         save_log({
             'action':      'SELL',
@@ -1209,18 +1240,97 @@ def place_sell(symbol: str, pos, reason: str) -> None:
 
 
 def manage_open_positions() -> None:
-    """Check all open positions against stop-loss and take-profit levels."""
+    """
+    Four-tier exit system — evaluated every scan for each open position.
+
+    Tier 1  peak < +1.5%   : hard stop-loss at -2% from entry
+    Tier 2  peak ≥ +1.5%   : profit lock — floor moves to 0% (breakeven)
+    Tier 3  peak ≥ +4.0%   : profit lock — floor moves to +2%
+    Tier 4  peak ≥ +6.0%   : trailing stop (5% below peak, +3% hard floor)
+
+    The floor only moves UP — it never comes back down.
+    Result: you can never lose money once you're up +1.5%, and
+            you capture outsized gains on the rare +8–20% catalyst days.
+
+    Examples (entry $100):
+      Hits +3%, retraces to  0%  → PROFIT_LOCK exit at  0%  (was -2% before)
+      Hits +5%, retraces to +2%  → PROFIT_LOCK exit at +2%
+      Hits +15%, retraces 5%     → TRAILING_STOP exit at +9.25%
+    """
+    global position_highs
+
     for sym, pos in get_positions().items():
         if sym not in WATCHLIST:
             continue
+
         entry   = float(pos.avg_entry_price)
         current = float(pos.current_price)
         pct     = (current - entry) / entry
 
-        if pct <= -STOP_PCT:
+        # ── Update running peak ──────────────────────────────
+        peak     = max(position_highs.get(sym, entry), current)
+        position_highs[sym] = peak
+        peak_pct = (peak - entry) / entry
+
+        # ── Tier 4: trailing stop (peak ever ≥ +6%) ─────────
+        if peak_pct >= TRAIL_ACTIVATE_PCT:
+            trail_price = max(
+                peak * (1 - TRAIL_PCT),
+                entry * (1 + TRAIL_FLOOR_PCT),
+            )
+            trail_pct = (trail_price - entry) / entry
+
+            if current <= trail_price:
+                log.info(
+                    f'  {sym:5s}: 📉 TRAILING STOP | '
+                    f'peak={peak_pct:+.1%}  exit={pct:+.1%}  '
+                    f'floor={trail_pct:+.1%}'
+                )
+                place_sell(sym, pos, 'TRAILING_STOP')
+            else:
+                log.info(
+                    f'  {sym:5s}: 🚀 TRAILING     | '
+                    f'pnl={pct:+.1%}  peak={peak_pct:+.1%}  '
+                    f'trail_stop={trail_pct:+.1%}  '
+                    f'room={pct - trail_pct:+.1%}'
+                )
+
+        # ── Tier 3: profit lock — floor at +2% (peak ≥ +4%) ─
+        elif peak_pct >= LOCK_PROFIT_AT:
+            floor_price = entry * (1 + LOCK_PROFIT_FLOOR)
+            if current <= floor_price:
+                log.info(
+                    f'  {sym:5s}: 🔒 PROFIT LOCK  | '
+                    f'peak={peak_pct:+.1%}  exit={pct:+.1%}  '
+                    f'(locked +2% floor)'
+                )
+                place_sell(sym, pos, 'PROFIT_LOCK')
+            else:
+                log.info(
+                    f'  {sym:5s}: 📈 HOLDING      | '
+                    f'pnl={pct:+.1%}  peak={peak_pct:+.1%}  '
+                    f'floor=+{LOCK_PROFIT_FLOOR:.0%}'
+                )
+
+        # ── Tier 2: profit lock — floor at 0% (peak ≥ +1.5%) ─
+        elif peak_pct >= LOCK_BREAKEVEN_AT:
+            if current <= entry:
+                log.info(
+                    f'  {sym:5s}: 🔒 BREAKEVEN    | '
+                    f'peak={peak_pct:+.1%}  exit={pct:+.1%}  '
+                    f'(protected from loss)'
+                )
+                place_sell(sym, pos, 'PROFIT_LOCK')
+            else:
+                log.info(
+                    f'  {sym:5s}: 📈 HOLDING      | '
+                    f'pnl={pct:+.1%}  peak={peak_pct:+.1%}  '
+                    f'floor=breakeven'
+                )
+
+        # ── Tier 1: hard stop-loss (peak never reached +1.5%) ─
+        elif pct <= -STOP_PCT:
             place_sell(sym, pos, 'STOP_LOSS')
-        elif pct >= TP_PCT:
-            place_sell(sym, pos, 'TAKE_PROFIT')
 
 
 def close_all_positions(reason: str = 'EOD') -> None:
@@ -1552,7 +1662,7 @@ def select_daily_watchlist(news_analysis: dict) -> list:
         }
 
     ranked = sorted(candidates.items(), key=lambda x: -x[1]['composite'])
-    return ranked[:5]
+    return ranked[:10]   # top 10 — expanded from 5 for broader intraday coverage
 
 
 # ══════════════════════════════════════════════════════════
@@ -1572,7 +1682,7 @@ def print_selection_report(ranked: list) -> None:
 
     log.info(f'\n{sep}')
     log.info(f'  🎯  TODAY\'S AI STOCK SELECTION — {today}')
-    log.info(f'  Why the bot chose these 5 stocks for today\'s trading')
+    log.info(f'  Why the bot chose these stocks for today\'s trading (up to 10)')
     log.info(sep)
 
     report_data = []
@@ -1746,7 +1856,133 @@ def run_news_intelligence() -> None:
     new_wl = [sym for sym, _ in ranked]
     log.info(f'  📋 WATCHLIST: {WATCHLIST}  →  {new_wl}')
     WATCHLIST = new_wl
-    log.info(f'  ✅ Bot will trade these 5 stocks today\n{sep}\n')
+    log.info(f'  ✅ Bot will trade these {len(new_wl)} stocks today\n{sep}\n')
+
+
+# ══════════════════════════════════════════════════════════
+# INTRADAY NEWS MONITOR  (every 2 hours during market hours)
+# ══════════════════════════════════════════════════════════
+
+def run_intraday_news_update() -> None:
+    """
+    Runs every 2 hours while the market is open.
+    Approximate fire times: 10:30 AM, 12:30 PM, 2:30 PM ET
+
+    Two live actions:
+      1. NEWS-DRIVEN EXIT   — sells an open position if strong negative
+                              news hits (sentiment ≤ -0.6, HIGH/MEDIUM impact)
+      2. BREAKOUT ADDITION  — adds a stock to today's watchlist if it
+                              gets a major catalyst (M&A, earnings beat, etc.)
+                              with sentiment ≥ 0.80 and HIGH impact
+    """
+    global WATCHLIST
+
+    if not is_market_open():
+        return
+
+    sep = '─' * 66
+    log.info(f'\n{sep}')
+    log.info(f'  📡 INTRADAY NEWS UPDATE — {now_et().strftime("%I:%M %p ET")}')
+    log.info(f'  Watchlist ({len(WATCHLIST)}): {WATCHLIST}')
+    log.info(sep)
+
+    # ── Gather last ~2.5 hours of news ─────────────────────
+    positions   = get_positions()
+    # Focus on current watchlist + any open positions not already in it
+    focus_syms  = list(set(WATCHLIST + list(positions.keys())))
+    alpaca_news = fetch_alpaca_news(hours=3)
+    yahoo_news  = fetch_yahoo_rss(focus_syms[:14])
+    all_articles = alpaca_news + yahoo_news
+
+    log.info(f'  Articles (last 3 h): {len(all_articles)}')
+
+    if not all_articles:
+        log.info('  No recent news — watchlist unchanged')
+        log.info(f'{sep}\n')
+        return
+
+    # ── Gemini quick-analysis ───────────────────────────────
+    if not gemini:
+        log.info('  Gemini not available — skipping intraday analysis')
+        log.info(f'{sep}\n')
+        return
+
+    news_analysis = analyze_news_with_gemini(all_articles)
+    log.info(f'  Gemini found news on {len(news_analysis)} stocks')
+
+    # ── Action 1: News-driven early exit ───────────────────
+    log.info('\n  📌 OPEN POSITIONS:')
+    for sym, pos in positions.items():
+        if sym not in news_analysis:
+            log.info(f'  {sym:5s}: holding | no recent news')
+            continue
+        nd        = news_analysis[sym]
+        sentiment = float(nd.get('sentiment', 0))
+        impact    = nd.get('impact', 'LOW')
+        catalyst  = nd.get('catalyst', 'OTHER')
+        headline  = nd.get('headline', 'N/A')
+
+        if sentiment <= -0.6 and impact in ('HIGH', 'MEDIUM'):
+            # Strong negative news → exit now, don't wait for stop
+            current = float(pos.current_price)
+            entry   = float(pos.avg_entry_price)
+            pnl_pct = (current - entry) / entry
+            log.info(
+                f'  🚨 {sym}: NEGATIVE NEWS EXIT '
+                f'sentiment={sentiment:+.2f} [{impact}]  pnl={pnl_pct:+.1%}'
+            )
+            log.info(f'     📰 {headline[:70]}')
+            place_sell(sym, pos, reason='NEWS_EXIT')
+        else:
+            sent_icon = '🟢' if sentiment >= 0 else '🔴'
+            log.info(
+                f'  ✅ {sym:5s}: holding | {sent_icon} sentiment={sentiment:+.2f} '
+                f'[{impact}] {catalyst}'
+            )
+
+    # ── Action 2: Mid-day breakout additions ───────────────
+    new_additions = []
+    for sym, nd in news_analysis.items():
+        if sym in WATCHLIST or sym not in SCAN_UNIVERSE:
+            continue
+        sentiment  = float(nd.get('sentiment', 0))
+        impact     = nd.get('impact', 'LOW')
+        catalyst   = nd.get('catalyst', 'OTHER')
+        cat_weight = CATALYST_WEIGHTS.get(catalyst, 0.30)
+
+        # Only high-conviction, market-moving catalysts
+        if (sentiment >= 0.80
+                and impact == 'HIGH'
+                and cat_weight >= 0.75):
+            headline = nd.get('headline', '')
+            score    = round(cat_weight * sentiment, 3)
+            log.info(
+                f'  ⚡ BREAKOUT CANDIDATE: {sym} | {catalyst} [{impact}] '
+                f'sentiment={sentiment:+.2f} score={score}'
+            )
+            log.info(f'     📰 {headline[:70]}')
+            new_additions.append((sym, score))
+
+    if new_additions:
+        new_additions.sort(key=lambda x: -x[1])
+        slots = 10 - len(WATCHLIST)
+        if slots > 0:
+            add_syms = [s for s, _ in new_additions[:slots]]
+            WATCHLIST.extend(add_syms)
+            log.info(f'\n  📋 Added mid-day: {add_syms}')
+        else:
+            log.info(
+                f'\n  📋 Breakout candidates found but watchlist full (10): '
+                + ', '.join(s for s, _ in new_additions)
+            )
+    else:
+        log.info('\n  No breakout additions — watchlist unchanged')
+
+    log.info(
+        f'\n  ✅ Intraday update done | '
+        f'Watchlist ({len(WATCHLIST)}): {WATCHLIST}'
+    )
+    log.info(f'{sep}\n')
 
 
 # ══════════════════════════════════════════════════════════
@@ -1858,15 +2094,18 @@ def main():
     # Conversion: ET (EDT) = UTC - 4
     #   8:30 AM ET = 12:30 UTC  ← News Intelligence (before open)
     #   9:00 AM ET = 13:00 UTC  ← Gemini morning brief
+    # Every 120 min after start  ← Intraday news monitor (~10:30, 12:30, 2:30 PM ET)
     #  12:05 AM ET = 04:05 UTC  ← Nightly retrain
-    schedule.every().day.at('12:30').do(run_news_intelligence)   # 8:30 AM ET
-    schedule.every().day.at('13:00').do(generate_morning_brief)  # 9:00 AM ET
-    schedule.every().day.at('04:05').do(nightly_retrain)         # 12:05 AM ET
+    schedule.every().day.at('12:30').do(run_news_intelligence)         # 8:30 AM ET
+    schedule.every().day.at('13:00').do(generate_morning_brief)        # 9:00 AM ET
+    schedule.every(120).minutes.do(run_intraday_news_update)           # every 2 h (market open check inside)
+    schedule.every().day.at('04:05').do(nightly_retrain)               # 12:05 AM ET
 
     log.info(f'\n📅 SCHEDULE (all times Eastern):')
     log.info(f'  Every {SCAN_EVERY} min  → Market scan + signal evaluation')
-    log.info(f'  08:30 AM ET → 📡 News Intelligence — picks today\'s 5 stocks')
+    log.info(f'  08:30 AM ET → 📡 News Intelligence — picks up to 10 stocks')
     log.info(f'  09:00 AM ET → 🧠 Gemini morning brief (optional)')
+    log.info(f'  Every 2 hrs → 📡 Intraday news update — exits on bad news, adds breakouts')
     log.info(f'  03:50 PM ET → 🔴 Close all positions (EOD)')
     log.info(f'  12:05 AM ET → 🌙 Nightly XGBoost retrain (self-learning)')
     log.info(f'\n🚀 Bot is live!\n{sep}')

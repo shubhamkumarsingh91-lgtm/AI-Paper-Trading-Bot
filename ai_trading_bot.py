@@ -1617,6 +1617,130 @@ def is_market_open() -> bool:
 
 eod_done_date: str = ''   # track which date EOD already ran — prevents repeated firing
 
+
+# ══════════════════════════════════════════════════════════
+# DAILY PERFORMANCE REPORT
+# Sent via Telegram every day at EOD — shows precision,
+# P&L, model accuracy, and individual trade results.
+# Use this to track whether the ML model is improving.
+# ══════════════════════════════════════════════════════════
+
+def send_daily_report() -> None:
+    """
+    Build and send a daily performance report to Telegram.
+
+    Metrics sent:
+      • Today's precision (wins ÷ total closed trades today)
+      • Today's total P&L and average per trade
+      • Best and worst trade of the day
+      • Individual trade log with reasons
+      • Cumulative all-time win rate (model health trend)
+      • Current ML model accuracy from last retrain
+    """
+    today     = now_et().strftime('%Y-%m-%d')
+    day_label = now_et().strftime('%a %b %d')
+
+    # ── Filter to today's SELL trades only ────────────────
+    today_sells = [
+        t for t in trade_log
+        if t.get('action') == 'SELL'
+        and str(t.get('timestamp', ''))[:10] == today
+    ]
+
+    # ── All-time stats ────────────────────────────────────
+    all_sells    = [t for t in trade_log if t.get('action') == 'SELL']
+    all_wins     = [t for t in all_sells if t.get('win')]
+    all_wr       = len(all_wins) / len(all_sells) * 100 if all_sells else 0.0
+    all_pnl      = sum(t.get('pnl', 0) for t in all_sells)
+
+    # ── Today's stats ────────────────────────────────────
+    n_trades     = len(today_sells)
+    today_wins   = [t for t in today_sells if t.get('win')]
+    today_losses = [t for t in today_sells if not t.get('win')]
+    precision    = len(today_wins) / n_trades * 100 if n_trades else 0.0
+    today_pnl    = sum(t.get('pnl', 0) for t in today_sells)
+    avg_pnl      = today_pnl / n_trades if n_trades else 0.0
+
+    # Best and worst trade
+    best  = max(today_sells, key=lambda t: t.get('pnl', 0), default=None)
+    worst = min(today_sells, key=lambda t: t.get('pnl', 0), default=None)
+
+    # ── Account info ─────────────────────────────────────
+    try:
+        acct   = trade_client.get_account()
+        equity = float(acct.equity)
+        cash   = float(acct.cash)
+    except Exception:
+        equity = cash = 0.0
+
+    # ── Precision emoji ───────────────────────────────────
+    if precision >= 70:
+        prec_emoji = '🟢'
+    elif precision >= 50:
+        prec_emoji = '🟡'
+    else:
+        prec_emoji = '🔴'
+
+    pnl_emoji = '📈' if today_pnl >= 0 else '📉'
+
+    # ── Build individual trade lines ──────────────────────
+    trade_lines = ''
+    for t in today_sells:
+        w      = '✅' if t.get('win') else '❌'
+        sym    = t.get('symbol', '???')
+        reason = t.get('reason', '')[:14]
+        pnl    = t.get('pnl', 0)
+        pct    = t.get('pct', 0) * 100
+        trade_lines += f'\n  {w} {sym:<5s} {reason:<14s}  ${pnl:+.2f} ({pct:+.1f}%)'
+
+    if not trade_lines:
+        trade_lines = '\n  No trades closed today'
+
+    # ── Compose message ───────────────────────────────────
+    msg = (
+        f'📊 <b>DAILY REPORT — {day_label}</b>\n'
+        f'{'━' * 28}\n'
+        f'\n'
+        f'{prec_emoji} <b>TODAY\'S PRECISION</b>\n'
+        f'  Trades: {n_trades}  ({len(today_wins)}W / {len(today_losses)}L)\n'
+        f'  Precision: <b>{precision:.0f}%</b>\n'
+        f'\n'
+        f'{pnl_emoji} <b>TODAY\'S P&amp;L</b>\n'
+        f'  Total:   <b>${today_pnl:+.2f}</b>\n'
+        f'  Avg/trade: ${avg_pnl:+.2f}\n'
+    )
+
+    if best and n_trades > 0:
+        msg += (
+            f'  Best:  {best["symbol"]} ${best.get("pnl",0):+.2f} ({best.get("pct",0)*100:+.1f}%)\n'
+        )
+    if worst and n_trades > 1:
+        msg += (
+            f'  Worst: {worst["symbol"]} ${worst.get("pnl",0):+.2f} ({worst.get("pct",0)*100:+.1f}%)\n'
+        )
+
+    msg += (
+        f'\n'
+        f'🤖 <b>MODEL HEALTH</b>\n'
+        f'  ML accuracy (last retrain): <b>{model_accuracy:.1%}</b>\n'
+        f'  All-time win rate: <b>{all_wr:.0f}%</b>  ({len(all_wins)}W / {len(all_sells)} trades)\n'
+        f'  Cumulative P&amp;L: <b>${all_pnl:+,.2f}</b>\n'
+        f'\n'
+        f'📋 <b>TRADES TODAY</b>{trade_lines}\n'
+        f'\n'
+        f'{'━' * 28}\n'
+        f'Equity: <b>${equity:,.2f}</b>  ·  Cash: ${cash:,.0f}'
+    )
+
+    send_telegram(msg)
+    log.info(
+        f'📊 Daily report sent — '
+        f'precision={precision:.0f}% ({len(today_wins)}W/{n_trades}) '
+        f'P&L=${today_pnl:+.2f}  '
+        f'ML={model_accuracy:.1%}'
+    )
+
+
 def check_eod() -> None:
     global eod_done_date
     now = now_et()   # ← must use ET, not UTC (Render servers run UTC)
@@ -1636,6 +1760,9 @@ def check_eod() -> None:
     if get_positions():
         log.info('🕑 EOD: closing all positions before market close')
         close_all_positions('EOD')
+
+    # Send daily performance report to Telegram
+    send_daily_report()
 
 
 # ══════════════════════════════════════════════════════════

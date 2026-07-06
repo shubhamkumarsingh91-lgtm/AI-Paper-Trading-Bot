@@ -72,6 +72,8 @@ log = logging.getLogger(__name__)
 API_KEY     = os.environ.get('ALPACA_API_KEY',    'YOUR_PAPER_KEY')
 SECRET_KEY  = os.environ.get('ALPACA_SECRET_KEY', 'YOUR_PAPER_SECRET')
 GEMINI_KEY  = os.environ.get('GEMINI_API_KEY',    'YOUR_GEMINI_KEY')
+TG_TOKEN    = os.environ.get('TELEGRAM_BOT_TOKEN', '')   # set in Render dashboard
+TG_CHAT_ID  = os.environ.get('TELEGRAM_CHAT_ID',  '')   # set in Render dashboard
 
 # ── Trading watchlist — updated daily by News Intelligence ─
 # This list is DYNAMIC — replaced each morning by AI analysis.
@@ -255,6 +257,41 @@ if GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
         gemini = _genai.GenerativeModel('gemini-2.5-flash-lite')  # updated — 2.0-flash deprecated June 2026
     except Exception as e:
         log.warning(f'Gemini init skipped: {e}')
+
+
+# ══════════════════════════════════════════════════════════
+# TELEGRAM NOTIFICATIONS
+# ══════════════════════════════════════════════════════════
+# Sends real-time alerts to your phone for every trade,
+# morning brief, regime change, and nightly retrain summary.
+#
+# Setup (one time):
+#   1. Open Telegram → search @BotFather → /newbot → copy TOKEN
+#   2. Start chat with your new bot → send any message
+#   3. Open: https://api.telegram.org/bot<TOKEN>/getUpdates
+#      → copy the "id" number from "chat" section = CHAT_ID
+#   4. Add both to Render dashboard:
+#      TELEGRAM_BOT_TOKEN = your token
+#      TELEGRAM_CHAT_ID   = your chat id
+# ══════════════════════════════════════════════════════════
+
+def send_telegram(message: str) -> None:
+    """
+    Send a message to your Telegram bot.
+    Silently skips if token/chat_id not configured — never breaks the bot.
+    """
+    if not TG_TOKEN or not TG_CHAT_ID:
+        return
+    try:
+        url  = f'https://api.telegram.org/bot{TG_TOKEN}/sendMessage'
+        payload = {
+            'chat_id':    TG_CHAT_ID,
+            'text':       message,
+            'parse_mode': 'HTML',
+        }
+        requests.post(url, json=payload, timeout=5)
+    except Exception:
+        pass   # Telegram failure must never stop trading
 
 
 # ══════════════════════════════════════════════════════════
@@ -926,6 +963,13 @@ Be precise and data-driven. Reference specific indicator values from the signals
         morning_brief_text = response.text
         sep = '═' * 60
         log.info(f'\n{sep}\n🧠 MORNING BRIEF — {now_et().strftime("%b %d %Y %I:%M %p ET")}\n{sep}\n{morning_brief_text}\n{sep}')
+        # Send first 3500 chars to Telegram (message limit is 4096)
+        send_telegram(
+            f'🧠 <b>MORNING BRIEF — {now_et().strftime("%b %d %Y")}</b>\n'
+            f'Equity: ${equity:,.0f}  ·  Model: {model_accuracy:.1%}\n'
+            f'────────────────────\n'
+            + morning_brief_text[:3200]
+        )
 
         BRIEF_FILE.write_text(
             f"Generated: {now_et().isoformat()}\n"
@@ -1011,6 +1055,14 @@ def get_market_regime() -> str:
             log.info(
                 f'{icon} REGIME CHANGE: {market_regime} → {new_regime} '
                 f'(SPY ${current:.2f} vs SMA50 ${sma50:.2f})'
+            )
+            send_telegram(
+                f'{icon} <b>MARKET REGIME CHANGE</b>\n'
+                f'{market_regime} → <b>{new_regime}</b>\n'
+                f'SPY: ${current:.2f}  ·  SMA50: ${sma50:.2f}\n'
+                + ('⚠️ Switching to half-size positions + higher confidence required'
+                   if new_regime == 'BEAR' else
+                   '✅ Back to full-size positions')
             )
         market_regime      = new_regime
         _regime_checked_at = now
@@ -1362,6 +1414,13 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
             f'🟢 BUY  {qty:5d}×{symbol} @ ${price:8.2f} '
             f'| Score:{signal["score"]:+.3f} | {" | ".join(signal["reasons"])}'
         )
+        send_telegram(
+            f'🟢 <b>PAPER BOT — BUY</b>\n'
+            f'Stock: <b>{symbol}</b>  ·  {qty} shares @ ${price:.2f}\n'
+            f'Cost: ${qty*price:,.0f}  ·  ML: {signal["confidence"]:.0%}\n'
+            f'Score: {signal["score"]:+.3f}  ·  {" | ".join(signal["reasons"][:3])}\n'
+            f'Equity: ${equity:,.0f}'
+        )
         save_log({
             'action':      'BUY',
             'symbol':      symbol,
@@ -1400,6 +1459,13 @@ def place_sell(symbol: str, pos, reason: str) -> None:
         log.info(
             f'🔴 SELL {qty:5.0f}×{symbol} @ ${current:8.2f} '
             f'| P&L: ${pnl:+8.2f} ({pct:+.1%}) [{reason}] {emoji}'
+        )
+        send_telegram(
+            f'{emoji} <b>PAPER BOT — SELL [{reason}]</b>\n'
+            f'Stock: <b>{symbol}</b>  ·  {qty:.0f} shares @ ${current:.2f}\n'
+            f'Entry: ${entry:.2f}  →  Exit: ${current:.2f}\n'
+            f'P&L: <b>${pnl:+.2f} ({pct:+.1%})</b>\n'
+            f'{"✅ WIN" if win else "❌ LOSS"}'
         )
         # Enter dip watch — bot will re-buy when candle patterns confirm reversal
         # (replaces fixed 60/120 min cooldown — smarter, pattern-driven)
@@ -1585,6 +1651,13 @@ def nightly_retrain() -> None:
 
     log.info(f'  New accuracy:      {model_accuracy:.1%}')
     log.info(f'✅ Bot is smarter — ready for tomorrow\n{sep}')
+    send_telegram(
+        f'🌙 <b>NIGHTLY RETRAIN COMPLETE</b>\n'
+        f'Trades ever: {len(sells)}  ·  Win rate: {wr:.1f}%\n'
+        f'Cumulative P&L: <b>${total_pnl:+,.2f}</b>\n'
+        f'Model accuracy: <b>{model_accuracy:.1%}</b>\n'
+        f'✅ Bot is smarter — ready for tomorrow'
+    )
 
 
 # ══════════════════════════════════════════════════════════

@@ -234,7 +234,7 @@ if GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
     try:
         import google.generativeai as _genai
         _genai.configure(api_key=GEMINI_KEY)
-        gemini = _genai.GenerativeModel('gemini-2.0-flash')
+        gemini = _genai.GenerativeModel('gemini-2.5-flash-lite')  # updated — 2.0-flash deprecated June 2026
     except Exception as e:
         log.warning(f'Gemini init skipped: {e}')
 

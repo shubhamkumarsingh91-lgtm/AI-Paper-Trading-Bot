@@ -695,10 +695,10 @@ def load_or_train() -> None:
 
 
 def ml_predict(symbol: str, sym_id: int = None) -> dict:
+    """Run the trained model on the latest bars for a given symbol."""
     # Use TRAINING_UNIVERSE index so sym_id is consistent with training
     if sym_id is None:
         sym_id = TRAINING_UNIVERSE.index(symbol) if symbol in TRAINING_UNIVERSE else 0
-    """Run the trained model on the latest bars for a given symbol."""
     if model is None:
         return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
     try:
@@ -778,20 +778,29 @@ def get_tv_analysis(symbol: str) -> dict | None:
 def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     """
     Combine all three signal sources into one final score.
-    Score >= 0.55 → BUY.  Below → HOLD.
-    """
-    score   = 0.0
-    reasons = []
 
-    # ── XGBoost (50%) ─────────────────────────────────────
+    When TradingView is available:
+      Score >= 0.55 → BUY.
+    When TradingView is N/A (Render network often blocks it):
+      TV weight (35%) is redistributed to ML, threshold drops to 0.48.
+      This prevents the bot from being completely paralyzed when TV is down.
+    """
+    score      = 0.0
+    reasons    = []
+    tv_up      = tv is not None
+
+    # ── XGBoost ────────────────────────────────────────────
+    # When TV is N/A, ML absorbs its weight (50% → 85%) so the
+    # bot can still act on strong ML signals alone.
+    eff_ml_w = ML_WEIGHT if tv_up else (ML_WEIGHT + TV_WEIGHT)
     conf = ml.get('confidence', 0.0)
     # normalize: 0.5 confidence = 0 contribution, 1.0 = full weight
-    ml_contrib = (conf - 0.5) * 2 * ML_WEIGHT
+    ml_contrib = (conf - 0.5) * 2 * eff_ml_w
     score += ml_contrib
     reasons.append(f'ML:{conf:.0%}')
 
     # ── TradingView (35%) ─────────────────────────────────
-    if tv:
+    if tv_up:
         tv_contrib = TV_SCORE.get(tv['rec'], 0.0) * TV_WEIGHT
         score += tv_contrib
         reasons.append(f'TV:{tv["rec"]}')
@@ -800,7 +809,7 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
             score += 0.04
             reasons.append('ADX:TREND')
     else:
-        reasons.append('TV:N/A')
+        reasons.append('TV:N/A(ML+)')  # note that ML weight was boosted
 
     # ── RSI filter (15%) ──────────────────────────────────
     rsi = ml.get('rsi', 50)
@@ -831,7 +840,10 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     elif bb > 0.95:              # near upper band — overbought
         score -= 0.08
 
-    final_signal = 'BUY' if score >= 0.55 else 'HOLD'
+    # Threshold: 0.55 with TV (full 3-source confidence)
+    #            0.48 without TV (ML bearing more weight, slightly lower bar)
+    threshold    = 0.55 if tv_up else 0.48
+    final_signal = 'BUY' if score >= threshold else 'HOLD'
     return {
         'signal':     final_signal,
         'score':      round(score, 3),
@@ -2307,11 +2319,12 @@ def scan() -> None:
         tv  = get_tv_analysis(sym)
         sig = combined_signal(sym, ml, tv)
 
+        tv_str = tv["rec"] if tv else "N/A(ML+)"  # N/A(ML+) = TV down, ML weight boosted
         log.info(
             f'  {sym:5s}: {sig["signal"]:4s} '
             f'score={sig["score"]:+.3f} '
             f'ml={ml["confidence"]:.0%} '
-            f'tv={tv["rec"] if tv else "N/A":12s} '
+            f'tv={tv_str:15s} '
             f'rsi={ml.get("rsi",0):.0f} '
             f'vol×{ml.get("vol_ratio",1):.1f}'
         )

@@ -199,6 +199,24 @@ BRIEF_FILE   = Path('morning_brief.txt')
 REPORT_FILE  = Path('daily_picks.json')   # today's AI stock picks with explanations
 TRAIN_DAYS   = 900   # ~2.5 years — covers 2024 AI bull run + 2025 corrections + 2026
 
+# ── Market Regime Gate ────────────────────────────────────
+# SPY above 50-day SMA = BULL → trade normally
+# SPY below 50-day SMA = BEAR → smaller positions + higher confidence required
+# One bad macro day can erase a week of gains — this gate filters those days.
+REGIME_GATE       = True   # set False to disable and always trade
+BEAR_POSITION_CAP = 0.06   # 6% max position in bear market (vs 12% normally)
+BEAR_MIN_CONF     = 0.68   # 68% ML confidence required in bear (vs 62% normally)
+
+# ── Earnings Blackout ─────────────────────────────────────
+# Never buy a stock within N days of its earnings report.
+# Earnings = ±15% surprise risk — the model has no way to predict this.
+EARNINGS_BLACKOUT_DAYS = 2
+
+# ── Time-Decay Training Weights ──────────────────────────
+# Recent market data is more relevant than 2-year-old data.
+# Exponential decay: oldest bar ~26% weight, newest bar 100% weight.
+TIME_DECAY_RATE = 0.0015
+
 TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 
 ET = pytz.timezone('America/New_York')     # all time checks use ET, not UTC
@@ -463,13 +481,35 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     return d
 
 
-def make_labels(df: pd.DataFrame, forward: int = 8, threshold: float = 0.005) -> pd.Series:
+def make_labels(df: pd.DataFrame, forward: int = 8, threshold: float = 0.005,
+                max_dd: float = -0.01) -> pd.Series:
     """
-    Binary label: 1 = price rises more than 0.5% in next 8 bars (≈2 hours).
-    This is what the model tries to predict.
+    High-quality binary label — stricter than a simple forward return.
+
+    Label = 1 only when BOTH conditions are true:
+      1. Price rises > 0.5% by bar +8 (≈2 hours forward)
+      2. Price never drops below -1% from entry during those 8 bars
+
+    Why: the old label caught 'brief touch' false signals — price taps +0.5%
+    for one bar then crashes -3%. The model learned to chase those.
+    The new label only rewards clean, sustained moves.
+
+    Result: bullish rate drops slightly (better signal quality), precision rises.
     """
-    future_ret = df['close'].shift(-forward) / df['close'] - 1
-    return (future_ret > threshold).astype(int)
+    c = df['close']
+    l = df['low']
+
+    # Condition 1: forward return at bar +8
+    future_ret = c.shift(-forward) / c - 1
+
+    # Condition 2: minimum low across next `forward` bars (vectorized)
+    # Stack 8 shifted copies of low → take row-wise min
+    future_lows    = pd.concat([l.shift(-i) for i in range(1, forward + 1)], axis=1)
+    min_future_low = future_lows.min(axis=1)
+    worst_drawdown = (min_future_low - c) / c   # negative = how far it dropped
+
+    # Label = 1 only if rising AND never crashed first
+    return ((future_ret > threshold) & (worst_drawdown > max_dd)).astype(int)
 
 
 # ══════════════════════════════════════════════════════════
@@ -538,10 +578,19 @@ def train_model(retrain: bool = False) -> None:
     pos_rate = y.mean()
     log.info(f'  Total: {len(X):,} samples | Bullish rate: {pos_rate:.1%}')
 
+    # ── Time-decay sample weights ────────────────────────
+    # Exponential decay: bar 0 (oldest) ≈ 26% weight, bar N (newest) = 100%.
+    # Teaches XGBoost to prioritise recent market behaviour over 2-year-old data.
+    n = len(X)
+    time_weights = np.exp(TIME_DECAY_RATE * np.arange(n))
+    time_weights = time_weights / time_weights.max()   # normalise to [~0.26, 1.0]
+    log.info(f'  Time weights: oldest={time_weights[0]:.2f}  newest={time_weights[-1]:.2f}')
+
     # Time-series split (no shuffle — respect temporal order)
-    split_idx = int(len(X) * 0.8)
+    split_idx = int(n * 0.8)
     X_tr, X_va = X.iloc[:split_idx], X.iloc[split_idx:]
     y_tr, y_va = y.iloc[:split_idx], y.iloc[split_idx:]
+    w_tr       = time_weights[:split_idx]   # weights for training set only
 
     model = xgb.XGBClassifier(
         n_estimators=600,
@@ -562,6 +611,7 @@ def train_model(retrain: bool = False) -> None:
     model.fit(
         X_tr, y_tr,
         eval_set=[(X_va, y_va)],
+        sample_weight=w_tr,          # ← time-decay weights applied here
         verbose=False,
     )
 
@@ -570,15 +620,16 @@ def train_model(retrain: bool = False) -> None:
     prec             = precision_score(y_va, preds, zero_division=0)
     model_trained_at = datetime.now().isoformat()
 
-    # Top 5 most important features
-    fi = sorted(
-        zip(FEATURES + ['sym_id'], model.feature_importances_),
-        key=lambda x: -x[1]
-    )[:5]
-    top_feats = ', '.join(f'{n}({v:.2f})' for n, v in fi)
+    # ── Feature importance analysis (SHAP-style via XGBoost gain) ──
+    fi_pairs = list(zip(FEATURES + ['sym_id'], model.feature_importances_))
+    fi_sorted = sorted(fi_pairs, key=lambda x: -x[1])
+
+    top_feats   = fi_sorted[:5]
+    bottom_feats = fi_sorted[-5:]
 
     log.info(f'✅ Model ready — Accuracy: {model_accuracy:.1%} | Precision: {prec:.1%}')
-    log.info(f'  Top signals learned: {top_feats}')
+    log.info(f'  🔝 Top signals:   {", ".join(f"{n}({v:.2f})" for n,v in top_feats)}')
+    log.info(f'  🔻 Weak signals (consider pruning): {", ".join(f"{n}({v:.4f})" for n,v in bottom_feats)}')
 
     joblib.dump({
         'model':      model,
@@ -916,6 +967,122 @@ position_highs: dict = {}
 # Set on BUY, updated every scan, cleared on SELL.
 
 dip_watch: dict = {}
+
+# ── Market Regime Cache ───────────────────────────────────
+market_regime: str      = 'BULL'   # current regime — updated every 30 min
+_regime_checked_at      = None     # datetime of last regime check
+
+# ── Earnings Blackout Cache ───────────────────────────────
+earnings_cache: dict    = {}       # sym → next earnings datetime (UTC)
+_earnings_cache_date: str = ''     # date when cache was last refreshed
+
+
+# ══════════════════════════════════════════════════════════
+# MARKET REGIME DETECTION
+# ══════════════════════════════════════════════════════════
+# Uses SPY vs its 50-day SMA as the macro health indicator.
+# Updated every 30 minutes during market hours — lightweight.
+# BULL → trade normally at full size
+# BEAR → require higher ML confidence + use half position cap
+# ══════════════════════════════════════════════════════════
+
+def get_market_regime() -> str:
+    """
+    Determine macro regime from SPY vs 50-day SMA.
+    Cached for 30 minutes — avoids redundant API calls each scan.
+    Returns 'BULL' or 'BEAR'.
+    """
+    global market_regime, _regime_checked_at
+    now = now_et()
+    if _regime_checked_at and (now - _regime_checked_at).total_seconds() < 1800:
+        return market_regime   # use cached value
+
+    try:
+        df = fetch_bars('SPY', days=80)
+        # Resample 15-min bars to daily closes for true 50-day SMA
+        daily = df['close'].resample('1D').last().dropna()
+        if len(daily) < 50:
+            return market_regime   # not enough data — keep last known
+        sma50   = daily.rolling(50).mean().iloc[-1]
+        current = daily.iloc[-1]
+        new_regime = 'BULL' if current > sma50 else 'BEAR'
+        if new_regime != market_regime:
+            icon = '📈' if new_regime == 'BULL' else '📉'
+            log.info(
+                f'{icon} REGIME CHANGE: {market_regime} → {new_regime} '
+                f'(SPY ${current:.2f} vs SMA50 ${sma50:.2f})'
+            )
+        market_regime      = new_regime
+        _regime_checked_at = now
+    except Exception as e:
+        log.warning(f'Regime check error: {e}')
+
+    return market_regime
+
+
+# ══════════════════════════════════════════════════════════
+# EARNINGS BLACKOUT SYSTEM
+# ══════════════════════════════════════════════════════════
+# Stocks can gap ±15% on earnings surprise — no technical
+# signal can predict this. The safest rule: never hold into
+# earnings. Bot skips buying any stock within 2 days of its
+# next scheduled earnings report.
+# ══════════════════════════════════════════════════════════
+
+def _fetch_earnings_date(symbol: str) -> datetime | None:
+    """Fetch next earnings date from Yahoo Finance free API (no key needed)."""
+    try:
+        url = (
+            f'https://query1.finance.yahoo.com/v10/finance/quoteSummary/{symbol}'
+            f'?modules=calendarEvents'
+        )
+        r    = requests.get(url, timeout=8, headers={'User-Agent': 'Mozilla/5.0'})
+        data = r.json()
+        events = data['quoteSummary']['result'][0]['calendarEvents']['earnings']
+        dates  = events.get('earningsDate', [])
+        if dates:
+            ts = dates[0]['raw']
+            return datetime.fromtimestamp(ts, tz=timezone.utc)
+    except Exception:
+        pass
+    return None
+
+
+def refresh_earnings_cache() -> None:
+    """
+    Pre-fetch next earnings date for all watchlist stocks.
+    Called once per day at market open. Results cached in earnings_cache dict.
+    """
+    global earnings_cache, _earnings_cache_date
+    today = now_et().strftime('%Y-%m-%d')
+    if _earnings_cache_date == today:
+        return   # already refreshed today
+    _earnings_cache_date = today
+    log.info('📅 Refreshing earnings calendar...')
+    upcoming = []
+    for sym in list(set(WATCHLIST + FALLBACK_WATCHLIST + list(SCAN_UNIVERSE[:15]))):
+        dt = _fetch_earnings_date(sym)
+        earnings_cache[sym] = dt
+        if dt:
+            days_away = (dt - datetime.now(timezone.utc)).days
+            if 0 <= days_away <= 7:
+                upcoming.append(f'{sym}({days_away}d)')
+    if upcoming:
+        log.info(f'  ⚠️  Earnings within 7 days: {", ".join(upcoming)}')
+    else:
+        log.info('  No earnings within 7 days for watchlist stocks')
+
+
+def is_earnings_blackout(symbol: str) -> bool:
+    """
+    Return True if symbol has earnings within EARNINGS_BLACKOUT_DAYS.
+    Signals the scan loop to skip this stock today.
+    """
+    dt = earnings_cache.get(symbol)
+    if not dt:
+        return False
+    days_away = (dt - datetime.now(timezone.utc)).days
+    return 0 <= days_away <= EARNINGS_BLACKOUT_DAYS
 # Structure per symbol:
 # {
 #   'reason':       'STOP_LOSS' | 'TAKE_PROFIT' | 'TREND' | 'NEWS_EXIT',
@@ -1158,9 +1325,29 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
     if open_count >= MAX_POSITIONS:
         return False
 
+    # ── Market regime gate ────────────────────────────────
+    # Bear market (SPY below 50-day SMA): require higher conviction + smaller size.
+    # Bull market: normal rules apply.
+    if REGIME_GATE:
+        regime = get_market_regime()
+        if regime == 'BEAR':
+            ml_conf = signal.get('confidence', 0)
+            if ml_conf < BEAR_MIN_CONF:
+                log.info(
+                    f'  {symbol}: 🐻 BEAR MARKET skip '
+                    f'(ML {ml_conf:.0%} < {BEAR_MIN_CONF:.0%} required)'
+                )
+                return False
+            cap = BEAR_POSITION_CAP
+            log.info(f'  {symbol}: 🐻 BEAR MARKET — half-size position ({cap:.0%} cap)')
+        else:
+            cap = POSITION_CAP
+    else:
+        cap = POSITION_CAP
+
     # Position sizing: risk 2% of equity, stop at -2% → position = 100%×equity×RISK_PCT/STOP_PCT
-    # Capped at POSITION_CAP of total equity
-    qty_usd = min(equity * RISK_PCT / STOP_PCT, equity * POSITION_CAP)
+    # Capped at regime-adjusted position cap
+    qty_usd = min(equity * RISK_PCT / STOP_PCT, equity * cap)
     qty     = max(1, int(qty_usd / price))
 
     try:
@@ -2030,6 +2217,13 @@ def scan() -> None:
             log.info(f'  {sym:5s}: HOLDING')
             continue
 
+        # Earnings blackout — never buy within 2 days of earnings report
+        if is_earnings_blackout(sym):
+            dt  = earnings_cache.get(sym)
+            eta = (dt - datetime.now(timezone.utc)).days if dt else '?'
+            log.info(f'  {sym:5s}: 📅 EARNINGS BLACKOUT ({eta}d away) — skip')
+            continue
+
         # Check dip-watch: only re-enter if candle patterns confirm reversal
         can_enter, dip_status = check_dip_reversal(sym)
         if not can_enter:
@@ -2099,10 +2293,12 @@ def main():
     schedule.every().day.at('12:30').do(run_news_intelligence)         # 8:30 AM ET
     schedule.every().day.at('13:00').do(generate_morning_brief)        # 9:00 AM ET
     schedule.every(120).minutes.do(run_intraday_news_update)           # every 2 h (market open check inside)
+    schedule.every().day.at('12:00').do(refresh_earnings_cache)        # 8:00 AM ET — before trading starts
     schedule.every().day.at('04:05').do(nightly_retrain)               # 12:05 AM ET
 
     log.info(f'\n📅 SCHEDULE (all times Eastern):')
     log.info(f'  Every {SCAN_EVERY} min  → Market scan + signal evaluation')
+    log.info(f'  08:00 AM ET → 📅 Earnings calendar refresh (blackout gate)')
     log.info(f'  08:30 AM ET → 📡 News Intelligence — picks up to 10 stocks')
     log.info(f'  09:00 AM ET → 🧠 Gemini morning brief (optional)')
     log.info(f'  Every 2 hrs → 📡 Intraday news update — exits on bad news, adds breakouts')
@@ -2113,6 +2309,14 @@ def main():
     # ── Immediate startup tasks ───────────────────────────
     et_now  = now_et()
     et_hour = et_now.hour
+
+    # Earnings calendar — always refresh on startup so blackout gate is ready
+    refresh_earnings_cache()
+
+    # Log initial market regime
+    regime = get_market_regime()
+    log.info(f'📊 Market regime at startup: {regime} (SPY vs 50-day SMA)')
+
     # If starting between 8-9 AM ET, run news intelligence right now
     if 8 <= et_hour < 9:
         run_news_intelligence()

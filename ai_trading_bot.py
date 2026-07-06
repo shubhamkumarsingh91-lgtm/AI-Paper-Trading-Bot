@@ -197,7 +197,7 @@ MODEL_FILE   = Path('ai_model.xgb')
 LOG_FILE     = Path('trade_log.json')
 BRIEF_FILE   = Path('morning_brief.txt')
 REPORT_FILE  = Path('daily_picks.json')   # today's AI stock picks with explanations
-TRAIN_DAYS   = 365
+TRAIN_DAYS   = 900   # ~2.5 years — covers 2024 AI bull run + 2025 corrections + 2026
 
 TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 

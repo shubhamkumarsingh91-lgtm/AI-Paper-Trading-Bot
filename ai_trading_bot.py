@@ -31,6 +31,8 @@ How to get keys:
 """
 
 import os, json, logging, time, joblib, warnings
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import requests
 import xml.etree.ElementTree as XMLTree
 import pytz
@@ -553,8 +555,9 @@ def make_labels(df: pd.DataFrame, forward: int = 8, threshold: float = 0.005,
 # XGBOOST MODEL
 # ══════════════════════════════════════════════════════════
 model: xgb.XGBClassifier = None
-model_accuracy: float     = 0.0
-model_trained_at: str     = 'never'
+model_accuracy:  float = 0.0
+model_precision: float = 0.0   # precision on last retrain's validation set
+model_trained_at: str  = 'never'
 
 
 def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
@@ -586,7 +589,7 @@ def train_model(retrain: bool = False) -> None:
     Train XGBoost on 1 year of 15-min data for all 5 watchlist stocks.
     Called once at startup and then nightly for self-improvement.
     """
-    global model, model_accuracy, model_trained_at
+    global model, model_accuracy, model_precision, model_trained_at
     label = 'Nightly retrain' if retrain else 'Initial training'
     log.info(f'🧠 {label} — fetching {TRAIN_DAYS} days × {len(TRAINING_UNIVERSE)} stocks...')
     log.info(f'   Training universe: {", ".join(TRAINING_UNIVERSE)}')
@@ -629,6 +632,11 @@ def train_model(retrain: bool = False) -> None:
     y_tr, y_va = y.iloc[:split_idx], y.iloc[split_idx:]
     w_tr       = time_weights[:split_idx]   # weights for training set only
 
+    neg = (y == 0).sum()
+    pos = (y == 1).sum()
+    spw = neg / (pos + 1)   # scale_pos_weight: upweight minority BUY class
+    log.info(f'  Class balance: {pos:,} BUY / {neg:,} HOLD → scale_pos_weight={spw:.2f}')
+
     model = xgb.XGBClassifier(
         n_estimators=600,
         max_depth=6,
@@ -638,9 +646,13 @@ def train_model(retrain: bool = False) -> None:
         min_child_weight=5,
         gamma=0.1,
         reg_alpha=0.1,
-        scale_pos_weight=(y == 0).sum() / ((y == 1).sum() + 1),
-        eval_metric='logloss',
-        early_stopping_rounds=50,   # moved here for XGBoost 2.0+
+        scale_pos_weight=spw,
+        # 'aucpr' = precision-recall AUC — correct metric for imbalanced data.
+        # 'logloss' was wrong: with 73% HOLD samples, every BUY prediction
+        # worsened logloss, so early_stopping fired immediately and the model
+        # trained 0 effective trees → predicted base_score=0.5 for everything.
+        eval_metric='aucpr',
+        early_stopping_rounds=50,
         verbosity=0,
         n_jobs=-1,
         random_state=42,
@@ -654,8 +666,9 @@ def train_model(retrain: bool = False) -> None:
 
     preds = model.predict(X_va)
     model_accuracy   = accuracy_score(y_va, preds)
-    prec             = precision_score(y_va, preds, zero_division=0)
+    model_precision  = precision_score(y_va, preds, zero_division=0)
     model_trained_at = datetime.now().isoformat()
+    prec             = model_precision   # local alias for logging below
 
     # ── Feature importance analysis (SHAP-style via XGBoost gain) ──
     fi_pairs = list(zip(FEATURES + ['sym_id'], model.feature_importances_))
@@ -664,7 +677,17 @@ def train_model(retrain: bool = False) -> None:
     top_feats   = fi_sorted[:5]
     bottom_feats = fi_sorted[-5:]
 
+    # Sanity check: show probability distribution on validation set
+    # If model is working, probs should spread between 0.1–0.9 (not all stuck at 0.5)
+    val_probs = model.predict_proba(X_va)[:, 1]
     log.info(f'✅ Model ready — Accuracy: {model_accuracy:.1%} | Precision: {prec:.1%}')
+    log.info(
+        f'  📊 Prob distribution: '
+        f'min={val_probs.min():.2f}  '
+        f'median={float(pd.Series(val_probs).median()):.2f}  '
+        f'max={val_probs.max():.2f}  '
+        f'(if all ~0.50 → model broken)'
+    )
     log.info(f'  🔝 Top signals:   {", ".join(f"{n}({v:.2f})" for n,v in top_feats)}')
     log.info(f'  🔻 Weak signals (consider pruning): {", ".join(f"{n}({v:.4f})" for n,v in bottom_feats)}')
 
@@ -680,14 +703,20 @@ def train_model(retrain: bool = False) -> None:
 
 def load_or_train() -> None:
     """Load saved model or train fresh if none exists."""
-    global model, model_accuracy, model_trained_at
+    global model, model_accuracy, model_precision, model_trained_at
     if MODEL_FILE.exists():
         try:
             saved = joblib.load(MODEL_FILE)
             model            = saved['model']
             model_accuracy   = saved['accuracy']
+            model_precision  = saved.get('precision', 0.0)
             model_trained_at = saved['trained_at']
-            log.info(f'📦 Model loaded — accuracy: {model_accuracy:.1%}, trained: {model_trained_at[:10]}')
+            log.info(
+                f'📦 Model loaded — '
+                f'accuracy: {model_accuracy:.1%}  '
+                f'precision: {model_precision:.1%}  '
+                f'trained: {model_trained_at[:10]}'
+            )
             return
         except Exception as e:
             log.warning(f'Model load failed ({e}), retraining from scratch')
@@ -2403,6 +2432,7 @@ def scan() -> None:
         return
 
     scan_count  += 1
+    _scan_count_ref[0] = scan_count   # expose to status server
     equity       = get_account_equity()
     positions    = get_positions()
     open_watch   = sum(1 for s in positions if s in WATCHLIST)
@@ -2468,6 +2498,53 @@ def scan() -> None:
 
 
 # ══════════════════════════════════════════════════════════
+# STATUS HTTP SERVER
+# Serves model accuracy + precision at GET /status so the
+# trading dashboard can display them without manual entry.
+# Render requires a PORT binding — this satisfies that too.
+#
+# Dashboard fetches: https://your-render-url.onrender.com/status
+# Response (JSON):
+#   { "accuracy": 74.2, "precision": 38.5,
+#     "trained_at": "2026-07-07T04:05:12",
+#     "scan_count": 12, "status": "running" }
+# ══════════════════════════════════════════════════════════
+
+_STATUS_PORT = int(os.environ.get('PORT', 8080))
+_scan_count_ref = [0]   # mutable ref so handler can read global scan_count
+
+
+class _StatusHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        payload = json.dumps({
+            'accuracy':   round(model_accuracy  * 100, 1),
+            'precision':  round(model_precision * 100, 1),
+            'trained_at': model_trained_at[:19] if model_trained_at != 'never' else 'never',
+            'scan_count': _scan_count_ref[0],
+            'status':     'running',
+        })
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')   # allow dashboard cross-origin fetch
+        self.end_headers()
+        self.wfile.write(payload.encode())
+
+    def log_message(self, *_):
+        pass   # suppress per-request HTTP logs — keep Render logs clean
+
+
+def _start_status_server() -> None:
+    """Start the status HTTP server in a background daemon thread."""
+    try:
+        server = HTTPServer(('0.0.0.0', _STATUS_PORT), _StatusHandler)
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+        log.info(f'📡 Status server → http://0.0.0.0:{_STATUS_PORT}/status')
+    except Exception as e:
+        log.warning(f'Status server failed to start: {e}')
+
+
+# ══════════════════════════════════════════════════════════
 # ENTRY POINT
 # ══════════════════════════════════════════════════════════
 
@@ -2489,6 +2566,9 @@ def main():
     except Exception as e:
         log.error(f'Cannot connect to Alpaca: {e}')
         raise
+
+    # ── Status server (serves model stats to dashboard) ──
+    _start_status_server()
 
     # ── Load history & train model ────────────────────────
     load_log()

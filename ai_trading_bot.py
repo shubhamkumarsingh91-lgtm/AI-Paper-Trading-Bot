@@ -190,7 +190,10 @@ LOCK_PROFIT_FLOOR  = 0.02   # the floor itself when LOCK_PROFIT_AT is reached
 # After TAKE_PROFIT/TREND: require 1 signal (stock was healthy — be lenient)
 DIP_SIGNALS_AFTER_STOP = 2
 DIP_SIGNALS_AFTER_TP   = 1
-DIP_MIN_WAIT_SEC       = 300   # always wait at least 5 min to avoid same-candle rebuy
+DIP_MIN_WAIT_SEC       = 300     # always wait at least 5 min to avoid same-candle rebuy
+DIP_MAX_WAIT_SEC       = 14400   # 4 hours — if no reversal pattern confirms by then, stop
+                                  # waiting on this candle pattern and fall back to the plain
+                                  # cooldown instead of watching indefinitely (was unbounded)
 
 # ── Signal Weights ───────────────────────────────────────
 ML_WEIGHT    = 0.50    # XGBoost prediction
@@ -656,6 +659,48 @@ def fetch_spy_context(days: int) -> pd.DataFrame:
         return pd.DataFrame(columns=['spy_ret_1', 'spy_ret_5', 'spy_above_ema20'])
 
 
+def apply_real_trade_outcomes(all_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Fold real trade outcomes from trade_log into the training labels.
+
+    Previously the nightly retrain only re-derived labels from fresh price
+    action (make_labels) and read trade_log solely to print a win-rate
+    summary — the model never actually saw what happened on its own trades,
+    despite the bot being advertised as self-learning from live results.
+
+    For every closed (SELL) trade, find the bar closest to that trade's
+    date for that symbol and overwrite its label with the real outcome
+    (1 = win, 0 = loss). Matched by symbol + calendar date rather than
+    exact timestamp since BUY/SELL log timestamps aren't stored in the
+    same explicit timezone as the ET-indexed price bars.
+    """
+    sells = [
+        t for t in trade_log
+        if t.get('action') == 'SELL' and t.get('symbol') in TRAINING_UNIVERSE
+    ]
+    if not sells:
+        return all_data
+
+    applied = 0
+    for sell in sells:
+        try:
+            sym         = sell['symbol']
+            trade_date  = pd.Timestamp(sell['timestamp']).date()
+            sym_id      = TRAINING_UNIVERSE.index(sym)
+            day_mask    = (all_data['sym_id'] == sym_id) & (all_data.index.date == trade_date)
+            day_bars    = all_data.index[day_mask]
+            if len(day_bars) == 0:
+                continue
+            all_data.loc[day_bars.max(), 'target'] = int(bool(sell.get('win')))
+            applied += 1
+        except Exception:
+            continue
+
+    if applied:
+        log.info(f'  Self-learning: {applied} real trade outcome(s) folded into training labels')
+    return all_data
+
+
 def train_model(retrain: bool = False) -> None:
     """
     Train XGBoost on 1 year of 15-min data for all 5 watchlist stocks.
@@ -707,6 +752,7 @@ def train_model(retrain: bool = False) -> None:
         return
 
     all_data = pd.concat(frames).sort_index()
+    all_data = apply_real_trade_outcomes(all_data)
     X        = all_data[FEATURES + ['sym_id']]
     y        = all_data['target']
     pos_rate = y.mean()
@@ -1033,18 +1079,23 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     """
     Combine all three signal sources into one final score.
 
-    When TradingView is available:
+    When TradingView gives a directional call (BUY/STRONG_BUY/SELL/STRONG_SELL):
       Score >= 0.55 → BUY.
-    When TradingView is N/A (Render network often blocks it):
+    When TradingView is N/A or NEUTRAL:
       TV weight (35%) is redistributed to ML, threshold drops to 0.48.
-      This prevents the bot from being completely paralyzed when TV is down.
+      This prevents the bot from being completely paralyzed when TV is down —
+      and NEUTRAL is treated the same way, since a NEUTRAL rating carries no
+      directional information but used to still eat 35% of the score while
+      the full 0.55 bar still applied, making BUY signals almost unreachable
+      (NEUTRAL is the most common TradingView outcome on a 10-min scan).
     """
     score      = 0.0
     reasons    = []
-    tv_up      = tv is not None
+    tv_present = tv is not None
+    tv_up      = tv_present and tv.get('rec') != 'NEUTRAL'
 
     # ── XGBoost ────────────────────────────────────────────
-    # When TV is N/A, ML absorbs its weight (50% → 85%) so the
+    # When TV is N/A or NEUTRAL, ML absorbs its weight (50% → 85%) so the
     # bot can still act on strong ML signals alone.
     eff_ml_w = ML_WEIGHT if tv_up else (ML_WEIGHT + TV_WEIGHT)
     conf = ml.get('confidence', 0.0)
@@ -1054,14 +1105,15 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     reasons.append(f'ML:{conf:.0%}')
 
     # ── TradingView (35%) ─────────────────────────────────
-    if tv_up:
-        tv_contrib = TV_SCORE.get(tv['rec'], 0.0) * TV_WEIGHT
-        score += tv_contrib
-        reasons.append(f'TV:{tv["rec"]}')
-        # ADX bonus: strong trend (ADX > 25) boosts conviction
-        if tv.get('adx', 0) > 25 and tv['rec'] in ('BUY', 'STRONG_BUY'):
-            score += 0.04
-            reasons.append('ADX:TREND')
+    if tv_present:
+        reasons.append(f'TV:{tv["rec"]}' if tv_up else f'TV:{tv["rec"]}(ML+)')
+        if tv_up:
+            tv_contrib = TV_SCORE.get(tv['rec'], 0.0) * TV_WEIGHT
+            score += tv_contrib
+            # ADX bonus: strong trend (ADX > 25) boosts conviction
+            if tv.get('adx', 0) > 25 and tv['rec'] in ('BUY', 'STRONG_BUY'):
+                score += 0.04
+                reasons.append('ADX:TREND')
     else:
         reasons.append('TV:N/A(ML+)')  # note that ML weight was boosted
 
@@ -1543,6 +1595,15 @@ def check_dip_reversal(symbol: str) -> tuple:
         remaining = int(DIP_MIN_WAIT_SEC - elapsed)
         return False, f'min wait ({remaining}s)'
 
+    # Enforce maximum wait — a symbol with no confirming pattern used to sit
+    # in dip_watch indefinitely, silently removing it from the tradeable set
+    # for the rest of the day. Give up on pattern confirmation after 4h and
+    # fall back to allowing re-entry on the normal signal gates.
+    if elapsed >= DIP_MAX_WAIT_SEC:
+        log.info(f'  ⏱  {symbol} dip watch expired after {elapsed/3600:.1f}h — re-entry allowed')
+        del dip_watch[symbol]
+        return True, 'dip watch expired'
+
     # Fetch recent bars for pattern analysis
     try:
         df = fetch_bars(symbol, days=3)
@@ -1700,6 +1761,11 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
         return True
     except Exception as e:
         log.error(f'Buy failed {symbol}: {e}')
+        send_telegram(
+            f'⚠️ <b>BUY FAILED</b>\n'
+            f'Stock: <b>{symbol}</b>  ·  Qty: {qty}\n'
+            f'Error: {e}'
+        )
         return False
 
 

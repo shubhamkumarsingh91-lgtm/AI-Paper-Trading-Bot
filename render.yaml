@@ -6,7 +6,13 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python ai_trading_bot.py
     autoDeploy: true
+    disk:
+      name: bot-state
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
+      - key: STATE_DIR
+        value: /var/data
       - key: ALPACA_API_KEY
         sync: false
       - key: ALPACA_SECRET_KEY

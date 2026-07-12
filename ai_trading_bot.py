@@ -63,6 +63,17 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 warnings.filterwarnings('ignore')
 
 # ══════════════════════════════════════════════════════════
+# PERSISTENT STATE DIRECTORY
+# ══════════════════════════════════════════════════════════
+# On Render this must point at the mounted disk (see render.yaml's
+# `disk.mountPath`) or the model, trade log, and self-learning history are
+# wiped on every redeploy/restart. STATE_DIR defaults to the working
+# directory so the bot still runs unchanged locally or anywhere without a
+# mounted disk.
+STATE_DIR = Path(os.environ.get('STATE_DIR', '.'))
+STATE_DIR.mkdir(parents=True, exist_ok=True)
+
+# ══════════════════════════════════════════════════════════
 # LOGGING
 # ══════════════════════════════════════════════════════════
 logging.basicConfig(
@@ -70,7 +81,7 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('ai_bot.log', encoding='utf-8'),
+        logging.FileHandler(STATE_DIR / 'ai_bot.log', encoding='utf-8'),
     ],
 )
 log = logging.getLogger(__name__)
@@ -207,10 +218,10 @@ EOD_HOUR     = 15      # close all at 3:50 PM ET
 EOD_MIN      = 50
 
 # ── Files ────────────────────────────────────────────────
-MODEL_FILE   = Path('ai_model.xgb')
-LOG_FILE     = Path('trade_log.json')
-BRIEF_FILE   = Path('morning_brief.txt')
-REPORT_FILE  = Path('daily_picks.json')   # today's AI stock picks with explanations
+MODEL_FILE   = STATE_DIR / 'ai_model.xgb'
+LOG_FILE     = STATE_DIR / 'trade_log.json'
+BRIEF_FILE   = STATE_DIR / 'morning_brief.txt'
+REPORT_FILE  = STATE_DIR / 'daily_picks.json'   # today's AI stock picks with explanations
 TRAIN_DAYS   = 900   # ~2.5 years — covers 2024 AI bull run + 2025 corrections + 2026
 
 # ── Market Regime Gate ────────────────────────────────────
@@ -598,6 +609,23 @@ model_precision: float = 0.0       # precision on last retrain's validation set
 model_trained_at: str  = 'never'
 _wf_precision:   float = 0.0       # walk-forward precision (most honest metric)
 
+# Decision threshold the model's probability must clear to count as a BUY
+# signal. Calibrated every retrain (see calibrate_threshold()) instead of
+# assuming the textbook default of 0.5 — that default was never actually
+# checked against what precision it produces, so the "precision" logged
+# during training didn't reflect the threshold live trading uses. 0.55 is
+# just the starting value before the first calibration ever runs.
+ML_DECISION_THRESHOLD: float = 0.55
+
+# Real trade outcomes are relabeled onto individual training rows (see
+# apply_real_trade_outcomes) but are a tiny fraction of the ~tens of
+# thousands of synthetic rows in a 900-day training set. Without upweighting
+# them, the model barely notices its own mistakes. This weight is applied
+# on top of the existing time-decay weighting.
+REAL_TRADE_SAMPLE_WEIGHT = 8.0
+
+LEARNING_LOG = STATE_DIR / 'learning_history.json'   # one row per retrain, never overwritten
+
 
 def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
     """Fetch OHLCV bars from Alpaca historical data API."""
@@ -674,6 +702,9 @@ def apply_real_trade_outcomes(all_data: pd.DataFrame) -> pd.DataFrame:
     exact timestamp since BUY/SELL log timestamps aren't stored in the
     same explicit timezone as the ET-indexed price bars.
     """
+    all_data['real_outcome'] = False   # marks rows overwritten with a real result,
+                                        # so train_model() can upweight them
+
     sells = [
         t for t in trade_log
         if t.get('action') == 'SELL' and t.get('symbol') in TRAINING_UNIVERSE
@@ -691,7 +722,9 @@ def apply_real_trade_outcomes(all_data: pd.DataFrame) -> pd.DataFrame:
             day_bars    = all_data.index[day_mask]
             if len(day_bars) == 0:
                 continue
-            all_data.loc[day_bars.max(), 'target'] = int(bool(sell.get('win')))
+            bar_idx = day_bars.max()
+            all_data.loc[bar_idx, 'target']       = int(bool(sell.get('win')))
+            all_data.loc[bar_idx, 'real_outcome'] = True
             applied += 1
         except Exception:
             continue
@@ -701,13 +734,75 @@ def apply_real_trade_outcomes(all_data: pd.DataFrame) -> pd.DataFrame:
     return all_data
 
 
+def calibrate_threshold(probs: np.ndarray, y_true: pd.Series, min_signals: int = 10) -> tuple:
+    """
+    Search validation-set probabilities for the cutoff that maximizes
+    precision while still producing enough BUY signals to be usable.
+
+    Without a minimum-signal floor, a threshold of 0.98 could "achieve"
+    100% precision by only ever firing on 1-2 lucky samples — useless live.
+    This is what live trading (combined_signal) now uses instead of the
+    unvalidated default of 0.5.
+
+    Returns (threshold, precision_at_threshold, signal_count).
+    """
+    best_th, best_prec, best_n = 0.5, 0.0, 0
+    for th in np.arange(0.50, 0.91, 0.02):
+        preds = (probs >= th).astype(int)
+        n_pos = int(preds.sum())
+        if n_pos < min_signals:
+            continue
+        prec = precision_score(y_true, preds, zero_division=0)
+        if prec > best_prec:
+            best_th, best_prec, best_n = float(th), float(prec), n_pos
+    return best_th, best_prec, best_n
+
+
+def record_learning_progress(real_trades_folded: int) -> tuple:
+    """
+    Append one row per retrain to LEARNING_LOG — never overwritten, so
+    accuracy/precision/win-rate/P&L over time is a visible, growing record
+    instead of only the latest snapshot in the log stream.
+
+    Returns (this_record, previous_record_or_None) so the caller can show
+    a trend delta (e.g. "precision +2.1% vs last retrain").
+    """
+    sells = [t for t in trade_log if t.get('action') == 'SELL']
+    wins  = [t for t in sells if t.get('win')]
+    wr    = len(wins) / len(sells) * 100 if sells else 0.0
+    pnl   = sum(t.get('pnl', 0) for t in sells)
+
+    record = {
+        'timestamp':            datetime.now().isoformat(),
+        'accuracy':              round(model_accuracy, 4),
+        'precision':             round(model_precision, 4),
+        'walk_forward_precision': round(_wf_precision, 4),
+        'decision_threshold':    round(ML_DECISION_THRESHOLD, 4),
+        'real_trades_folded_in': real_trades_folded,
+        'total_trades_ever':     len(sells),
+        'win_rate_pct':          round(wr, 1),
+        'cumulative_pnl':        round(pnl, 2),
+    }
+    history = []
+    if LEARNING_LOG.exists():
+        try:
+            history = json.loads(LEARNING_LOG.read_text())
+        except Exception:
+            history = []
+    previous = history[-1] if history else None
+    history.append(record)
+    LEARNING_LOG.write_text(json.dumps(history, indent=2))
+    log.info(f'  Learning history: {len(history)} retrain(s) recorded -> {LEARNING_LOG}')
+    return record, previous
+
+
 def train_model(retrain: bool = False) -> None:
     """
     Train XGBoost on 1 year of 15-min data for all 5 watchlist stocks.
     Called once at startup and then nightly for self-improvement.
     """
     global model, lgb_model, model_accuracy, model_precision, \
-        model_trained_at, _wf_precision
+        model_trained_at, _wf_precision, ML_DECISION_THRESHOLD
     label = 'Nightly retrain' if retrain else 'Initial training'
     log.info(f'🧠 {label} — fetching {TRAIN_DAYS} days x {len(TRAINING_UNIVERSE)} stocks...')
     log.info(f'   Training universe: {", ".join(TRAINING_UNIVERSE)}')
@@ -753,6 +848,7 @@ def train_model(retrain: bool = False) -> None:
 
     all_data = pd.concat(frames).sort_index()
     all_data = apply_real_trade_outcomes(all_data)
+    real_trade_mask = all_data['real_outcome'].to_numpy()
     X        = all_data[FEATURES + ['sym_id']]
     y        = all_data['target']
     pos_rate = y.mean()
@@ -762,6 +858,12 @@ def train_model(retrain: bool = False) -> None:
     # Time-decay sample weights: older bars get lower weight
     time_weights = np.exp(TIME_DECAY_RATE * np.arange(n))
     time_weights = time_weights / time_weights.max()
+    if real_trade_mask.any():
+        time_weights = time_weights * np.where(real_trade_mask, REAL_TRADE_SAMPLE_WEIGHT, 1.0)
+        log.info(
+            f'  Real-trade upweighting: {int(real_trade_mask.sum())} row(s) '
+            f'weighted {REAL_TRADE_SAMPLE_WEIGHT}x so the model actually notices them'
+        )
     log.info(f'  Time weights: oldest={time_weights[0]:.2f}  newest={time_weights[-1]:.2f}')
 
     neg       = (y == 0).sum()
@@ -843,7 +945,8 @@ def train_model(retrain: bool = False) -> None:
     # LightGBM (companion model)
     # Uses leaf-wise tree growth — catches different patterns than XGBoost.
     # Ensemble (60% XGB + 40% LGB) reduces false positives -> higher precision.
-    lgb_prec = 0.0
+    lgb_prec    = 0.0
+    final_probs = xgb_probs   # falls back to XGBoost-only if LightGBM unavailable/fails
     if _LGBM_OK:
         log.info('  Training LightGBM...')
         try:
@@ -868,12 +971,27 @@ def train_model(retrain: bool = False) -> None:
             ens_preds = (ens_probs >= 0.5).astype(int)
             ens_prec  = precision_score(y_va, ens_preds, zero_division=0)
             log.info(f'  Ensemble: precision={ens_prec:.1%}  <-- live bot uses this')
+            final_probs = ens_probs
         except Exception as _le:
             log.warning(f'  LightGBM failed: {_le} — XGBoost only')
             lgb_model = None
     else:
         lgb_model = None
         log.info('  LightGBM not installed (pip install lightgbm to enable ensemble)')
+
+    # Calibrate the live decision threshold against whatever the model
+    # (XGBoost alone, or the XGB+LGB ensemble) actually produces — replaces
+    # the unvalidated hardcoded 0.5 default with a data-driven cutoff, and
+    # is what combined_signal() uses for live BUY decisions. min_signals
+    # scales with the validation set so a threshold isn't picked just
+    # because it got lucky on a handful of predictions.
+    min_signals = max(10, int(0.01 * len(y_va)))
+    ML_DECISION_THRESHOLD, calib_prec, calib_n = calibrate_threshold(final_probs, y_va, min_signals)
+    log.info(
+        f'  Calibrated decision threshold: {ML_DECISION_THRESHOLD:.2f} '
+        f'(precision {calib_prec:.1%} on {calib_n} signals in validation) '
+        f'<-- live trading now uses this cutoff, not 0.5'
+    )
 
     # Feature importance — which features drive the model most?
     fi_pairs  = list(zip(FEATURES + ['sym_id'], model.feature_importances_))
@@ -885,11 +1003,25 @@ def train_model(retrain: bool = False) -> None:
     model_trained_at = datetime.now().isoformat()
     prec             = model_precision
 
+    real_trades_folded = int(real_trade_mask.sum())
+    record, previous = record_learning_progress(real_trades_folded)
+    trend_line = ''
+    if previous:
+        d_prec = (record['precision'] - previous['precision']) * 100
+        d_wf   = (record['walk_forward_precision'] - previous['walk_forward_precision']) * 100
+        trend_line = (
+            f'\n  Trend vs last retrain: precision {d_prec:+.1f}pp, '
+            f'walk-forward {d_wf:+.1f}pp'
+        )
+
     log.info(
         f'\n=== TRAINING COMPLETE ==='
         f'\n  XGB precision:  {xgb_prec:.1%}'
         f'\n  LGB precision:  {lgb_prec:.1%}'
         f'\n  Walk-forward:   {_wf_precision:.1%}  <-- most honest number'
+        f'\n  Decision threshold: {ML_DECISION_THRESHOLD:.2f}'
+        f'\n  Real trades folded in: {real_trades_folded}  (total ever: {record["total_trades_ever"]})'
+        f'{trend_line}'
         f'\n  Top 5 drivers:  {", ".join(n for n,_ in top_feats)}'
         f'\n  Weakest feats:  {", ".join(n for n,_ in bot_feats)}'
         f'\n  (weak features above 0.001 are still contributing — below means useless)'
@@ -899,38 +1031,45 @@ def train_model(retrain: bool = False) -> None:
         f'XGB precision:  <b>{xgb_prec:.1%}</b>\n'
         f'LGB precision:  {lgb_prec:.1%}\n'
         f'Walk-forward:   <b>{_wf_precision:.1%}</b> (real-world estimate)\n'
+        f'Decision threshold: {ML_DECISION_THRESHOLD:.2f}\n'
+        f'Real trades folded in: {real_trades_folded} (total ever: {record["total_trades_ever"]})'
+        f'{trend_line}\n'
         f'Top drivers: {", ".join(n for n,_ in top_feats[:3])}'
     )
     joblib.dump({
-        'model':        model,
-        'lgb_model':    lgb_model,
-        'accuracy':     model_accuracy,
-        'precision':    model_precision,
-        'wf_precision': _wf_precision,
-        'trained_at':   model_trained_at,
-        'features':     FEATURES,
+        'model':             model,
+        'lgb_model':         lgb_model,
+        'accuracy':          model_accuracy,
+        'precision':         model_precision,
+        'wf_precision':      _wf_precision,
+        'decision_threshold': ML_DECISION_THRESHOLD,
+        'trained_at':        model_trained_at,
+        'features':          FEATURES,
     }, MODEL_FILE)
     log.info(f'Model saved -> {MODEL_FILE}')
 
 
 def load_or_train() -> None:
     """Load saved model or train fresh if none exists."""
-    global model, lgb_model, model_accuracy, model_precision,         model_trained_at, _wf_precision
+    global model, lgb_model, model_accuracy, model_precision, \
+        model_trained_at, _wf_precision, ML_DECISION_THRESHOLD
     if MODEL_FILE.exists():
         try:
-            saved            = joblib.load(MODEL_FILE)
-            model            = saved['model']
-            lgb_model        = saved.get('lgb_model', None)
-            model_accuracy   = saved.get('accuracy',   0.0)
-            model_precision  = saved.get('precision',  0.0)
-            _wf_precision    = saved.get('wf_precision', 0.0)
-            model_trained_at = saved.get('trained_at', 'unknown')
+            saved                  = joblib.load(MODEL_FILE)
+            model                  = saved['model']
+            lgb_model              = saved.get('lgb_model', None)
+            model_accuracy         = saved.get('accuracy',   0.0)
+            model_precision        = saved.get('precision',  0.0)
+            _wf_precision          = saved.get('wf_precision', 0.0)
+            ML_DECISION_THRESHOLD  = saved.get('decision_threshold', ML_DECISION_THRESHOLD)
+            model_trained_at       = saved.get('trained_at', 'unknown')
             lgb_tag = ' + LGB' if lgb_model is not None else ''
             log.info(
                 f'📦 Model loaded (XGB{lgb_tag}) — '
                 f'accuracy={model_accuracy:.1%}  '
                 f'precision={model_precision:.1%}  '
                 f'walk-forward={_wf_precision:.1%}  '
+                f'threshold={ML_DECISION_THRESHOLD:.2f}  '
                 f'trained={model_trained_at[:10]}'
             )
             return
@@ -1099,10 +1238,15 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     # bot can still act on strong ML signals alone.
     eff_ml_w = ML_WEIGHT if tv_up else (ML_WEIGHT + TV_WEIGHT)
     conf = ml.get('confidence', 0.0)
-    # normalize: 0.5 confidence = 0 contribution, 1.0 = full weight
-    ml_contrib = (conf - 0.5) * 2 * eff_ml_w
+    # Normalize against the calibrated decision threshold (ML_DECISION_THRESHOLD),
+    # not a hardcoded 0.5 — the threshold is picked every retrain as whatever
+    # cutoff actually produced good precision on held-out data, so "0
+    # contribution" here means "at the model's real breakeven point", not an
+    # arbitrary textbook default.
+    neutral_pt = min(ML_DECISION_THRESHOLD, 0.95)
+    ml_contrib = (conf - neutral_pt) / (1.0 - neutral_pt) * eff_ml_w
     score += ml_contrib
-    reasons.append(f'ML:{conf:.0%}')
+    reasons.append(f'ML:{conf:.0%}(vs{neutral_pt:.0%})')
 
     # ── TradingView (35%) ─────────────────────────────────
     if tv_present:

@@ -31,6 +31,7 @@ How to get keys:
 """
 
 import os, json, logging, time, joblib, warnings
+from logging.handlers import RotatingFileHandler
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import requests
@@ -81,7 +82,13 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(STATE_DIR / 'ai_bot.log', encoding='utf-8'),
+        # Capped at 20MB x 3 backups (60MB max) — the log now lives on the
+        # persistent disk (STATE_DIR) so, unlike before, it never gets wiped
+        # by a redeploy. Without rotation it would just grow forever.
+        RotatingFileHandler(
+            STATE_DIR / 'ai_bot.log', maxBytes=20 * 1024 * 1024,
+            backupCount=3, encoding='utf-8',
+        ),
     ],
 )
 log = logging.getLogger(__name__)

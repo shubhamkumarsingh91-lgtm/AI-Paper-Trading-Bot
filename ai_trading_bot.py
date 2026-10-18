@@ -1844,6 +1844,32 @@ def get_positions() -> dict:
     return {p.symbol: p for p in trade_client.get_all_positions()}
 
 
+# ══════════════════════════════════════════════════════════
+# VIX FEAR GAUGE — blocks new buys during market panic
+# Free Yahoo Finance data, no API key needed
+# ══════════════════════════════════════════════════════════
+VIX_CAUTION = 25    # above this -> half-size positions
+VIX_PANIC   = 30    # above this -> no new buys at all
+_vix_cache  = {'value': None, 'checked': None}
+
+
+def get_vix():
+    """Fetch current VIX level. Cached for 30 minutes."""
+    now = now_et()
+    if _vix_cache['checked'] and (now - _vix_cache['checked']).total_seconds() < 1800:
+        return _vix_cache['value']
+    try:
+        url = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d'
+        r = requests.get(url, timeout=8, headers={'User-Agent': 'Mozilla/5.0'})
+        vix = float(r.json()['chart']['result'][0]['meta']['regularMarketPrice'])
+        _vix_cache.update(value=vix, checked=now)
+        log.info(f'VIX fear gauge: {vix:.1f}')
+        return vix
+    except Exception as e:
+        log.warning(f'VIX fetch failed: {e} — trading normally')
+        return None
+
+
 def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
     """Calculate position size, place market buy, log trade."""
     global position_highs
@@ -1853,6 +1879,12 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
 
     open_count = sum(1 for s in pos if s in WATCHLIST)
     if open_count >= MAX_POSITIONS:
+        return False
+
+    # ── VIX panic gate ────────────────────────────────────
+    vix = get_vix()
+    if vix is not None and vix >= VIX_PANIC:
+        log.info(f'  {symbol}: VIX {vix:.1f} >= {VIX_PANIC} — market panic, no new buys')
         return False
 
     # ── Market regime gate ────────────────────────────────
@@ -1877,6 +1909,9 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
 
     # Position sizing: risk 2% of equity, stop at -2% → position = 100%×equity×RISK_PCT/STOP_PCT
     # Capped at regime-adjusted position cap
+    if vix is not None and vix >= VIX_CAUTION:
+        cap = min(cap, POSITION_CAP / 2)
+        log.info(f'  {symbol}: VIX {vix:.1f} elevated — half-size position')
     qty_usd = min(equity * RISK_PCT / STOP_PCT, equity * cap)
     qty     = max(1, int(qty_usd / price))
 
@@ -2990,80 +3025,81 @@ def _start_status_server() -> None:
 # ENTRY POINT
 # ══════════════════════════════════════════════════════════
 
-def main():
-    sep = '═' * 60
-    log.info(sep)
-    log.info('🤖  AI SELF-LEARNING PAPER TRADING BOT')
-    log.info('    XGBoost + TradingView + Claude AI')
-    log.info('    Alpaca Paper — $100,000 account')
-    log.info(sep)
+# ══════════════════════════════════════════════════════════
+# RUNTIME STATE — survives between GitHub Actions runs
+# ══════════════════════════════════════════════════════════
+import argparse
+RUNTIME_FILE = STATE_DIR / 'runtime_state.json'
 
-    # ── Verify Alpaca connection ──────────────────────────
+
+def save_runtime_state() -> None:
+    RUNTIME_FILE.write_text(json.dumps({
+        'watchlist':      WATCHLIST,
+        'position_highs': position_highs,
+        'dip_watch': {
+            s: {**w, 'exit_time': w['exit_time'].isoformat()}
+            for s, w in dip_watch.items()
+        },
+        'earnings_cache': {
+            s: (d.isoformat() if d else None) for s, d in earnings_cache.items()
+        },
+        'earnings_cache_date': _earnings_cache_date,
+    }, indent=2))
+
+
+def load_runtime_state() -> None:
+    global WATCHLIST, position_highs, dip_watch, earnings_cache, _earnings_cache_date
+    if not RUNTIME_FILE.exists():
+        return
     try:
-        acct = trade_client.get_account()
-        log.info(f'✅ Alpaca paper connected')
-        log.info(f'   Equity:  ${float(acct.equity):>12,.2f}')
-        log.info(f'   Cash:    ${float(acct.cash):>12,.2f}')
-        log.info(f'   BP:      ${float(acct.buying_power):>12,.2f}')
+        s = json.loads(RUNTIME_FILE.read_text())
+        WATCHLIST      = s.get('watchlist', FALLBACK_WATCHLIST)
+        position_highs = s.get('position_highs', {})
+        dip_watch = {
+            sym: {**w, 'exit_time': datetime.fromisoformat(w['exit_time'])}
+            for sym, w in s.get('dip_watch', {}).items()
+        }
+        earnings_cache = {
+            sym: (datetime.fromisoformat(d) if d else None)
+            for sym, d in s.get('earnings_cache', {}).items()
+        }
+        _earnings_cache_date = s.get('earnings_cache_date', '')
+        log.info(f'Runtime state restored — watchlist {WATCHLIST}')
     except Exception as e:
-        log.error(f'Cannot connect to Alpaca: {e}')
-        raise
+        log.warning(f'Runtime state load failed: {e}')
 
-    # ── Status server (serves model stats to dashboard) ──
-    _start_status_server()
 
-    # ── Load history & train model ────────────────────────
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', required=True,
+                        choices=['premarket', 'scan', 'eod', 'retrain'])
+    mode = parser.parse_args().mode
+    log.info(f'Run mode: {mode.upper()}')
+
     load_log()
-    load_or_train()
+    load_runtime_state()
 
-    # ── Schedule all recurring tasks ──────────────────────
-    schedule.every(SCAN_EVERY).minutes.do(scan)
-    schedule.every(1).minutes.do(check_eod)
-    # ── All times below are UTC (Render servers run UTC) ──
-    # Conversion: ET (EDT) = UTC - 4
-    #   8:30 AM ET = 12:30 UTC  ← News Intelligence (before open)
-    #   9:00 AM ET = 13:00 UTC  ← Gemini morning brief
-    # Every 120 min after start  ← Intraday news monitor (~10:30, 12:30, 2:30 PM ET)
-    #  12:05 AM ET = 04:05 UTC  ← Nightly retrain
-    schedule.every().day.at('12:30').do(run_news_intelligence)         # 8:30 AM ET
-    schedule.every().day.at('13:00').do(generate_morning_brief)        # 9:00 AM ET
-    schedule.every(120).minutes.do(run_intraday_news_update)           # every 2 h (market open check inside)
-    schedule.every().day.at('12:00').do(refresh_earnings_cache)        # 8:00 AM ET — before trading starts
-    schedule.every().day.at('04:05').do(nightly_retrain)               # 12:05 AM ET
+    if mode == 'retrain':
+        nightly_retrain()
+    else:
+        load_or_train()
+        if mode == 'premarket':
+            refresh_earnings_cache()
+            run_news_intelligence()
+            generate_morning_brief()
+        elif mode == 'scan':
+            refresh_earnings_cache()   # no-op if already done today
+            et = now_et()
+            if et.hour in (10, 12, 14) and et.minute < 10:
+                run_intraday_news_update()
+            scan()
+        elif mode == 'eod':
+            if is_market_open() and get_positions():
+                close_all_positions('EOD')
+            send_daily_report()
 
-    log.info(f'\n📅 SCHEDULE (all times Eastern):')
-    log.info(f'  Every {SCAN_EVERY} min  → Market scan + signal evaluation')
-    log.info(f'  08:00 AM ET → 📅 Earnings calendar refresh (blackout gate)')
-    log.info(f'  08:30 AM ET → 📡 News Intelligence — picks up to 10 stocks')
-    log.info(f'  09:00 AM ET → 🧠 Gemini morning brief (optional)')
-    log.info(f'  Every 2 hrs → 📡 Intraday news update — exits on bad news, adds breakouts')
-    log.info(f'  03:50 PM ET → 🔴 Close all positions (EOD)')
-    log.info(f'  12:05 AM ET → 🌙 Nightly XGBoost retrain (self-learning)')
-    log.info(f'\n🚀 Bot is live!\n{sep}')
-
-    # ── Immediate startup tasks ───────────────────────────
-    et_now  = now_et()
-    et_hour = et_now.hour
-
-    # Earnings calendar — always refresh on startup so blackout gate is ready
-    refresh_earnings_cache()
-
-    # Log initial market regime
-    regime = get_market_regime()
-    log.info(f'📊 Market regime at startup: {regime} (SPY vs 50-day SMA)')
-
-    # If starting between 8-9 AM ET, run news intelligence right now
-    if 8 <= et_hour < 9:
-        run_news_intelligence()
-    # Morning brief on startup between 9-10 AM ET
-    if 9 <= et_hour <= 10 and GEMINI_KEY and GEMINI_KEY != 'YOUR_GEMINI_KEY':
-        generate_morning_brief()
-    scan()
-
-    # ── Main event loop ───────────────────────────────────
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
+    save_runtime_state()
+    log.info('Run complete — state saved')
 
 
 if __name__ == '__main__':

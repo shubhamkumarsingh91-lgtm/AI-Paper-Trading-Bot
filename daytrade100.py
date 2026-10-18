@@ -17,6 +17,7 @@ HOW IT WORKS (no changes to ai_trading_bot.py):
     6. Training window 365 days (900 days x 100 stocks is too heavy for a
        free GitHub runner)
     7. Adds a daily scorecard vs SPY: state_dt100/scorecard.csv
+    8. Smaller time-decay rate so sample weights don't overflow with 100 stocks
 """
 import os, sys, csv
 from datetime import datetime
@@ -48,6 +49,13 @@ bot.WATCHLIST          = list(UNIVERSE_100)
 bot.FALLBACK_WATCHLIST = list(UNIVERSE_100)
 bot.SCAN_UNIVERSE      = list(UNIVERSE_100)
 bot.TRAIN_DAYS         = 365                      # 6
+
+# -- 8: FIX (Oct 18) time-decay weights overflowed with 100 stocks --
+# The original formula is exp(TIME_DECAY_RATE * row_number). With ~650,000
+# rows that became infinity, and inf/inf = NaN, so XGBoost refused to train
+# ("Weights must be positive values"). This rate gives the oldest row about
+# 5% weight and the newest 100%, and stays safe up to millions of rows.
+bot.TIME_DECAY_RATE    = 3.0 / 700_000
 
 # ── 4: TradingView off ──
 bot.get_tv_analysis = lambda symbol: None

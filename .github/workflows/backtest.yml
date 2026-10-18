@@ -1,16 +1,8 @@
-# Independent personal project, not tied to any employer or agency.
-# Public market data only. No personal data (no SSNs/PHI).
-#
-# Put this file at: .github/workflows/backtest.yml
-# Run it from the Actions tab -> "200-Day Strategy Backtest" -> Run workflow
 name: 200-Day Strategy Backtest
-
 on:
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   backtest:
     runs-on: ubuntu-latest
@@ -22,7 +14,7 @@ jobs:
           python-version: "3.11"
       - run: pip install yfinance pandas numpy
       - name: Run backtest
-        run: python backtest_200dma.py | tee backtest_output.txt
+        run: python backtest_regime.py | tee backtest_output.txt
       - name: Show results on the run summary page
         if: always()
         run: |

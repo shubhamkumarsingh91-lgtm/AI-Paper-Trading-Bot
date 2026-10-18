@@ -1,0 +1,68 @@
+# Independent personal project, not tied to any employer or agency.
+# Paper trading only. Public market data only. No personal data (no SSNs/PHI).
+#
+# Put this file at: .github/workflows/trading-bot.yml
+# Times are UTC (set for US daylight time; shift +1 hour after early November).
+name: AI Paper Trading Bot
+
+on:
+  schedule:
+    - cron: "30 12 * * 1-5"         # premarket (8:30 AM ET)
+    - cron: "*/10 13-19 * * 1-5"    # scan every 10 min during market hours
+    - cron: "50 19 * * 1-5"         # end of day (3:50 PM ET)
+    - cron: "5 4 * * 2-6"           # nightly retrain (12:05 AM ET)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "premarket | scan | eod | retrain"
+        default: "retrain"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Apply bot updates (safe to repeat)
+        run: python apply_updates.py
+      - name: Pick mode
+        id: mode
+        run: |
+          if [ -n "${{ github.event.inputs.mode }}" ]; then
+            echo "m=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          case "${{ github.event.schedule }}" in
+            "30 12 * * 1-5") echo "m=premarket" >> $GITHUB_OUTPUT ;;
+            "50 19 * * 1-5") echo "m=eod" >> $GITHUB_OUTPUT ;;
+            "5 4 * * 2-6")   echo "m=retrain" >> $GITHUB_OUTPUT ;;
+            *)               echo "m=scan" >> $GITHUB_OUTPUT ;;
+          esac
+      - name: Run bot
+        env:
+          STATE_DIR: state
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python ai_trading_bot.py --mode ${{ steps.mode.outputs.m }}
+      - name: Save learning back to repo
+        if: always()
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/ ai_trading_bot.py || true
+          git diff --cached --quiet || git commit -m "bot state update [skip ci]"
+          git pull --rebase && git push

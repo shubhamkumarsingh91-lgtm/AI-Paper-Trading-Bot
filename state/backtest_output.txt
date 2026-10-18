@@ -1,38 +1,42 @@
-Universe: 503 S&P 500 stocks + SPY, TLT, GLD, SHY
-Downloading prices (a few minutes)...
+Membership history: 826 snapshots, 2012-11-27 -> 2026-08-18
+Stocks that were EVER in the S&P 500 in this period: 801
+Downloading prices (several minutes)...
+Stocks with usable Yahoo data: 621 of 801 (78% coverage)
 
-=== WHOLE PERIOD (since 2015) ===
+=== WHOLE PERIOD (since 2015) — POINT-IN-TIME MEMBERS ===
                    Total  Per year  Max drop  Sharpe
-Regime bot        +2295%    +31.0%    -41.5%    1.04
+Regime bot         +174%     +8.9%    -37.1%    0.45
 SPY hold           +351%    +13.7%    -33.7%    0.82
+(Version 1 with today's members showed +31.0%/yr — compare.)
 
-=== WALK-FORWARD STYLE: SEPARATE ERAS ===
+=== SEPARATE ERAS ===
 2015-2019 (calm bull + 2018 dip)
-   bot +31.8%/yr (max drop -25.0%)   SPY +11.6%/yr (max drop -19.3%)
+   bot +13.4%/yr (max drop -19.5%)   SPY +11.6%/yr (max drop -19.3%)
 2020-2022 (COVID crash + 2022 bear)
-   bot -5.2%/yr (max drop -41.5%)   SPY +7.6%/yr (max drop -33.7%)
+   bot -8.1%/yr (max drop -36.1%)   SPY +7.6%/yr (max drop -33.7%)
 2023-now (AI rally + 2026 shocks)
-   bot +68.0%/yr (max drop -39.2%)   SPY +21.6%/yr (max drop -18.8%)
+   bot +18.2%/yr (max drop -36.0%)   SPY +21.6%/yr (max drop -18.8%)
 
-=== BY REGIME (which playbook earns its keep?) ===
-BULL        75% of days | bot +35.8%/yr vs SPY +11.9%/yr while in this regime
-SIDEWAYS    13% of days | bot +32.2%/yr vs SPY +0.3%/yr while in this regime
-BEAR        12% of days | bot +3.9%/yr vs SPY +46.2%/yr while in this regime
+=== BY REGIME ===
+BULL        75% of days | bot +11.6%/yr vs SPY +11.9%/yr
+SIDEWAYS    13% of days | bot +22.9%/yr vs SPY +0.3%/yr
+BEAR        12% of days | bot +3.9%/yr vs SPY +46.2%/yr
 
 === YEAR BY YEAR ===
         bot    SPY  beat_SPY
-2015  0.216  0.012      True
-2016  0.289  0.120      True
-2017  0.426  0.217      True
-2018  0.359 -0.046      True
-2019  0.308  0.312     False
-2020  0.075  0.183     False
-2021  0.119  0.287     False
-2022 -0.292 -0.182     False
-2023  0.676  0.262      True
-2024  0.621  0.249      True
-2025  0.338  0.177      True
-2026  0.949  0.128      True
+2015  0.097  0.012      True
+2016  0.198  0.120      True
+2017  0.328  0.217      True
+2018 -0.039 -0.046      True
+2019  0.117  0.312     False
+2020 -0.124  0.183     False
+2021  0.151  0.287     False
+2022 -0.230 -0.182     False
+2023  0.083  0.262     False
+2024  0.020  0.249     False
+2025  0.097  0.177     False
+2026  0.552  0.128      True
 
 Current regime (latest close): BULL
+NOTE: delisted stocks missing from Yahoo -> results are an UPPER bound.
 Saved -> state/regime_backtest_daily.csv

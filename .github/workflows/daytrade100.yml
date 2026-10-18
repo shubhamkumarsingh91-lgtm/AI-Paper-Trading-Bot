@@ -1,0 +1,64 @@
+# DISCLAIMER: Independent personal project. Not tied to any employer or agency.
+# Paper trading only, public market data, no internal or personal data (no SSNs/PHI).
+#
+# Runs daytrade100.py (bot #3) on its own Alpaca paper account.
+# Times are UTC = New York daylight time + 4h. After Nov 1 add 1 hour to each.
+name: Day-Trade-100 Bot
+
+on:
+  schedule:
+    - cron: "30 12 * * 1-5"      # premarket   8:30 AM NY
+    - cron: "*/10 13-19 * * 1-5" # scan every 10 min during market hours
+    - cron: "50 19 * * 1-5"      # eod         3:50 PM NY
+    - cron: "20 4 * * 2-6"       # retrain     overnight
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "premarket, scan, eod or retrain"
+        default: "scan"
+
+concurrency:
+  group: state-commits           # same group as the other bots, so commits never clash
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Pick mode
+        id: mode
+        run: |
+          if [ -n "${{ github.event.inputs.mode }}" ]; then M="${{ github.event.inputs.mode }}"
+          else case "${{ github.event.schedule }}" in
+            "30 12 * * 1-5") M=premarket ;;
+            "50 19 * * 1-5") M=eod ;;
+            "20 4 * * 2-6")  M=retrain ;;
+            *)               M=scan ;;
+          esac; fi
+          echo "mode=$M" >> $GITHUB_OUTPUT
+
+      - name: Run bot
+        env:
+          DAYTRADE100_ALPACA_API_KEY: ${{ secrets.DAYTRADE100_ALPACA_API_KEY }}
+          DAYTRADE100_ALPACA_SECRET_KEY: ${{ secrets.DAYTRADE100_ALPACA_SECRET_KEY }}
+        run: python daytrade100.py --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Save memory back to repo
+        if: always()
+        run: |
+          git config user.name "daytrade100-bot"
+          git config user.email "actions@github.com"
+          git add state_dt100/ || true
+          git diff --cached --quiet || git commit -m "dt100 state [skip ci]"
+          git pull --rebase && git push

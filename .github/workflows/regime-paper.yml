@@ -1,0 +1,44 @@
+# Regime-Sideways paper trader - runs once a day ~15 min before the US close.
+# DISCLAIMER: Independent personal project. Not tied to any employer or agency.
+# Public data only. No internal or personal data (no SSNs / PHI). Paper trading only.
+name: Regime-Sideways Paper Trader
+
+on:
+  schedule:
+    - cron: "45 19 * * 1-5"   # 3:45 pm New York during daylight time. After Nov 1 change to "45 20 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 = show orders without placing them"
+        default: "1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: state-commits
+  cancel-in-progress: false
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q yfinance pandas requests
+      - name: Run strategy
+        env:
+          REGIME_ALPACA_API_KEY: ${{ secrets.REGIME_ALPACA_API_KEY }}
+          REGIME_ALPACA_SECRET_KEY: ${{ secrets.REGIME_ALPACA_SECRET_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+        run: python regime_paper.py
+      - name: Save state
+        run: |
+          git config user.name "regime-bot"
+          git config user.email "regime-bot@users.noreply.github.com"
+          git add state/ || true
+          git commit -m "regime paper update [skip ci]" || exit 0
+          git pull --rebase origin main
+          git push

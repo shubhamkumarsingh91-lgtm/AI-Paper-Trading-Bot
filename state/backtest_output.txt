@@ -1,39 +1,38 @@
-Universe: 503 S&P 500 stocks
-Downloading prices (this takes a minute or two)...
-Stocks with data: 503
+Universe: 503 S&P 500 stocks + SPY, TLT, GLD, SHY
+Downloading prices (a few minutes)...
 
-=== 200-DAY STRATEGY ON THE S&P 500 ===
-Trades:              6245
-Win rate:            47.9%
-Avg return/trade:    +2.63%
-Median return/trade: -1.12%
-Avg win:             +14.34%
-Avg loss:            -8.15%
-Worst trade:         -39.42%
-Trend-break exits:   45%
+=== WHOLE PERIOD (since 2015) ===
+                   Total  Per year  Max drop  Sharpe
+Regime bot        +2295%    +31.0%    -41.5%    1.04
+SPY hold           +351%    +13.7%    -33.7%    0.82
 
-=== VS JUST HOLDING SPY OVER THE SAME DATES ===
-SPY avg over same windows: +2.50%
-Avg EXCESS per trade:      +0.13%  <-- the real edge
-Median excess per trade:   -2.28%
-Trades that beat SPY:      40.7%
+=== WALK-FORWARD STYLE: SEPARATE ERAS ===
+2015-2019 (calm bull + 2018 dip)
+   bot +31.8%/yr (max drop -25.0%)   SPY +11.6%/yr (max drop -19.3%)
+2020-2022 (COVID crash + 2022 bear)
+   bot -5.2%/yr (max drop -41.5%)   SPY +7.6%/yr (max drop -33.7%)
+2023-now (AI rally + 2026 shocks)
+   bot +68.0%/yr (max drop -39.2%)   SPY +21.6%/yr (max drop -18.8%)
 
-SPY buy-and-hold since 2015-01-01: +351% total, +13.6% per year
+=== BY REGIME (which playbook earns its keep?) ===
+BULL        75% of days | bot +35.8%/yr vs SPY +11.9%/yr while in this regime
+SIDEWAYS    13% of days | bot +32.2%/yr vs SPY +0.3%/yr while in this regime
+BEAR        12% of days | bot +3.9%/yr vs SPY +46.2%/yr while in this regime
 
-By year (avg return | avg excess vs SPY | trades):
-      trades  avg_return  avg_excess
-year                                
-2015      35     -0.0452      0.0027
-2016     547      0.0556      0.0157
-2017     405      0.0547      0.0162
-2018     586     -0.0016      0.0058
-2019     459      0.0328     -0.0064
-2020     615      0.0242     -0.0048
-2021     761      0.0417     -0.0025
-2022     505     -0.0160      0.0122
-2023     604      0.0379     -0.0019
-2024     662      0.0326     -0.0040
-2025     537      0.0156      0.0032
-2026     529      0.0148     -0.0127
+=== YEAR BY YEAR ===
+        bot    SPY  beat_SPY
+2015  0.216  0.012      True
+2016  0.289  0.120      True
+2017  0.426  0.217      True
+2018  0.359 -0.046      True
+2019  0.308  0.312     False
+2020  0.075  0.183     False
+2021  0.119  0.287     False
+2022 -0.292 -0.182     False
+2023  0.676  0.262      True
+2024  0.621  0.249      True
+2025  0.338  0.177      True
+2026  0.949  0.128      True
 
-Saved -> state/backtest_results.csv
+Current regime (latest close): BULL
+Saved -> state/regime_backtest_daily.csv

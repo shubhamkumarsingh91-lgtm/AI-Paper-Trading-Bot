@@ -1,0 +1,41 @@
+# Independent personal project, not tied to any employer or agency.
+# Public market data only. No personal data (no SSNs/PHI).
+#
+# Put this file at: .github/workflows/backtest.yml
+# Run it from the Actions tab -> "200-Day Strategy Backtest" -> Run workflow
+name: 200-Day Strategy Backtest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install yfinance pandas numpy
+      - name: Run backtest
+        run: python backtest_200dma.py | tee backtest_output.txt
+      - name: Show results on the run summary page
+        if: always()
+        run: |
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat backtest_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Save results to repo
+        if: always()
+        run: |
+          mkdir -p state
+          cp backtest_output.txt state/ || true
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/ || true
+          git diff --cached --quiet || git commit -m "backtest results [skip ci]"
+          git pull --rebase && git push

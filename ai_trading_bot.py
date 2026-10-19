@@ -897,6 +897,7 @@ def train_model(retrain: bool = False) -> None:
     # =========================================================================
     log.info('Walk-Forward Validation (3 folds — no future leakage)...')
     wf_precisions = []
+    fold_trees    = []   # how many trees each fold found useful (early stopping)
     for fold_num, (tr_end, te_end) in enumerate([(0.60,0.75),(0.75,0.87),(0.87,1.00)], 1):
         t0 = int(n * tr_end);  t1 = int(n * te_end)
         Xtr = X.iloc[:t0];  ytr = y.iloc[:t0];  wtr = time_weights[:t0]
@@ -915,6 +916,7 @@ def train_model(retrain: bool = False) -> None:
         _pr = precision_score(yva, _p, zero_division=0)
         _ac = accuracy_score(yva, _p)
         wf_precisions.append(_pr)
+        fold_trees.append(int(getattr(_m, 'best_iteration', 0) or 0) + 1)
         log.info(
             f'  Fold {fold_num}: train={t0:,} test={t1-t0:,} | '
             f'precision={_pr:.1%}  accuracy={_ac:.1%}  BUYs={_p.sum()}/{len(_p)}'
@@ -926,6 +928,19 @@ def train_model(retrain: bool = False) -> None:
         f'<-- this is your REAL expected precision trading live'
     )
 
+    # How many trees the final models get.
+    # FIX (Oct 19, 2026): the final models used their own early stopping on the
+    # last 20% of data and kept stopping after 1 tree (XGB) / 8 trees (LGB).
+    # A 1-tree model gives every stock the same score (bot #1 scored all five
+    # watchlist stocks 0.45), so it could never buy. Instead, use the tree count
+    # the walk-forward folds found useful, with a floor so the model always
+    # actually learns, and train the final models without early stopping.
+    if fold_trees:
+        n_trees = int(np.clip(np.median(fold_trees), 100, 400))
+    else:
+        n_trees = 200
+    log.info(f'  Walk-forward tree counts: {fold_trees} -> final models use {n_trees} trees')
+
     # Final model trained on 80% of all data
     split_idx  = int(n * 0.80)
     X_tr, X_va = X.iloc[:split_idx], X.iloc[split_idx:]
@@ -934,14 +949,15 @@ def train_model(retrain: bool = False) -> None:
 
     # XGBoost (primary model)
     log.info('  Training XGBoost (final model)...')
+    # Same settings as the walk-forward folds (which are what we validated),
+    # fixed tree count, no early stopping.
     model = xgb.XGBClassifier(
-        n_estimators=600, max_depth=6, learning_rate=0.04,
+        n_estimators=n_trees, max_depth=5, learning_rate=0.05,
         subsample=0.8, colsample_bytree=0.8, min_child_weight=5,
-        gamma=0.1, reg_alpha=0.1, scale_pos_weight=spw,
-        eval_metric='aucpr', early_stopping_rounds=50,
+        scale_pos_weight=spw, eval_metric='aucpr',
         verbosity=0, n_jobs=-1, random_state=42,
     )
-    model.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], sample_weight=w_tr, verbose=False)
+    model.fit(X_tr, y_tr, sample_weight=w_tr, verbose=False)
     xgb_preds = model.predict(X_va)
     xgb_probs = model.predict_proba(X_va)[:, 1]
     xgb_prec  = precision_score(y_va, xgb_preds, zero_division=0)
@@ -952,6 +968,8 @@ def train_model(retrain: bool = False) -> None:
         f'median={float(pd.Series(xgb_probs).median()):.2f} '
         f'max={xgb_probs.max():.2f} (all 0.50 = model broken)'
     )
+    if float(np.std(xgb_probs)) < 0.01:
+        log.warning('  ⚠️ XGBoost scores barely vary between stocks — model is not discriminating')
 
     # LightGBM (companion model)
     # Uses leaf-wise tree growth — catches different patterns than XGBoost.
@@ -971,8 +989,8 @@ def train_model(retrain: bool = False) -> None:
                     bagging_fraction=0.8, bagging_freq=5,
                     scale_pos_weight=spw, verbose=-1, n_jobs=-1,
                 ),
-                dtrain, num_boost_round=600, valid_sets=[dval],
-                callbacks=[lgb.early_stopping(50, verbose=False), lgb.log_evaluation(-1)],
+                dtrain, num_boost_round=n_trees, valid_sets=[dval],
+                callbacks=[lgb.log_evaluation(-1)],
             )
             lgb_raw  = (lgb_model.predict(X_va) >= 0.5).astype(int)
             lgb_prec = precision_score(y_va, lgb_raw, zero_division=0)

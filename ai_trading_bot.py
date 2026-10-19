@@ -246,8 +246,12 @@ EARNINGS_BLACKOUT_DAYS = 2
 
 # ── Time-Decay Training Weights ──────────────────────────
 # Recent market data is more relevant than 2-year-old data.
-# Exponential decay: oldest bar ~26% weight, newest bar 100% weight.
-TIME_DECAY_RATE = 0.0015
+# Exponential decay: weight = exp(rate * row_number), newest bar 100% weight.
+# FIX (Oct 19, 2026): was 0.0015, which suited a few thousand rows. With ~235,000
+# rows it made almost every row's weight ~0, so the model only learned from the last
+# few days and predicted 0.50 for everything (never bought). 0.000013 gives the
+# oldest row ~5% weight, the same curve as the Day-Trade-100 bot (fair comparison).
+TIME_DECAY_RATE = 0.000013
 
 TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 

@@ -18,6 +18,7 @@ HOW IT WORKS (no changes to ai_trading_bot.py):
        free GitHub runner)
     7. Adds a daily scorecard vs SPY: state_dt100/scorecard.csv
     8. Smaller time-decay rate so sample weights don't overflow with 100 stocks
+    9. Simpler buy rule (model threshold + safety vetoes), since TradingView is off
 """
 import os, sys, csv
 from datetime import datetime
@@ -59,6 +60,34 @@ bot.TIME_DECAY_RATE    = 3.0 / 700_000
 
 # ── 4: TradingView off ──
 bot.get_tv_analysis = lambda symbol: None
+
+# ── 4b: FIX (Oct 19, 2026) buy rule for a bot without TradingView ──
+# With TradingView off, the original 3-source score needed the model to be
+# ~72%+ sure AND RSI in a narrow band to reach 0.48. The model's highest score
+# ever is ~0.74, so bot #3 could almost never buy (13 scans, 0 trades, even
+# with SCHW/PANW/DAL at 64%). New rule: BUY when the model clears its own
+# tested threshold and no safety veto fires. The candidate list is ranked by
+# model confidence. Bot #1 keeps the original rule.
+_orig_combined = bot.combined_signal
+def _dt100_signal(symbol, ml, tv):
+    sig  = _orig_combined(symbol, ml, tv)         # keeps the original reasons for the log
+    conf = float(ml.get('confidence', 0.0))
+    rsi  = float(ml.get('rsi', 50))
+    bb   = float(ml.get('bb_pct', 0.5))
+    vetoes = []
+    if rsi > 78:                       vetoes.append(f'RSI>{78}')
+    if ml.get('above_ema50', 0) == 0:  vetoes.append('BELOW_EMA50')
+    if bb > 0.95:                      vetoes.append('TOP_OF_BAND')
+    if conf >= bot.ML_DECISION_THRESHOLD and not vetoes:
+        sig['signal'] = 'BUY'
+        sig['score']  = round(conf, 3)            # ranks candidates by model confidence
+    else:
+        sig['signal'] = 'HOLD'
+        sig['score']  = round(conf - bot.ML_DECISION_THRESHOLD, 3)
+    if vetoes:
+        sig['reasons'] = sig.get('reasons', []) + ['VETO:' + '+'.join(vetoes)]
+    return sig
+bot.combined_signal = _dt100_signal
 
 # ── 5: never shrink the list to a news-picked 10 ──
 bot.run_news_intelligence    = lambda: bot.log.info('News re-ranking off — scanning all 100')

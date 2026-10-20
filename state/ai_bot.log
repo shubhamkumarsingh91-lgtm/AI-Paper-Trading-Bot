@@ -5422,3 +5422,65 @@
 2026-10-20 15:50:00,749 [INFO] ✅ Bot is smarter — ready for tomorrow
 ════════════════════════════════════════════════════════════
 2026-10-20 15:50:00,750 [INFO] Run complete — state saved
+2026-10-20 16:01:01,705 [INFO] Run mode: RETRAIN
+2026-10-20 16:01:01,705 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-20 16:01:01,705 [INFO] 
+════════════════════════════════════════════════════════════
+🌙 NIGHTLY SELF-LEARNING RETRAIN
+════════════════════════════════════════════════════════════
+2026-10-20 16:01:01,705 [INFO]   Total trades ever: 0
+2026-10-20 16:01:01,705 [INFO]   Win rate:          0.0%
+2026-10-20 16:01:01,705 [INFO]   Cumulative P&L:    $+0.00
+2026-10-20 16:01:01,705 [INFO]   Old accuracy:      0.0%
+2026-10-20 16:01:01,705 [INFO] 🧠 Nightly retrain — fetching 900 days x 14 stocks...
+2026-10-20 16:01:01,705 [INFO]    Training universe: NVDA, AMD, AVGO, PANW, CRWD, SOFI, PYPL, PLTR, SNOW, TSLA, MSTR, SPY, QQQ, SOXX
+2026-10-20 16:01:01,705 [INFO]    Trading watchlist: NVDA, PANW, AVGO, SOFI, PLTR
+2026-10-20 16:01:01,706 [INFO]   Fetching SPY market context...
+2026-10-20 16:01:47,961 [INFO]   SPY context: 18,031 bars loaded
+2026-10-20 16:02:52,258 [INFO]   ok NVDA: 18,108 bars | bullish rate 28.1%
+2026-10-20 16:02:59,271 [INFO]   ok AMD: 16,582 bars | bullish rate 29.7%
+2026-10-20 16:03:09,658 [INFO]   ok AVGO: 16,604 bars | bullish rate 28.8%
+2026-10-20 16:03:13,653 [INFO]   ok PANW: 15,709 bars | bullish rate 28.0%
+2026-10-20 16:03:18,553 [INFO]   ok CRWD: 15,674 bars | bullish rate 30.9%
+2026-10-20 16:05:07,103 [INFO]   ok SOFI: 16,733 bars | bullish rate 31.0%
+2026-10-20 16:05:34,477 [INFO]   ok PYPL: 15,793 bars | bullish rate 24.8%
+2026-10-20 16:05:48,479 [INFO]   ok PLTR: 16,756 bars | bullish rate 31.1%
+2026-10-20 16:07:13,211 [INFO]   ok SNOW: 15,755 bars | bullish rate 28.6%
+2026-10-20 16:07:19,018 [INFO]   ok TSLA: 17,233 bars | bullish rate 29.5%
+2026-10-20 16:07:38,158 [INFO]   ok MSTR: 15,991 bars | bullish rate 28.8%
+2026-10-20 16:08:44,740 [INFO]   ok SPY: 17,812 bars | bullish rate 9.6%
+2026-10-20 16:09:39,600 [INFO]   ok QQQ: 19,639 bars | bullish rate 15.1%
+2026-10-20 16:11:10,450 [INFO]   ok SOXX: 16,689 bars | bullish rate 26.7%
+2026-10-20 16:11:10,628 [INFO]   Total: 235,078 samples | Bullish rate: 26.2%
+2026-10-20 16:11:10,629 [INFO]   Time weights: oldest=0.05  newest=1.00
+2026-10-20 16:11:10,630 [INFO]   Class balance: 61,701 BUY / 173,377 HOLD  scale_pos_weight=2.81
+2026-10-20 16:11:10,630 [INFO] Walk-Forward Validation (3 folds — no future leakage)...
+2026-10-20 16:11:12,115 [INFO]   Fold 1: train=141,046 test=35,262 | precision=29.5%  accuracy=50.2%  BUYs=22401/35262
+2026-10-20 16:11:12,878 [INFO]   Fold 2: train=176,308 test=28,209 | precision=50.0%  accuracy=71.2%  BUYs=282/28209
+2026-10-20 16:11:14,032 [INFO]   Fold 3: train=204,517 test=30,561 | precision=30.5%  accuracy=51.6%  BUYs=18751/30561
+2026-10-20 16:11:14,032 [INFO]   Walk-forward avg precision: 36.7% <-- this is your REAL expected precision trading live
+2026-10-20 16:11:14,033 [INFO]   Walk-forward tree counts: [77, 1, 21] -> final models use 100 trees
+2026-10-20 16:11:14,033 [INFO]   Training XGBoost (final model)...
+2026-10-20 16:11:15,491 [INFO]   XGBoost: precision=30.7%  accuracy=50.9%
+2026-10-20 16:11:15,492 [INFO]   Prob spread: min=0.03 median=0.53 max=0.74 (all 0.50 = model broken)
+2026-10-20 16:11:15,492 [INFO]   Training LightGBM...
+2026-10-20 16:11:17,473 [INFO]   LightGBM: precision=30.6%  accuracy=52.0%
+2026-10-20 16:11:17,582 [INFO]   Ensemble: precision=30.7%  <-- live bot uses this
+2026-10-20 16:11:17,658 [INFO]   Calibrated decision threshold: 0.68 (precision 36.1% on 599 signals in validation) <-- live trading now uses this cutoff, not 0.5
+2026-10-20 16:11:17,660 [INFO]   Learning history: 88 retrain(s) recorded -> state/learning_history.json
+2026-10-20 16:11:17,661 [INFO] 
+=== TRAINING COMPLETE ===
+  XGB precision:  30.7%
+  LGB precision:  30.6%
+  Walk-forward:   36.7%  <-- most honest number
+  Decision threshold: 0.68
+  Real trades folded in: 0  (total ever: 0)
+  Trend vs last retrain: precision -0.0pp, walk-forward +5.4pp
+  Top 5 drivers:  atr_pct, hour_cos, hour, hour_sin, above_ema200
+  Weakest feats:  doji, is_morning, spy_ret_1, spy_ret_5, spy_above_ema20
+  (weak features above 0.001 are still contributing — below means useless)
+2026-10-20 16:11:17,668 [INFO] Model saved -> state/ai_model.xgb
+2026-10-20 16:11:17,670 [INFO]   New accuracy:      50.9%
+2026-10-20 16:11:17,670 [INFO] ✅ Bot is smarter — ready for tomorrow
+════════════════════════════════════════════════════════════
+2026-10-20 16:11:17,671 [INFO] Run complete — state saved

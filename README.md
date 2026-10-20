@@ -1,282 +1,128 @@
-[README.md](https://github.com/user-attachments/files/29645379/README.md)
-# 🤖 AI Self-Learning Paper Trading Bot
+# AI Paper Trading Lab
 
-> An autonomous trading bot powered by XGBoost ML, trained on strategies from 9 of the world's greatest traders, with daily news intelligence powered by Google Gemini.
+> **Disclaimer:** Independent personal project for self-learning. Not affiliated with any employer, state agency or vendor. Paper trading only (simulated money), using public market data. No internal or confidential data and no personal data (no SSNs, PHI/PII). Educational, not investment advice.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square)
-![Alpaca](https://img.shields.io/badge/Broker-Alpaca%20Paper-yellow?style=flat-square)
-![XGBoost](https://img.shields.io/badge/ML-XGBoost-orange?style=flat-square)
-![Gemini](https://img.shields.io/badge/AI-Gemini%20Flash-purple?style=flat-square)
-![Render](https://img.shields.io/badge/Deploy-Render-green?style=flat-square)
+Three automated trading bots that run on a schedule in GitHub Actions, each on its own Alpaca **paper** account. The goal is to find out, with honest measurement, whether any of them beats simply holding SPY.
 
----
+- **Two AI day traders** score stocks every 10 minutes with an XGBoost + LightGBM model built on 54 features drawn from well-known traders' methods. They retrain every night and fold in the outcomes of their own trades.
+- **One regime bot** holds SPY unless the market is moving sideways, then switches to a basket of oversold stocks.
 
-## What This Bot Does
+Every bot saves its memory (model, logs, scorecard) back into this repository after each run, so nothing is lost between runs.
 
-Every trading day, the bot wakes up before the market opens, reads the news, picks the best stocks, trades them, and then learns from the results overnight — fully automated, no human input needed.
-
-```
-8:30 AM  →  Reads news · Gemini AI picks today's 5 best stocks
-9:30 AM  →  Market opens · Bot scans every 10 minutes for entries
- During  →  Auto stop-loss · Auto take-profit · Trailing stop
-3:50 PM  →  Closes all positions before market close
-12:05 AM →  Retrains the ML model on today's real trade outcomes
-```
+**Docs:** [Overview (PDF)](docs/Trading_Bot_Overview.pdf) · [Architecture](docs/ARCHITECTURE.md) · [Architecture (PDF)](docs/Trading_Bot_Architecture.pdf)
 
 ---
 
-## How the AI Learns
+## How it works
 
-The bot gets smarter every single night through a self-improvement loop:
-
+```mermaid
+flowchart LR
+    GA[GitHub Actions<br/>cron schedules] --> B3[Bot 3<br/>daytrade100.py<br/>AI day trader, 100 stocks]
+    GA --> B1[Bot 1<br/>ai_trading_bot.py<br/>AI day trader, 5 stocks]
+    GA --> RG[Regime bot<br/>regime_paper.py<br/>SPY + sideways playbook]
+    B3 --> A3[(Alpaca paper<br/>Day-Trade-100)]
+    B1 --> A1[(Alpaca paper<br/>account 1)]
+    RG --> A2[(Alpaca paper<br/>Regime-Sideways)]
+    B3 --> ST[(state files committed<br/>back to this repo)]
+    B1 --> ST
+    RG --> ST
+    ST --> UI[index.html<br/>Trading Lab dashboard]
 ```
-Week 1                    Week 2+                   Month 2+
-──────────────────────    ──────────────────────    ──────────────────────
-Train on 1 year of        Real trade outcomes       Win rate improves as
-price history only        feed back into model      model learns what
-                          each night at midnight    actually makes money
 
-Accuracy ~80%             Accuracy improving        Accuracy growing
-```
+| Bot | What it does | Runs (New York time) |
+|---|---|---|
+| **Bot 1** `ai_trading_bot.py` | AI day trader on a 5-stock watchlist, 15-minute bars. Signal: ML model 50%, TradingView rating 35%, RSI 15%. Closes everything by 3:50 pm | 8:30 premarket, every 10 min, 3:50 close, 12:05 am retrain |
+| **Bot 3** `daytrade100.py` | Same engine on the 100 most-traded S&P 500 stocks. TradingView off; buys when the model clears its threshold and no safety veto fires | Same as bot 1; retrain 12:20 am |
+| **Regime bot** `regime_paper.py` | Holds SPY in bull and bear markets. When sideways, holds 10 oversold S&P 500 stocks still above their 200-day average. Other playbooks are logged in shadow mode, never traded | Daily, 3:45 pm |
+| **Backtests** `backtest_200dma.py`, `backtest_regime.py` | Test the 200-day trend and regime strategies on S&P 500 data since 2015, against SPY | By hand |
 
-The longer it runs, the more it learns from its own real trades. It is not just backtesting — it learns from live results.
+Bot 3 reuses bot 1's code: it imports `ai_trading_bot.py` and changes settings (keys, state folder, stock list) before running.
 
----
+### How the AI bots learn
 
-## Features
+1. **Data:** 15-minute bars (900 days for bot 1, 365 for bot 3).
+2. **Features:** 54 features covering trend, momentum, volatility, volume, time of day and SPY context. They are based on Weinstein, Minervini, O'Neil, Darvas, Tudor Jones, Raschke, Larry Williams, Bollinger and Donchian.
+3. **Label:** a row counts as a buy only if price rises 0.5% within 8 bars (about 2 hours) without first dropping 1%.
+4. **Real outcomes:** every closed paper trade overwrites the matching training label with what actually happened, counted 8 times.
+5. **Walk-forward test:** the model is tested only on data later than what it trained on. Precision is logged after every retrain in `learning_history.json`, which is never overwritten.
 
-### 📡 News Intelligence
+### Risk rules (AI bots)
 
-Scans 3 free data sources every morning at 8:30 AM ET:
-
-| Source | What It Finds |
+| Rule | Setting |
 |---|---|
-| **Alpaca News API** | Real-time articles tagged by ticker (already in your account) |
-| **Yahoo Finance RSS** | Earnings beats, analyst upgrades, company news |
-| **SEC EDGAR 8-K** | Merger filings the moment they are submitted — before most traders see them |
-
-Gemini AI reads every article and produces a plain-English briefing explaining *why* each stock was chosen, what the catalyst is, and what the risk is.
-
-### 🧠 ML Model — 49 Features from 9 Legendary Traders
-
-The XGBoost model is trained on strategies from the world's best traders, encoded as mathematical features:
-
-| Trader | Strategy | Key Signals |
-|---|---|---|
-| Stan Weinstein | Stage Analysis | Price above 150-SMA, SMA slope |
-| Mark Minervini | SEPA / VCP | EMA stack, ATR contraction, distance from high |
-| William O'Neil | CAN SLIM | Volume quality: up days vs down days |
-| Nicolas Darvas | Box Theory | Donchian channel position, breakout |
-| Paul Tudor Jones | 200-SMA Trend | Trend strength, MA slope |
-| Linda Raschke | Holy Grail | ADX strength, oversold in uptrend |
-| Larry Williams | %R + Temporal | Williams %R, day of week, month-end |
-| John Bollinger | Band Analysis | BB width, squeeze, lower band bounce |
-| Richard Donchian | Channel Breakout | 20-bar channel position, breakout signal |
-
-### 🛡️ Risk Management
-
-Every trade follows strict rules so one bad trade cannot hurt the account:
-
-| Rule | Setting | Why |
-|---|---|---|
-| Stop loss | −2% | Auto-exit if trade goes wrong |
-| Take profit | +6% (3:1 ratio) | Lock in gains at 3× the risk |
-| Trailing stop | 3% from peak | Protects profits as stock rises |
-| Cooldown after loss | 120 minutes | Prevents buying a falling stock again |
-| Cooldown after profit | 60 minutes | Prevents buying back at the top |
-| EMA exit | 2 bars required | Avoids selling on 1-candle noise |
-| Max positions | 3 stocks | Stays concentrated in best ideas |
-| EOD close | 3:50 PM ET | No risky overnight holds |
+| Risk per trade | 2% of equity |
+| Position size cap | 12% of equity (6% in a bear market) |
+| Max open positions | 5 |
+| Stop loss | -2% |
+| Profit locks | breakeven once up +1.5%; +2% floor once up +4% |
+| Trailing stop | starts at +6%, trails 5% below the peak, never below +3% |
+| Market regime | SPY below its 50-day average: smaller positions, higher confidence needed |
+| VIX | 25 or more: half size; 30 or more: no new buys |
+| Earnings | no buys within 2 days of an earnings report |
+| End of day | everything closed at 3:50 pm; no overnight holds |
 
 ---
 
-## Daily Morning Report
+## Results so far
 
-Every morning at 8:30 AM, the bot prints a full briefing in Render logs explaining exactly why it chose each stock:
+| What | Result |
+|---|---|
+| Live paper trading (since October 18, 2026) | The AI bots have placed **no orders yet**. The regime bot holds SPY (bull market) and is level with SPY so far |
+| Model quality, bot 1 | Walk-forward precision 31-37%, when about 26% of setups are good anyway: a small edge over guessing |
+| Model quality, bot 3 | Walk-forward precision 29% against a 24% base rate |
+| 200-day trend backtest (6,245 trades, 2015-2026) | +0.13% average excess over SPY per trade; beat SPY on 41% of trades. **No real edge** |
+| Regime backtest v3 (2015-2026) | +15.9% a year vs SPY's +13.7%; Sharpe 0.89 vs 0.82; worst drop -36.2% vs -33.7%. An upper bound, since 22% of past S&P 500 stocks lack price data |
 
-```
-══════════════════════════════════════════════════════════════════
-  🎯  TODAY'S AI STOCK SELECTION — Monday July 07, 2026 · 08:30 AM ET
-══════════════════════════════════════════════════════════════════
-
-  ┌── #1 · PANW ─ M&A · HIGH IMPACT ─ 🟢 BULLISH
-
-  │  📰 NEWS
-  │     Palo Alto Networks in talks to acquire Axonius for $2.3B
-
-  │  💡 WHY THIS MATTERS
-  │     Axonius fills a critical gap in PANW's platform. Deal adds $0.40
-  │     EPS within 18 months. M&A targets typically rally 15–30% on news.
-
-  │  ✅ REASON TO BUY
-  │     Institutions chase PANW on platform M&A — expect volume surge at open
-
-  │  ⚠️  MAIN RISK
-  │     Integration risk; deal premium may weigh short-term
-
-  │  📊 SCORES
-  │     News     +0.72   [████████]
-  │     ML Model   68%   confidence
-  │     Composite  0.581 ← final ranking score
-
-  │  🎯 LEVELS
-  │     Stop → $342.22  |  Target → $370.15  |  Risk/Reward 1:3
-  └────────────────────────────────────────────────────────────────
-```
-
-The full report is also saved to `daily_picks.json` each morning.
+The model's edge is small and unproven, and there is no live track record yet. The next real test is one month of paper results against SPY. The full list of problems found and fixed is in the [overview](docs/Trading_Bot_Overview.pdf).
 
 ---
 
 ## Setup
 
-### Step 1 — Install dependencies
+1. **Alpaca paper accounts** (free, simulated money): create one paper account per bot at [alpaca.markets](https://alpaca.markets) and generate API keys for each.
+2. **GitHub secrets:** in this repo, go to Settings, then Secrets and variables, then Actions, and add:
 
-```bash
-pip install alpaca-py xgboost scikit-learn pandas numpy \
-            joblib tradingview-ta schedule \
-            google-generativeai requests pytz
-```
-
-### Step 2 — Get your API keys
-
-**Alpaca Paper Keys** (free — no real money needed)
-1. Go to [alpaca.markets](https://alpaca.markets)
-2. Top-left dropdown → switch to **Paper Account**
-3. API Keys → Generate New Key
-4. Copy the key and secret
-
-**Gemini API Key** (free — no credit card)
-1. Go to [aistudio.google.com](https://aistudio.google.com)
-2. Click **Get API Key** → Create API Key
-3. Free tier: 15 requests/min, enough for daily use
-
-### Step 3 — Deploy on Render
-
-1. Push this repo to GitHub
-2. Go to [render.com](https://render.com) → New → **Background Worker**
-3. Connect your GitHub repo
-4. Set the following:
-
-| Field | Value |
+| Secret | Used by |
 |---|---|
-| Build Command | `pip install -r requirements.txt` |
-| Start Command | `python ai_trading_bot.py` |
+| `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` | Bot 1 |
+| `DAYTRADE100_ALPACA_API_KEY`, `DAYTRADE100_ALPACA_SECRET_KEY` | Bot 3 |
+| `REGIME_ALPACA_API_KEY`, `REGIME_ALPACA_SECRET_KEY` | Regime bot |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Optional trade alerts for bot 1 |
 
-5. Go to **Environment** → Add these variables:
+3. **Schedules** run on their own once the workflows are enabled. Any bot can also be run by hand from the Actions tab with a chosen mode (`premarket`, `scan`, `eod` or `retrain`).
 
-```
-ALPACA_API_KEY      =  your_paper_api_key
-ALPACA_SECRET_KEY   =  your_paper_secret_key
-GEMINI_API_KEY      =  your_gemini_api_key
-```
+Notes:
+- Schedule times are in UTC and set for daylight time. Move them one hour later when daylight saving ends.
+- The Gemini news briefing is optional and needs a `GEMINI_API_KEY`. Without it, bot 1 trades its fallback watchlist (NVDA, PANW, AVGO, SOFI, PLTR).
+- Never put API keys in the code. The regime bot is hard-coded to Alpaca's paper endpoint.
 
-6. Click **Deploy** — the bot is now live.
-
-> ⚠️ Never hardcode API keys in the code. Always use environment variables.
+To run locally: `pip install -r requirements.txt`, set the same keys as environment variables, then `python ai_trading_bot.py --mode scan`.
 
 ---
 
 ## Files
 
 ```
-AI-Paper-Trading-Bot/
-│
-├── ai_trading_bot.py      ← Main bot (all logic in one file)
-├── requirements.txt       ← Python dependencies
-├── README.md              ← This file
-│
-│  Auto-created when bot runs:
-│
-├── ai_model.xgb           ← Saved ML model (retrained nightly)
-├── trade_log.json         ← Every trade with P&L (feeds nightly retrain)
-├── daily_picks.json       ← Today's AI stock picks with full reasoning
-├── morning_brief.txt      ← Gemini market overview
-└── ai_bot.log             ← Full bot activity log
+ai_trading_bot.py      Bot 1: the AI day trader (signal engine, model, risk rules)
+daytrade100.py         Bot 3: bot 1's engine on 100 stocks, its own account
+regime_paper.py        Regime bot: SPY or the sideways playbook
+apply_updates.py       Run before bot 1: one-job-per-run mode, saved state, VIX gate
+backtest_200dma.py     200-day trend backtest vs SPY
+backtest_regime.py     Regime strategy backtest (v3)
+index.html             Trading Lab dashboard; reads the state files from this repo
+state/                 Bot 1, regime bot and backtest memory and results
+state_dt100/           Bot 3 memory and scorecard
+docs/                  Overview and architecture
+.github/workflows/     The schedules
+render.yaml            Old Render setup, no longer used
 ```
 
 ---
 
-## Monitoring
+## Stack
 
-Check Render logs each morning. Here is what to look for:
-
-| Log Message | What It Means |
-|---|---|
-| `Model ready — Accuracy: 80.2%` | Model retrained successfully overnight |
-| `WATCHLIST UPDATE: [...] → [...]` | News intelligence picked today's stocks |
-| `BUY 56×PANW @ $349.20` | Position opened |
-| `SELL 56×PANW · P&L: +$1,847` | Position closed with profit |
-| `COOLDOWN 94 min remaining` | Bot correctly avoiding a re-entry |
-| `EOD: closing all positions` | Bot safely closing before market close |
-
-**Win rate guide**
-
-- Below 35% after 30+ trades → signals need review
-- 35–50% → normal early-stage performance
-- Above 50% → self-learning is working well
+Python 3.11 · Alpaca (paper trading, market data, news) · XGBoost + LightGBM · scikit-learn · TradingView ratings · Yahoo Finance · SEC EDGAR · Google Gemini (optional) · GitHub Actions · Telegram (optional)
 
 ---
 
-## Architecture
-
-```
-                    ┌─────────────────────────────┐
-                    │     8:30 AM · News Scan      │
-                    │  Alpaca · Yahoo · SEC EDGAR  │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │      Gemini AI Analysis      │
-                    │  Catalyst · Sentiment · Why  │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │        Stock Ranker          │
-                    │  News 40% + ML 35% + TA 25% │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │   Dynamic Watchlist (Top 5)  │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │    Market Scan (10 min)      │
-                    │   TradingView TA + XGBoost   │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │     Trade Execution          │
-                    │  Buy · Monitor · Sell · EOD  │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │   Nightly Retrain 12:05 AM   │
-                    │  Real outcomes → XGBoost     │
-                    └─────────────────────────────┘
-```
-
----
-
-## Live Trading Bot
-
-`trading_bot.py` is a separate rules-based bot for real money. Same watchlist, same legendary trader strategies, but no ML — pure Minervini + Raschke + PTJ logic with deterministic rules.
-
-| | Paper Bot | Live Bot |
-|---|---|---|
-| Capital | $100,000 simulated | Real money |
-| Signal | XGBoost ML + TradingView | Rules-based only |
-| Self-learning | Yes — nightly retrain | No |
-| Risk rules | 2% stop · 6% target | Same |
-
-> Both bots read API keys from environment variables. Never hardcode real money keys.
-
----
-
-## Disclaimer
-
-This bot is built for learning and paper trading. Past performance does not guarantee future results. Always understand the risk before trading with real money.
-
----
-
-*Built with Alpaca · XGBoost · Google Gemini · TradingView TA · Render*
+*Independent personal project. Paper trading only, public market data only, no employer or personal data of any kind. Past or backtested performance does not guarantee future results. Not investment advice.*

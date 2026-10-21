@@ -11556,3 +11556,178 @@ symbols
 2026-10-21 15:41:44,733 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.1%  precision=30.9%  walk-forward=32.3%  threshold=0.60  trained=2026-10-21
 2026-10-21 15:41:44,978 [INFO] 📊 Daily report sent — precision=0% (0W/0) P&L=$+0.00  ML=51.1%
 2026-10-21 15:41:44,979 [INFO] Run complete — state saved
+2026-10-21 15:45:22,972 [INFO] Run mode: PREMARKET
+2026-10-21 15:45:22,972 [INFO] Runtime state restored — watchlist ['SOFI', 'NVDA', 'PLTR', 'PANW', 'AVGO']
+2026-10-21 15:45:22,980 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.1%  precision=30.9%  walk-forward=32.3%  threshold=0.60  trained=2026-10-21
+2026-10-21 15:45:22,981 [INFO] 
+──────────────────────────────────────────────────────────────────
+2026-10-21 15:45:22,981 [INFO]   📡 NEWS INTELLIGENCE PIPELINE — 11:45 AM ET
+2026-10-21 15:45:22,981 [INFO] ──────────────────────────────────────────────────────────────────
+2026-10-21 15:45:22,981 [WARNING]   Alpaca news error: 1 validation error for NewsRequest
+symbols
+  Input should be a valid string [type=string_type, input_value=['NVDA', 'PANW', 'AVGO', ..., 'DDOG', 'MDB', 'TSLA'], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.14/v/string_type
+2026-10-21 15:45:25,898 [INFO]   Yahoo Finance:  52 articles
+2026-10-21 15:45:26,163 [INFO]   SEC EDGAR 8-K:  30 filings
+2026-10-21 15:45:26,164 [INFO]   Total items gathered: 82
+2026-10-21 15:45:26,164 [WARNING]   ⚠️  Gemini not available — using technical signals only
+2026-10-21 15:45:28,485 [INFO]   [PLTR] ML HOLD  xgb=0.49 lgb=0.50 ens=0.49 | Drivers: atr_pct=0.007, hour_cos=-0.966, hour=11.000
+2026-10-21 15:45:28,667 [INFO]   [PANW] ML BUY  xgb=0.54 lgb=0.54 ens=0.54 | Drivers: atr_pct=0.006, hour_cos=-0.966, hour=11.000
+2026-10-21 15:45:29,212 [INFO]   [SOFI] ML HOLD  xgb=0.45 lgb=0.43 ens=0.45 | Drivers: atr_pct=0.005, hour_cos=-0.966, hour=11.000
+2026-10-21 15:45:31,287 [INFO]   [AVGO] ML HOLD  xgb=0.43 lgb=0.40 ens=0.42 | Drivers: atr_pct=0.005, hour_cos=-0.966, hour=11.000
+2026-10-21 15:45:31,786 [INFO]   [NVDA] ML HOLD  xgb=0.46 lgb=0.47 ens=0.46 | Drivers: atr_pct=0.006, hour_cos=-0.966, hour=11.000
+2026-10-21 15:45:31,787 [INFO] 
+══════════════════════════════════════════════════════════════════
+2026-10-21 15:45:31,787 [INFO]   🎯  TODAY'S AI STOCK SELECTION — Wednesday  October 21, 2026  ·  11:45 AM ET
+2026-10-21 15:45:31,787 [INFO]   Why the bot chose these stocks for today's trading (up to 10)
+2026-10-21 15:45:31,787 [INFO] ══════════════════════════════════════════════════════════════════
+2026-10-21 15:45:31,787 [INFO] 
+  ┌── #1 · PANW ─ TECHNICAL · — IMPACT ─ 🟢 BULLISH
+2026-10-21 15:45:31,787 [INFO]   │
+2026-10-21 15:45:31,787 [INFO]   │  📰 NEWS CATALYST
+2026-10-21 15:45:31,787 [INFO]   │     No specific news — technicals-driven
+2026-10-21 15:45:31,787 [INFO]   │
+2026-10-21 15:45:31,787 [INFO]   │  💡 WHY THIS MATTERS TO THE STOCK PRICE
+2026-10-21 15:45:31,787 [INFO]   │     Strong technical setup with high ML confidence
+2026-10-21 15:45:31,787 [INFO]   │
+2026-10-21 15:45:31,788 [INFO]   │  ✅ REASON TO BUY
+2026-10-21 15:45:31,788 [INFO]   │     ML model shows high buy probability
+2026-10-21 15:45:31,788 [INFO]   │
+2026-10-21 15:45:31,788 [INFO]   │  ⚠️  MAIN RISK
+2026-10-21 15:45:31,788 [INFO]   │     Always manage with stop-loss
+2026-10-21 15:45:31,788 [INFO]   │
+2026-10-21 15:45:31,788 [INFO]   │  📊 SCORES
+2026-10-21 15:45:31,788 [INFO]   │     News    : +0.00  [        ] (catalyst × sentiment)
+2026-10-21 15:45:31,788 [INFO]   │     ML Model: 54%  confidence (49-feature XGBoost)
+2026-10-21 15:45:31,788 [INFO]   │     Technical: 1.0/1.0  (Stage 2 + RSI health)
+2026-10-21 15:45:31,788 [INFO]   │     COMPOSITE: 0.439  ← final ranking score
+2026-10-21 15:45:31,788 [INFO]   │
+2026-10-21 15:45:31,788 [INFO]   │  📈 MARKET DATA
+2026-10-21 15:45:31,788 [INFO]   │     Price $348.80  ·  RSI 69  ·  Volume 0.1× average
+2026-10-21 15:45:31,788 [INFO]   │     Stop-loss  → $341.82  (-2%)   ← bot auto-exits here
+2026-10-21 15:45:31,789 [INFO]   │     Take-profit → $369.72  (+6%)   ← bot auto-exits here
+2026-10-21 15:45:31,789 [INFO]   │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)
+2026-10-21 15:45:31,789 [INFO]   └────────────────────────────────────────────────────────────────
+2026-10-21 15:45:31,789 [INFO] 
+  ┌── #2 · NVDA ─ TECHNICAL · — IMPACT ─ 🟢 BULLISH
+2026-10-21 15:45:31,789 [INFO]   │
+2026-10-21 15:45:31,789 [INFO]   │  📰 NEWS CATALYST
+2026-10-21 15:45:31,789 [INFO]   │     No specific news — technicals-driven
+2026-10-21 15:45:31,789 [INFO]   │
+2026-10-21 15:45:31,789 [INFO]   │  💡 WHY THIS MATTERS TO THE STOCK PRICE
+2026-10-21 15:45:31,789 [INFO]   │     Strong technical setup with high ML confidence
+2026-10-21 15:45:31,789 [INFO]   │
+2026-10-21 15:45:31,789 [INFO]   │  ✅ REASON TO BUY
+2026-10-21 15:45:31,789 [INFO]   │     ML model shows high buy probability
+2026-10-21 15:45:31,789 [INFO]   │
+2026-10-21 15:45:31,789 [INFO]   │  ⚠️  MAIN RISK
+2026-10-21 15:45:31,789 [INFO]   │     Always manage with stop-loss
+2026-10-21 15:45:31,790 [INFO]   │
+2026-10-21 15:45:31,790 [INFO]   │  📊 SCORES
+2026-10-21 15:45:31,790 [INFO]   │     News    : +0.00  [        ] (catalyst × sentiment)
+2026-10-21 15:45:31,790 [INFO]   │     ML Model: 46%  confidence (49-feature XGBoost)
+2026-10-21 15:45:31,790 [INFO]   │     Technical: 1.0/1.0  (Stage 2 + RSI health)
+2026-10-21 15:45:31,790 [INFO]   │     COMPOSITE: 0.412  ← final ranking score
+2026-10-21 15:45:31,790 [INFO]   │
+2026-10-21 15:45:31,790 [INFO]   │  📈 MARKET DATA
+2026-10-21 15:45:31,790 [INFO]   │     Price $220.41  ·  RSI 70  ·  Volume 0.9× average
+2026-10-21 15:45:31,790 [INFO]   │     Stop-loss  → $216.0  (-2%)   ← bot auto-exits here
+2026-10-21 15:45:31,790 [INFO]   │     Take-profit → $233.63  (+6%)   ← bot auto-exits here
+2026-10-21 15:45:31,790 [INFO]   │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)
+2026-10-21 15:45:31,790 [INFO]   └────────────────────────────────────────────────────────────────
+2026-10-21 15:45:31,790 [INFO] 
+  ┌── #3 · AVGO ─ TECHNICAL · — IMPACT ─ 🟢 BULLISH
+2026-10-21 15:45:31,790 [INFO]   │
+2026-10-21 15:45:31,790 [INFO]   │  📰 NEWS CATALYST
+2026-10-21 15:45:31,790 [INFO]   │     No specific news — technicals-driven
+2026-10-21 15:45:31,791 [INFO]   │
+2026-10-21 15:45:31,791 [INFO]   │  💡 WHY THIS MATTERS TO THE STOCK PRICE
+2026-10-21 15:45:31,791 [INFO]   │     Strong technical setup with high ML confidence
+2026-10-21 15:45:31,791 [INFO]   │
+2026-10-21 15:45:31,791 [INFO]   │  ✅ REASON TO BUY
+2026-10-21 15:45:31,791 [INFO]   │     ML model shows high buy probability
+2026-10-21 15:45:31,791 [INFO]   │
+2026-10-21 15:45:31,791 [INFO]   │  ⚠️  MAIN RISK
+2026-10-21 15:45:31,791 [INFO]   │     Always manage with stop-loss
+2026-10-21 15:45:31,791 [INFO]   │
+2026-10-21 15:45:31,791 [INFO]   │  📊 SCORES
+2026-10-21 15:45:31,791 [INFO]   │     News    : +0.00  [        ] (catalyst × sentiment)
+2026-10-21 15:45:31,791 [INFO]   │     ML Model: 42%  confidence (49-feature XGBoost)
+2026-10-21 15:45:31,791 [INFO]   │     Technical: 1.0/1.0  (Stage 2 + RSI health)
+2026-10-21 15:45:31,791 [INFO]   │     COMPOSITE: 0.397  ← final ranking score
+2026-10-21 15:45:31,791 [INFO]   │
+2026-10-21 15:45:31,792 [INFO]   │  📈 MARKET DATA
+2026-10-21 15:45:31,792 [INFO]   │     Price $337.90  ·  RSI 61  ·  Volume 1.1× average
+2026-10-21 15:45:31,792 [INFO]   │     Stop-loss  → $331.14  (-2%)   ← bot auto-exits here
+2026-10-21 15:45:31,792 [INFO]   │     Take-profit → $358.17  (+6%)   ← bot auto-exits here
+2026-10-21 15:45:31,792 [INFO]   │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)
+2026-10-21 15:45:31,792 [INFO]   └────────────────────────────────────────────────────────────────
+2026-10-21 15:45:31,792 [INFO] 
+  ┌── #4 · PLTR ─ TECHNICAL · — IMPACT ─ 🟢 BULLISH
+2026-10-21 15:45:31,792 [INFO]   │
+2026-10-21 15:45:31,792 [INFO]   │  📰 NEWS CATALYST
+2026-10-21 15:45:31,792 [INFO]   │     No specific news — technicals-driven
+2026-10-21 15:45:31,792 [INFO]   │
+2026-10-21 15:45:31,792 [INFO]   │  💡 WHY THIS MATTERS TO THE STOCK PRICE
+2026-10-21 15:45:31,792 [INFO]   │     Strong technical setup with high ML confidence
+2026-10-21 15:45:31,792 [INFO]   │
+2026-10-21 15:45:31,792 [INFO]   │  ✅ REASON TO BUY
+2026-10-21 15:45:31,792 [INFO]   │     ML model shows high buy probability
+2026-10-21 15:45:31,793 [INFO]   │
+2026-10-21 15:45:31,793 [INFO]   │  ⚠️  MAIN RISK
+2026-10-21 15:45:31,793 [INFO]   │     Always manage with stop-loss
+2026-10-21 15:45:31,793 [INFO]   │
+2026-10-21 15:45:31,793 [INFO]   │  📊 SCORES
+2026-10-21 15:45:31,793 [INFO]   │     News    : +0.00  [        ] (catalyst × sentiment)
+2026-10-21 15:45:31,793 [INFO]   │     ML Model: 49%  confidence (49-feature XGBoost)
+2026-10-21 15:45:31,793 [INFO]   │     Technical: 0.5/1.0  (Stage 2 + RSI health)
+2026-10-21 15:45:31,793 [INFO]   │     COMPOSITE: 0.297  ← final ranking score
+2026-10-21 15:45:31,793 [INFO]   │
+2026-10-21 15:45:31,793 [INFO]   │  📈 MARKET DATA
+2026-10-21 15:45:31,793 [INFO]   │     Price $199.27  ·  RSI 78  ·  Volume 0.9× average
+2026-10-21 15:45:31,793 [INFO]   │     Stop-loss  → $195.28  (-2%)   ← bot auto-exits here
+2026-10-21 15:45:31,793 [INFO]   │     Take-profit → $211.23  (+6%)   ← bot auto-exits here
+2026-10-21 15:45:31,793 [INFO]   │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)
+2026-10-21 15:45:31,793 [INFO]   └────────────────────────────────────────────────────────────────
+2026-10-21 15:45:31,794 [INFO] 
+  ┌── #5 · SOFI ─ TECHNICAL · — IMPACT ─ 🟢 BULLISH
+2026-10-21 15:45:31,794 [INFO]   │
+2026-10-21 15:45:31,794 [INFO]   │  📰 NEWS CATALYST
+2026-10-21 15:45:31,794 [INFO]   │     No specific news — technicals-driven
+2026-10-21 15:45:31,794 [INFO]   │
+2026-10-21 15:45:31,794 [INFO]   │  💡 WHY THIS MATTERS TO THE STOCK PRICE
+2026-10-21 15:45:31,794 [INFO]   │     Strong technical setup with high ML confidence
+2026-10-21 15:45:31,794 [INFO]   │
+2026-10-21 15:45:31,794 [INFO]   │  ✅ REASON TO BUY
+2026-10-21 15:45:31,794 [INFO]   │     ML model shows high buy probability
+2026-10-21 15:45:31,794 [INFO]   │
+2026-10-21 15:45:31,794 [INFO]   │  ⚠️  MAIN RISK
+2026-10-21 15:45:31,794 [INFO]   │     Always manage with stop-loss
+2026-10-21 15:45:31,794 [INFO]   │
+2026-10-21 15:45:31,794 [INFO]   │  📊 SCORES
+2026-10-21 15:45:31,794 [INFO]   │     News    : +0.00  [        ] (catalyst × sentiment)
+2026-10-21 15:45:31,795 [INFO]   │     ML Model: 45%  confidence (49-feature XGBoost)
+2026-10-21 15:45:31,795 [INFO]   │     Technical: 0.5/1.0  (Stage 2 + RSI health)
+2026-10-21 15:45:31,795 [INFO]   │     COMPOSITE: 0.281  ← final ranking score
+2026-10-21 15:45:31,795 [INFO]   │
+2026-10-21 15:45:31,795 [INFO]   │  📈 MARKET DATA
+2026-10-21 15:45:31,795 [INFO]   │     Price $14.94  ·  RSI 72  ·  Volume 0.7× average
+2026-10-21 15:45:31,795 [INFO]   │     Stop-loss  → $14.64  (-2%)   ← bot auto-exits here
+2026-10-21 15:45:31,795 [INFO]   │     Take-profit → $15.84  (+6%)   ← bot auto-exits here
+2026-10-21 15:45:31,795 [INFO]   │     Risk/Reward  1:3  (PTJ rule — always risk $1 to make $3)
+2026-10-21 15:45:31,795 [INFO]   └────────────────────────────────────────────────────────────────
+2026-10-21 15:45:31,795 [INFO] 
+  📌 HOW TO READ THIS REPORT:
+2026-10-21 15:45:31,795 [INFO]      News score > 0.3  = strong catalyst driving price today
+2026-10-21 15:45:31,795 [INFO]      ML > 55%          = model sees historical pattern of a winning trade
+2026-10-21 15:45:31,795 [INFO]      Composite > 0.5   = bot will scan for entry trigger at market open
+2026-10-21 15:45:31,795 [INFO] 
+══════════════════════════════════════════════════════════════════
+
+2026-10-21 15:45:31,796 [INFO]   📄 Full report saved → state/daily_picks.json
+2026-10-21 15:45:31,796 [INFO]   📋 WATCHLIST: ['SOFI', 'NVDA', 'PLTR', 'PANW', 'AVGO']  →  ['PANW', 'NVDA', 'AVGO', 'PLTR', 'SOFI']
+2026-10-21 15:45:31,796 [INFO]   ✅ Bot will trade these 5 stocks today
+──────────────────────────────────────────────────────────────────
+
+2026-10-21 15:45:31,796 [INFO] ⏭️  Morning brief skipped (Gemini not configured)
+2026-10-21 15:45:31,797 [INFO] Run complete — state saved

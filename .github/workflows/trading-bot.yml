@@ -1,17 +1,12 @@
-# Schedule re-registered Oct 19, 2026 (GitHub had not fired any scheduled runs yet).
+# Timing: started by cron-job.org (New York time) via the "Run workflow" API.
+# GitHub's own schedule was removed Oct 21, 2026: it fired late or not at all and caused double runs.
 # Independent personal project, not tied to any employer or agency.
 # Paper trading only. Public market data only. No personal data (no SSNs/PHI).
 #
 # Put this file at: .github/workflows/trading-bot.yml
-# Times are UTC (set for US daylight time; shift +1 hour after early November).
 name: AI Paper Trading Bot
 
 on:
-  schedule:
-    - cron: "30 12 * * 1-5"         # premarket (8:30 AM ET)
-    - cron: "*/10 13-19 * * 1-5"    # scan every 10 min during market hours
-    - cron: "50 19 * * 1-5"         # end of day (3:50 PM ET)
-    - cron: "5 4 * * 2-6"           # nightly retrain (12:05 AM ET)
   workflow_dispatch:
     inputs:
       mode:

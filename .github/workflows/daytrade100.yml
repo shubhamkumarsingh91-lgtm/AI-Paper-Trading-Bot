@@ -1,17 +1,12 @@
-# Schedule re-registered Oct 19, 2026 (GitHub had not fired any scheduled runs yet).
+# Timing: started by cron-job.org (New York time) via the "Run workflow" API.
+# GitHub's own schedule was removed Oct 21, 2026: it fired late or not at all and caused double runs.
 # DISCLAIMER: Independent personal project. Not tied to any employer or agency.
 # Paper trading only, public market data, no internal or personal data (no SSNs/PHI).
 #
 # Runs daytrade100.py (bot #3) on its own Alpaca paper account.
-# Times are UTC = New York daylight time + 4h. After Nov 1 add 1 hour to each.
 name: Day-Trade-100 Bot
 
 on:
-  schedule:
-    - cron: "30 12 * * 1-5"      # premarket   8:30 AM NY
-    - cron: "*/10 13-19 * * 1-5" # scan every 10 min during market hours
-    - cron: "50 19 * * 1-5"      # eod         3:50 PM NY
-    - cron: "20 4 * * 2-6"       # retrain     overnight
   workflow_dispatch:
     inputs:
       mode:

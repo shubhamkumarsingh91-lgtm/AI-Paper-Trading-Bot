@@ -63,6 +63,7 @@ jobs:
         run: |
           git config user.name "trading-bot"
           git config user.email "bot@users.noreply.github.com"
+          python backfill_precision.py state || echo 'backfill skipped'   # precision history for the dashboard
           python events.py day --bot b1 --dir state --out state/events_b1.json || echo 'events skipped'   # Agent HQ story feed
           git add state/ ai_trading_bot.py || true
           git diff --cached --quiet || git commit -m "bot state update [skip ci]"

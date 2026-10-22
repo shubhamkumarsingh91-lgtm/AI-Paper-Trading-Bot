@@ -187,6 +187,9 @@ def day_events(bot: str, run: dict, threshold_default: float = 0.60) -> list[dic
     if "Max positions" in text:
         add(t0, "floor", "wait", f"All {maxpos} position slots are full, so it is only watching what it already holds.")
         return ev
+    if "no new buys today" in text:
+        add(t0, "floor", "wait", "Too close to the 3:50 close-out, so no new buys; it only checked what it holds.")
+        return ev
     if "No actionable signal" in text:
         # explain why it didn't buy: the AI liked something but another check said no
         why = []
@@ -194,7 +197,7 @@ def day_events(bot: str, run: dict, threshold_default: float = 0.60) -> list[dic
             mm = re.match(r"^([A-Z.]{1,6})\s*: HOLD .*?ml=(\d+)% tv=(\S+)", m)
             if mm and int(mm.group(2)) >= thr * 100:
                 sym, ml, tv = mm.group(1), int(mm.group(2)), mm.group(3)
-                why.append(f"{sym} ({ml}%) but TradingView said {tv}" if tv.startswith(("SELL", "STRONG_SELL")) else f"{sym} ({ml}%) but a safety check said no")
+                why.append(f"{sym} ({ml}%) but TradingView said {tv}" if tv.startswith("STRONG_SELL") else f"{sym} ({ml}%) but a safety check said no")
         if why:
             add(t0, "floor", "hold", "No buy this time. The AI liked " + "; ".join(why[:2]) + ".")
         else:

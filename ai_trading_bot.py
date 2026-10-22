@@ -217,6 +217,7 @@ DIP_MAX_WAIT_SEC       = 14400   # 4 hours — if no reversal pattern confirms b
 ML_WEIGHT    = 0.50    # XGBoost prediction
 TV_WEIGHT    = 0.35    # TradingView technical analysis
 RSI_WEIGHT   = 0.15    # RSI quality filter
+BUY_RULE     = os.getenv('BUY_RULE', 'precision_first')   # 'blend' = the old 3-source score
 CONFIDENCE   = 0.62    # minimum ML confidence to consider BUY
 
 # ── Schedule ─────────────────────────────────────────────
@@ -771,6 +772,9 @@ def calibrate_threshold(probs: np.ndarray, y_true: pd.Series, min_signals: int =
     return best_th, best_prec, best_n
 
 
+_calib_prec, _calib_n, _base_rate = 0.0, 0, 0.0   # set by train_model()
+
+
 def record_learning_progress(real_trades_folded: int) -> tuple:
     """
     Append one row per retrain to LEARNING_LOG — never overwritten, so
@@ -791,6 +795,15 @@ def record_learning_progress(real_trades_folded: int) -> tuple:
         'precision':             round(model_precision, 4),
         'walk_forward_precision': round(_wf_precision, 4),
         'decision_threshold':    round(ML_DECISION_THRESHOLD, 4),
+        # Precision AT the live cutoff (what a BUY call is worth) vs the base rate
+        # (how often a random bar is a winner). lift > 1.0 = the model adds value.
+        'precision_at_threshold': round(_calib_prec, 4),
+        'signals_at_threshold':   _calib_n,
+        'base_rate':              round(_base_rate, 4),
+        'lift':                   round(_calib_prec / _base_rate, 3) if _base_rate else None,
+        'live_precision':         round(len(wins) / len(sells), 4) if sells else None,
+        'avg_win':                round(sum(t.get('pnl', 0) for t in wins) / len(wins), 2) if wins else None,
+        'avg_loss':               round(sum(t.get('pnl', 0) for t in sells if not t.get('win')) / max(1, len(sells) - len(wins)), 2) if len(sells) > len(wins) else None,
         'real_trades_folded_in': real_trades_folded,
         'total_trades_ever':     len(sells),
         'win_rate_pct':          round(wr, 1),
@@ -1018,6 +1031,8 @@ def train_model(retrain: bool = False) -> None:
     # because it got lucky on a handful of predictions.
     min_signals = max(10, int(0.01 * len(y_va)))
     ML_DECISION_THRESHOLD, calib_prec, calib_n = calibrate_threshold(final_probs, y_va, min_signals)
+    global _calib_prec, _calib_n, _base_rate
+    _calib_prec, _calib_n, _base_rate = calib_prec, calib_n, float(y_va.mean())
     log.info(
         f'  Calibrated decision threshold: {ML_DECISION_THRESHOLD:.2f} '
         f'(precision {calib_prec:.1%} on {calib_n} signals in validation) '
@@ -1325,6 +1340,27 @@ def combined_signal(symbol: str, ml: dict, tv: dict | None) -> dict:
     #            0.48 without TV (ML bearing more weight, slightly lower bar)
     threshold    = 0.55 if tv_up else 0.48
     final_signal = 'BUY' if score >= threshold else 'HOLD'
+
+    # ── FIX (Oct 22, 2026): precision-first buy rule (same as Day-Trade-100) ──
+    # Under the blended score above, a plain TradingView "SELL" on a 15-min chart
+    # (very common) took 0.175 off the score, so bot #1 vetoed every buy and made
+    # 0 trades in 4 days — and a bot that never trades has nothing to learn from.
+    # New rule: BUY when the model clears its calibrated threshold (the cutoff
+    # chosen each retrain for the best PRECISION on held-out data) and no safety
+    # veto fires. TradingView now only blocks on STRONG_SELL.
+    if BUY_RULE == 'precision_first':
+        vetoes = []
+        if rsi > 78:                       vetoes.append('RSI>78')
+        if ml.get('above_ema50', 0) == 0:  vetoes.append('BELOW_EMA50')
+        if bb > 0.95:                      vetoes.append('TOP_OF_BAND')
+        if tv_present and tv.get('rec') == 'STRONG_SELL':
+            vetoes.append('TV_STRONG_SELL')
+        if conf >= ML_DECISION_THRESHOLD and not vetoes:
+            final_signal, score = 'BUY', conf          # ranks candidates by model confidence
+        else:
+            final_signal, score = 'HOLD', conf - ML_DECISION_THRESHOLD
+        if vetoes:
+            reasons.append('VETO:' + '+'.join(vetoes))
     return {
         'signal':     final_signal,
         'score':      round(score, 3),

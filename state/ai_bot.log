@@ -12671,3 +12671,34 @@ symbols
 2026-10-22 15:50:53,196 [INFO]   NVDA : HOLD score=-0.419 ml=48% tv=SELL            rsi=15 vol×0.3
 2026-10-22 15:50:53,196 [INFO]   No actionable signal this scan
 2026-10-22 15:50:53,196 [INFO] Run complete — state saved
+2026-10-22 16:01:02,634 [INFO] Run mode: SCAN
+2026-10-22 16:01:02,634 [INFO] Runtime state restored — watchlist ['SOFI', 'PLTR', 'PANW', 'AVGO', 'NVDA']
+2026-10-22 16:01:02,643 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.9%  precision=30.8%  walk-forward=31.4%  threshold=0.60  trained=2026-10-22
+2026-10-22 16:01:02,804 [INFO] 
+──────────────────────────────────────────────────────────────────
+2026-10-22 16:01:02,805 [INFO]   📡 INTRADAY NEWS UPDATE — 12:01 PM ET
+2026-10-22 16:01:02,805 [INFO]   Watchlist (5): ['SOFI', 'PLTR', 'PANW', 'AVGO', 'NVDA']
+2026-10-22 16:01:02,805 [INFO] ──────────────────────────────────────────────────────────────────
+2026-10-22 16:01:02,855 [WARNING]   Alpaca news error: 1 validation error for NewsRequest
+symbols
+  Input should be a valid string [type=string_type, input_value=['NVDA', 'PANW', 'AVGO', ..., 'DDOG', 'MDB', 'TSLA'], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.14/v/string_type
+2026-10-22 16:01:03,873 [INFO]   Yahoo Finance:  20 articles
+2026-10-22 16:01:03,874 [INFO]   Articles (last 3 h): 20
+2026-10-22 16:01:03,874 [INFO]   Gemini not available — skipping intraday analysis
+2026-10-22 16:01:03,874 [INFO] ──────────────────────────────────────────────────────────────────
+
+2026-10-22 16:01:04,008 [INFO] 
+── Scan #1 | $99,346.63 equity | 0/5 positions | Model: 50.9% ──
+2026-10-22 16:01:07,003 [INFO]   [SOFI] ML HOLD  xgb=0.40 lgb=0.41 ens=0.40 | Drivers: atr_pct=0.008, hour_cos=-1.000, hour=12.000
+2026-10-22 16:01:07,169 [INFO]   SOFI : HOLD score=-0.400 ml=40% tv=SELL            rsi=52 vol×0.1
+2026-10-22 16:01:08,328 [INFO]   [PLTR] ML HOLD  xgb=0.41 lgb=0.43 ens=0.42 | Drivers: atr_pct=0.008, hour_cos=-1.000, hour=12.000
+2026-10-22 16:01:08,474 [INFO]   PLTR : HOLD score=-0.231 ml=42% tv=NEUTRAL         rsi=41 vol×0.0
+2026-10-22 16:01:09,580 [INFO]   [PANW] ML BUY  xgb=0.52 lgb=0.51 ens=0.52 | Drivers: atr_pct=0.010, hour_cos=-1.000, hour=12.000
+2026-10-22 16:01:09,723 [INFO]   PANW : HOLD score=+0.180 ml=52% tv=BUY             rsi=66 vol×0.0
+2026-10-22 16:01:10,598 [INFO]   [AVGO] ML HOLD  xgb=0.44 lgb=0.44 ens=0.44 | Drivers: atr_pct=0.006, hour_cos=-1.000, hour=12.000
+2026-10-22 16:01:10,784 [INFO]   AVGO : HOLD score=-0.374 ml=44% tv=SELL            rsi=42 vol×0.1
+2026-10-22 16:01:12,251 [INFO]   [NVDA] ML HOLD  xgb=0.40 lgb=0.37 ens=0.39 | Drivers: atr_pct=0.006, hour_cos=-1.000, hour=12.000
+2026-10-22 16:01:12,391 [INFO]   NVDA : HOLD score=-0.531 ml=39% tv=SELL            rsi=16 vol×0.1
+2026-10-22 16:01:12,391 [INFO]   No actionable signal this scan
+2026-10-22 16:01:12,391 [INFO] Run complete — state saved

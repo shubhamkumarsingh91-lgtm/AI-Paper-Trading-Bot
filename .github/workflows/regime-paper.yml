@@ -38,6 +38,7 @@ jobs:
         run: |
           git config user.name "regime-bot"
           git config user.email "regime-bot@users.noreply.github.com"
+          python events.py regime --bot b2 --dir state --out state/events_regime.json || echo 'events skipped'   # Agent HQ story feed
           git add state/ || true
           git commit -m "regime paper update [skip ci]" || exit 0
           # Several bots save to main within seconds of each other (e.g. 15:50 EOD). Each writes its own

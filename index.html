@@ -162,6 +162,19 @@ tbody tr{transition:background .2s} tbody tr:hover{background:rgba(255,255,255,.
 @media(max-width:640px){.ptable td:last-child{white-space:normal;word-break:break-word}.perf{padding:14px}}
 html,body{overflow-x:clip}
 @media(max-width:640px){.panel table:not(.ptable table){display:block;overflow-x:auto;white-space:nowrap}}
+.grid2.eq{grid-template-columns:1fr 1fr}
+@media(max-width:1000px){.grid2.eq{grid-template-columns:1fr}}
+.learn{padding:18px}
+.learn h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.lk{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.lk div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lk small{font-size:10.5px;color:var(--mute)}
+.lk b{font-size:14px;font-weight:600}
+.lchart{width:100%;height:auto;display:block}
+.lleg{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mute);margin-top:6px}
+.lleg i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+.lverdict{font-size:12.5px;margin-top:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+@media(max-width:640px){.lk{grid-template-columns:repeat(2,1fr)}}
 .empty{color:var(--dim);font-size:12.5px;padding:18px 10px}
 .filter{display:flex;gap:4px;flex-wrap:wrap}
 footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-align:center}
@@ -239,6 +252,12 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
   <div class="perfhead"><h2>Performance by bot<i class="tip" data-tip="Each bot's own money: what it started with, what it has now, and how its trades did. Hover the i next to any row for what it means. Balances come from the Alpaca paper accounts once a day at the close; trades update after every run.">i</i></h2>
   <span class="muted" style="font-size:12px">Click a bot for all metrics · fake money (Alpaca paper accounts)</span></div>
   <div class="grid3" id="perf"></div>
+</section>
+
+<section class="perfwrap fade" style="animation-delay:.28s">
+  <div class="perfhead"><h2>Is it learning? Buy-call precision<i class="tip" data-tip="Precision = when the AI says BUY, how often it is right. Tested every night on data the model never trained on, at the exact cutoff live trading uses. Random guessing would be right only as often as the grey line, so the gap above grey is what the AI has learned. Live hit rate = share of its real paper trades that made money.">i</i></h2>
+  <span class="muted" style="font-size:12px">One point per nightly retrain · precision over accuracy</span></div>
+  <div class="grid2 eq" id="learn"></div>
 </section>
 
 <!-- TRADINGVIEW CHART + NEWS -->
@@ -394,6 +413,7 @@ async function loadAll(){
   renderRegime(regRows, shadow);
   renderStats(extras);
   renderTrades(log1, log3);
+  renderLearn({log1, hist1, log3, hist3});
   renderPerf({log1, hist1, log3, hist3, card1: csv(card1), card3: dtRows, regRows, regState, spyNow, brk1, brk3});
   $('#synced').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
@@ -493,7 +513,7 @@ function renderPerf(d){
   const P3 = perf({start:100000, log:d.log3, card:d.card3, hist:d.hist3, spyReturn:d.spyNow, broker:d.brk3});
   const hold = d.regState && d.regState.target ? Object.entries(d.regState.target).map(([s,w])=>`${s} ${Math.round(w*100)}%`).join(', ') : 'SPY';
   $('#perf').innerHTML =
-    perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'This bot hasn\u2019t made a trade yet: its AI\u2019s buy calls keep getting vetoed by TradingView. The $653 drop happened before its records begin, from earlier bots on the same Alpaca account; the list from Alpaca below shows which stocks.'}) +
+    perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'This bot hasn\u2019t made a trade yet: until Oct 22 its AI\u2019s buy calls kept getting vetoed by TradingView (now it uses the precision-first rule). The $653 drop happened before its records begin, from earlier bots on the same Alpaca account; the list from Alpaca below shows which stocks.'}) +
     perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
     perfTable(BOTS[2], P3, {});
   let open = []; try { open = JSON.parse(localStorage.getItem('perfOpen') || '[]'); } catch (e) {}
@@ -501,6 +521,56 @@ function renderPerf(d){
     if (open.includes(d.dataset.bot)) d.open = true;
     d.addEventListener('toggle', () => { try { localStorage.setItem('perfOpen', JSON.stringify([...document.querySelectorAll('#perf details[open]')].map(x => x.dataset.bot))); } catch (e) {} });
   });
+}
+/* ---------- Is it learning? (precision) ---------- */
+function learnCard(bot, hist, log){
+  const H = (Array.isArray(hist)?hist:[]).filter(r => r.precision_at_threshold > 0);   // 0 = no cutoff found that night (model broken), not a real reading
+  const byDay = {}; H.forEach(r => { byDay[String(r.timestamp).slice(0,10)] = r; });   // last retrain of each day
+  const pts = Object.entries(byDay).sort(([a],[b]) => a.localeCompare(b)).map(([d,r]) => ({d, ...r}));
+  const S = sells(log), wins = S.filter(t => t.win), losses = S.filter(t => !t.win);
+  const pct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+  const money = v => v == null ? '—' : (v<0?'-':'') + '$' + Math.abs(v).toFixed(0);
+  const avgW = wins.length ? wins.reduce((a,t)=>a+(+t.pnl||0),0)/wins.length : null;
+  const avgL = losses.length ? losses.reduce((a,t)=>a+(+t.pnl||0),0)/losses.length : null;
+  const per  = S.length ? S.reduce((a,t)=>a+(+t.pnl||0),0)/S.length : null;
+  const last = pts[pts.length-1] || {};
+  if (!pts.length) return `<div class="card learn"><h3><span class="sw" style="background:${bot.color}"></span>${bot.name}</h3><div class="empty">Precision history fills in after the bot's next run.</div></div>`;
+  // chart
+  const W = 520, Hh = 150, L = 34, R = 8, T = 8, B = 20;
+  const live = pts.map(p => p.live_precision ?? (p.total_trades_ever ? p.win_rate_pct/100 : null));
+  const all = [...pts.map(p=>p.precision_at_threshold), ...pts.map(p=>p.base_rate), ...live.filter(v=>v!=null), wins.length/(S.length||1)];
+  const top = Math.min(1, Math.ceil((Math.max(...all)+0.05)*10)/10), bot0 = Math.max(0, Math.floor((Math.min(...all)-0.05)*10)/10);
+  const x = i => L + (pts.length === 1 ? (W-L-R)/2 : i*(W-L-R)/(pts.length-1));
+  const y = v => T + (top - v)/(top - bot0) * (Hh-T-B);
+  const line = (vals, col, dash) => { const p = vals.map((v,i)=>v==null?null:`${x(i)},${y(v)}`).filter(Boolean);
+    return p.length>1 ? `<polyline fill="none" stroke="${col}" stroke-width="2" ${dash?'stroke-dasharray="4 4"':''} points="${p.join(' ')}"/>` : ''; };
+  const dots = (vals, col) => vals.map((v,i)=>v==null?'':`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${col}"><title>${pts[i].d}: ${pct(v)}</title></circle>`).join('');
+  let grid = ''; for (let g = bot0; g <= top + 1e-9; g += 0.1) grid += `<line x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}" stroke="rgba(255,255,255,.06)"/><text x="${L-6}" y="${y(g)+3}" fill="#7d8494" font-size="10" text-anchor="end">${Math.round(g*100)}%</text>`;
+  const lbl = [0, pts.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>`<text x="${x(i)}" y="${Hh-4}" fill="#7d8494" font-size="10" text-anchor="${i?'end':'start'}">${pts[i].d.slice(5)}</text>`).join('');
+  const svg = `<svg class="lchart" viewBox="0 0 ${W} ${Hh}">${grid}${lbl}
+    ${line(pts.map(p=>p.base_rate), '#8a8f9c', true)}${line(pts.map(p=>p.precision_at_threshold), bot.color)}${dots(pts.map(p=>p.precision_at_threshold), bot.color)}
+    ${line(live, 'var(--up)')}${dots(live, 'var(--up)')}</svg>`;
+  // verdict
+  const first = pts[0], dPrec = (last.precision_at_threshold - first.precision_at_threshold)*100;
+  const days = pts.length;
+  let verdict;
+  if (!S.length) verdict = `⚪ No closed trades yet, so it has nothing of its own to learn from. Its buy calls beat random guessing by <b>${((last.lift||1)-1)*100 >= 0 ? '+' : ''}${(((last.lift||1)-1)*100).toFixed(0)}%</b> in testing.`;
+  else if (S.length < 50) verdict = `🟡 ${S.length} closed trades: too few to judge live precision (need ~50). Tested precision ${dPrec>=0?'up':'down'} ${Math.abs(dPrec).toFixed(1)} pts over ${days} day${days>1?'s':''}.`;
+  else verdict = dPrec > 1 ? `🟢 Learning: tested precision up ${dPrec.toFixed(1)} pts over ${days} days.` : dPrec < -1 ? `🔴 Getting worse: tested precision down ${(-dPrec).toFixed(1)} pts over ${days} days.` : `⚪ Flat: tested precision moved ${dPrec.toFixed(1)} pts over ${days} days.`;
+  return `<div class="card learn"><h3><span class="sw" style="background:${bot.color}"></span>${bot.name}</h3>
+    <div class="lk">
+      <div><small>Buy-call precision (tested)</small><b>${pct(last.precision_at_threshold)}</b></div>
+      <div><small>Random guess</small><b>${pct(last.base_rate)}</b></div>
+      <div><small>Better than random</small><b class="${(last.lift||1)>=1?'up':'down'}">${last.lift ? ((last.lift-1)*100>=0?'+':'') + ((last.lift-1)*100).toFixed(0) + '%' : '—'}</b></div>
+      <div><small>Live hit rate</small><b>${S.length ? pct(wins.length/S.length) + ` <span class="muted" style="font-size:11px">(${wins.length}/${S.length})</span>` : '—'}</b></div>
+      <div><small>Avg win / avg loss</small><b>${S.length ? `<span class="up">${money(avgW)}</span> / <span class="down">${money(avgL)}</span>` : '—'}</b></div>
+      <div><small>Profit per trade</small><b class="${per==null?'':per>=0?'up':'down'}">${money(per)}</b></div>
+    </div>${svg}
+    <div class="lleg"><span><i style="background:${bot.color}"></i>Tested precision at live cutoff</span><span><i style="background:#8a8f9c"></i>Random guess</span><span><i style="background:var(--up)"></i>Live hit rate</span></div>
+    <div class="lverdict">${verdict}</div></div>`;
+}
+function renderLearn(d){
+  $('#learn').innerHTML = learnCard(BOTS[0], d.hist1, d.log1) + learnCard(BOTS[2], d.hist3, d.log3);
 }
 let tradeRows = [];
 function renderTrades(l1, l3){

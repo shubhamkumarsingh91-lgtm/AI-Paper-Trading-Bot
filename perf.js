@@ -76,21 +76,21 @@ function perfTable(bot, P, opts = {}) {
     R('Balance now', P.balance == null ? 'from today’s close' : $f(P.balance, 2), P.balanceDate ? `Alpaca closing balance on ${P.balanceDate}. Updates once a day at the close.` : P.balance == null ? 'The bot starts recording its Alpaca balance at the end of the next trading day.' : 'Start + closed-trade profit (no daily balance recorded yet).'),
     R('Total profit / loss', P.totalPnl == null ? '—' : `${$s(P.totalPnl)} · ${pc(P.totalPct, 2, true)}`, 'Balance now minus what it started with, in dollars and as % of the starting money.', cls(P.totalPnl)),
     R('vs just holding SPY', P.vsSpy == null ? '—' : pc(P.vsSpy, 2, true) + ' pts', 'Positive = beating the market over the same days.', cls(P.vsSpy)),
-    R('Biggest drop (max drawdown)', P.maxDrawdown == null ? '—' : pc(P.maxDrawdown, 2), 'Worst fall from a high point in the daily balance. Smaller is safer.', P.maxDrawdown < 0 ? 'down' : ''),
+    R('Biggest drop', P.maxDrawdown == null ? '—' : pc(P.maxDrawdown, 2), 'Worst fall from a high point in the daily balance. Smaller is safer.', P.maxDrawdown < 0 ? 'down' : ''),
   ];
   if (opts.holder) return tableHtml(bot, [...money,
     H('How it invests'),
     R('Holding', opts.holding || '—', 'This bot holds the market instead of making many trades, so trade stats don’t apply.'),
     R('Market mood', opts.regime || '—', 'Its daily read of the market: BULL, SIDEWAYS or BEAR.'),
     R('Days running', String(P.days), 'Trading days with a recorded closing balance.'),
-  ], opts.note);
+  ], opts.note, P, true);
   const t = P.closed;
   return tableHtml(bot, [...money,
     R('From closed trades', $s(P.realised), 'Profit or loss locked in by trades that were bought and then sold.', cls(P.realised)),
-    R('Open positions & other', $s(P.other), `Balance change not explained by trades closed by ${P.balanceDate || 'the last close'}: positions still open then, and fees.`, cls(P.other)),
+    R('Open & other', $s(P.other), `Balance change not explained by trades closed by ${P.balanceDate || 'the last close'}: positions still open then, and fees.`, cls(P.other)),
     H('Money put to work'),
     R('Total bought', $f(P.invested), `Dollars spent on ${P.buys} buy${P.buys === 1 ? '' : 's'} (shares × price), counting each trade.`),
-    R('Average trade size', P.avgSize == null ? '—' : `${$f(P.avgSize)} · ${pc(P.avgSize / P.start, 1)} of the account`, 'How much of the account goes into one trade.'),
+    R('Average trade size', P.avgSize == null ? '—' : `${$f(P.avgSize)} (${pc(P.avgSize / P.start, 1)})`, 'How much goes into one trade, in dollars and as % of the account.'),
     R('Return on money traded', pc(P.returnOnTraded, 2, true), 'Closed-trade profit ÷ the dollars those trades used.', cls(P.returnOnTraded)),
     H('Trade results'),
     R('Closed trades', String(t), t && t < 30 ? `Small sample: win rates mean little until about 30 trades.` : 'Round trips: bought, then sold.'),
@@ -100,17 +100,35 @@ function perfTable(bot, P, opts = {}) {
     R('Average loss', P.avgLoss == null ? '—' : `${$s(P.avgLoss)} · ${pc(P.avgLossPct, 2, true)}`, 'Typical losing trade. Wins should be bigger than losses.', 'down'),
     R('Profit factor', P.profitFactor == null ? '—' : P.profitFactor === Infinity ? 'no losses yet' : P.profitFactor.toFixed(2), 'Dollars won ÷ dollars lost. Above 1.0 makes money; 1.5+ is good.', P.profitFactor == null ? '' : P.profitFactor >= 1 ? 'up' : 'down'),
     R('Average per trade', $s(P.expectancy), 'What one trade earns on average (the “expectancy”).', cls(P.expectancy)),
-    R('Best / worst trade', P.best ? `${P.best.symbol} ${$s(+P.best.pnl)} · ${P.worst.symbol} ${$s(+P.worst.pnl)}` : '—', 'Single biggest gain and loss.'),
+    R('Best trade', P.best ? `${P.best.symbol} ${$s(+P.best.pnl)}` : '—', 'Single biggest gain.', P.best ? cls(+P.best.pnl) : ''),
+    R('Worst trade', P.worst ? `${P.worst.symbol} ${$s(+P.worst.pnl)}` : '—', 'Single biggest loss.', P.worst ? cls(+P.worst.pnl) : ''),
     H('How good are the buy calls'),
     R('Live precision', P.livePrecision == null ? '—' : pc(P.livePrecision, 1), 'Of the real trades it closed, how often the buy made money.'),
-    R('Model precision (testing)', pc(P.modelPrecision, 1), 'When the AI said “buy” on past data it hadn’t seen, how often it was right. Random ≈ 24%.'),
-    R('Model accuracy (testing)', pc(P.modelAccuracy, 1), 'Share of all buy/skip calls that were right in testing. Less useful than precision: skipping is easy.'),
-  ], opts.note);
+    R('Model precision (test)', pc(P.modelPrecision, 1), 'When the AI said “buy” on past data it hadn’t seen, how often it was right. Random ≈ 24%.'),
+    R('Model accuracy (test)', pc(P.modelAccuracy, 1), 'Share of all buy/skip calls that were right in testing. Less useful than precision: skipping is easy.'),
+  ], opts.note, P, false);
 }
-function tableHtml(bot, rows, note) {
-  return `<div class="card perf fade"><div class="panel-head"><h2><span class="sw" style="background:${bot.color};margin-right:8px"></span>${bot.name}</h2><span class="tag">${$f(bot.start)} account</span></div>
+// Split the rows at each group heading so an opened table lays its groups out side by side.
+function groups(rows) {
+  const out = []; let cur = [];
+  for (const r of rows) { if (r.startsWith('<tr class="grp"') && cur.length) { out.push(cur); cur = []; } cur.push(r); }
+  if (cur.length) out.push(cur);
+  return out.map(g => `<table><tbody>${g.join('')}</tbody></table>`).join('');
+}
+// Collapsed by default: one compact line (balance, P&L, win ratio); click to open the full table.
+function tableHtml(bot, rows, note, P, holder) {
+  const kv = (k, v, c = '') => `<span class="pk"><small>${k}</small><b class="mono ${c}">${v}</b></span>`;
+  const line = [
+    kv('Balance', P.balance == null ? '—' : $f(P.balance)),
+    kv('Profit / loss', P.totalPnl == null ? '—' : `${$s(P.totalPnl)} · ${pc(P.totalPct, 2, true)}`, cls(P.totalPnl)),
+    holder ? kv('vs SPY', P.vsSpy == null ? '—' : pc(P.vsSpy, 2, true), cls(P.vsSpy))
+           : kv('Win ratio', P.winRate == null ? '—' : `${pc(P.winRate, 0)} of ${P.closed}`, P.winRate == null ? '' : P.winRate >= 0.5 ? 'up' : 'down'),
+  ].join('');
+  return `<details class="card perf fade" data-bot="${bot.id}">
+    <summary><div class="ph"><span class="sw" style="background:${bot.color}"></span><b>${bot.name}</b><span class="tag">${$f(bot.start)} account</span><span class="chev">▾</span></div>
+      <div class="pline">${line}</div></summary>
     ${note ? `<div class="pnote">${note}</div>` : ''}
-    <div class="ptable"><table><tbody>${rows.join('')}</tbody></table></div></div>`;
+    <div class="ptable pgroups">${groups(rows)}</div></details>`;
 }
 
 root.perf = perf; root.perfTable = perfTable;

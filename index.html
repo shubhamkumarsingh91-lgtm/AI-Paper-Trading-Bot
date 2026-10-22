@@ -133,8 +133,25 @@ tbody tr{transition:background .2s} tbody tr:hover{background:rgba(255,255,255,.
 .perfwrap{margin-bottom:16px}
 .perfhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 2px 12px}
 .perfhead h2{font-size:15px;font-weight:600;display:flex;align-items:center}
-.perf{padding:18px 20px}
-.perf .panel-head{margin-bottom:10px}
+.perf{padding:14px 18px;align-self:start}
+#perf{grid-auto-flow:row dense}
+.perf[open]{grid-column:1/-1}
+.perf[open] .pline{max-width:560px}
+.pgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:4px 32px}
+.pgroups table{align-self:start}
+.pgroups td:first-child{white-space:nowrap}
+.perf summary{list-style:none;cursor:pointer;user-select:none}
+.perf summary::-webkit-details-marker{display:none}
+.perf .ph{display:flex;align-items:center;gap:8px;font-size:14px}
+.perf .ph .tag{margin-left:auto}
+.perf .chev{color:var(--mute);transition:transform .2s;font-size:13px}
+.perf[open] .chev{transform:rotate(180deg)}
+.perf .pline{display:flex;gap:10px;justify-content:space-between;margin-top:10px;flex-wrap:wrap}
+.perf .pk{display:flex;flex-direction:column;gap:2px;min-width:0}
+.perf .pk small{font-size:10.5px;color:var(--mute);letter-spacing:.3px}
+.perf .pk b{font-size:13px;font-weight:600}
+.perf[open] .pline{padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.perf summary:hover .chev{color:var(--text)}
 .pnote{font-size:12px;color:var(--mute);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 .ptable table{width:100%;border-collapse:collapse;font-size:12.5px}
 .ptable td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
@@ -220,7 +237,7 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
 
 <section class="perfwrap fade" style="animation-delay:.27s">
   <div class="perfhead"><h2>Performance by bot<i class="tip" data-tip="Each bot's own money: what it started with, what it has now, and how its trades did. Hover the i next to any row for what it means. Balances come from the Alpaca paper accounts once a day at the close; trades update after every run.">i</i></h2>
-  <span class="muted" style="font-size:12px">Fake money (Alpaca paper accounts) · not financial advice</span></div>
+  <span class="muted" style="font-size:12px">Click a bot for all metrics · fake money (Alpaca paper accounts)</span></div>
   <div class="grid3" id="perf"></div>
 </section>
 
@@ -477,6 +494,11 @@ function renderPerf(d){
     perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'No closed trades yet, so trade results are blank. Its Alpaca balance starts recording at today\u2019s close.'}) +
     perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
     perfTable(BOTS[2], P3, {});
+  let open = []; try { open = JSON.parse(localStorage.getItem('perfOpen') || '[]'); } catch (e) {}
+  document.querySelectorAll('#perf details').forEach(d => {
+    if (open.includes(d.dataset.bot)) d.open = true;
+    d.addEventListener('toggle', () => { try { localStorage.setItem('perfOpen', JSON.stringify([...document.querySelectorAll('#perf details[open]')].map(x => x.dataset.bot))); } catch (e) {} });
+  });
 }
 let tradeRows = [];
 function renderTrades(l1, l3){

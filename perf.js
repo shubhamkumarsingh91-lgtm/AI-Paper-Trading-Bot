@@ -39,13 +39,22 @@ function perf({start, log, card, hist, spyReturn}) {
   const best = sells.length ? sells.reduce((a, t) => pnl(t) > pnl(a) ? t : a) : null;
   const worst = sells.length ? sells.reduce((a, t) => pnl(t) < pnl(a) ? t : a) : null;
   const last = Array.isArray(hist) && hist.length ? hist[hist.length - 1] : {};
+  // most money invested at the same moment: replay buys and sells in time order
+  let held = {}, peakCash = 0, peakAt = null;
+  [...rows].sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || ''))).forEach(t => {
+    const a = (t.action || '').toUpperCase();
+    if (a === 'BUY') held[t.symbol] = (held[t.symbol] || 0) + cost(t);
+    else if (a === 'SELL') delete held[t.symbol];
+    const now = Object.values(held).reduce((x, y) => x + y, 0);
+    if (now > peakCash){ peakCash = now; peakAt = t.timestamp; }
+  });
 
   return {
     start, balance, balanceDate, totalPnl, totalPct: totalPnl == null ? null : totalPnl / start,
     vsSpy: spyReturn == null || totalPnl == null ? null : totalPnl / start - spyReturn,
     realised, other: balance == null ? null : balance - start - sells.filter(t => !balanceDate || String(t.timestamp || '').slice(0, 10) <= balanceDate).reduce((a, t) => a + (num(t.pnl) ?? 0), 0),
     maxDrawdown: cardRows.length ? mdd : null, days: cardRows.length,
-    buys: buys.length, invested: sum(buys.map(cost)), avgSize: buys.length ? sum(buys.map(cost)) / buys.length : null,
+    buys: buys.length, invested: sum(buys.map(cost)), peakInvested: buys.length ? peakCash : null, peakAt, avgSize: buys.length ? sum(buys.map(cost)) / buys.length : null,
     returnOnTraded: closedCost ? realised / closedCost : null,
     closed: sells.length, wins: wins.length, losses: losses.length,
     winRate: sells.length ? wins.length / sells.length : null, lossRate: sells.length ? losses.length / sells.length : null,
@@ -89,7 +98,8 @@ function perfTable(bot, P, opts = {}) {
     R('From closed trades', $s(P.realised), 'Profit or loss locked in by trades that were bought and then sold.', cls(P.realised)),
     R('Open & other', $s(P.other), `Balance change not explained by trades closed by ${P.balanceDate || 'the last close'}: positions still open then, and fees.`, cls(P.other)),
     H('Money put to work'),
-    R('Total bought', $f(P.invested), `Dollars spent on ${P.buys} buy${P.buys === 1 ? '' : 's'} (shares × price), counting each trade.`),
+    R('Most invested at once', P.peakInvested == null ? '—' : `${$f(P.peakInvested)} (${pc(P.peakInvested / P.start, 0)})`, `The most money it had in stocks at the same moment${P.peakAt ? ' (' + String(P.peakAt).slice(0, 16).replace('T', ' ') + ')' : ''}. It can never be more than the account.`),
+    R('Total traded', $f(P.invested), `All ${P.buys} buy${P.buys === 1 ? '' : 's'} added up. This can be bigger than the account: after each sale the same cash is used again for the next buy.`),
     R('Average trade size', P.avgSize == null ? '—' : `${$f(P.avgSize)} (${pc(P.avgSize / P.start, 1)})`, 'How much goes into one trade, in dollars and as % of the account.'),
     R('Return on money traded', pc(P.returnOnTraded, 2, true), 'Closed-trade profit ÷ the dollars those trades used.', cls(P.returnOnTraded)),
     H('Trade results'),

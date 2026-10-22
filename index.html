@@ -130,6 +130,21 @@ th{text-align:left;font-weight:500;color:var(--mute);font-size:10.5px;letter-spa
 td{padding:11px 10px;border-top:1px solid var(--line)}
 tbody tr{transition:background .2s} tbody tr:hover{background:rgba(255,255,255,.025)}
 .up{color:var(--up)} .down{color:var(--down)} .muted{color:var(--mute)}
+.perfwrap{margin-bottom:16px}
+.perfhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 2px 12px}
+.perfhead h2{font-size:15px;font-weight:600;display:flex;align-items:center}
+.perf{padding:18px 20px}
+.perf .panel-head{margin-bottom:10px}
+.pnote{font-size:12px;color:var(--mute);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.ptable table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ptable td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.ptable td:first-child{color:var(--mute);padding-right:10px}
+.ptable td:last-child{text-align:right;white-space:nowrap}
+.ptable tr.grp td{color:var(--text);font-weight:600;font-size:11px;letter-spacing:.6px;text-transform:uppercase;padding-top:14px;border-bottom:1px solid var(--line);text-align:left}
+.ptable .tip{margin-left:6px}
+@media(max-width:640px){.ptable td:last-child{white-space:normal;word-break:break-word}.perf{padding:14px}}
+html,body{overflow-x:clip}
+@media(max-width:640px){.panel table:not(.ptable table){display:block;overflow-x:auto;white-space:nowrap}}
 .empty{color:var(--dim);font-size:12.5px;padding:18px 10px}
 .filter{display:flex;gap:4px;flex-wrap:wrap}
 footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-align:center}
@@ -203,6 +218,12 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
 <!-- MODEL STATS -->
 <section class="grid3" id="stats"></section>
 
+<section class="perfwrap fade" style="animation-delay:.27s">
+  <div class="perfhead"><h2>Performance by bot<i class="tip" data-tip="Each bot's own money: what it started with, what it has now, and how its trades did. Hover the i next to any row for what it means. Balances come from the Alpaca paper accounts once a day at the close; trades update after every run.">i</i></h2>
+  <span class="muted" style="font-size:12px">Fake money (Alpaca paper accounts) · not financial advice</span></div>
+  <div class="grid3" id="perf"></div>
+</section>
+
 <!-- TRADINGVIEW CHART + NEWS -->
 <section class="marketrow">
   <div class="card tv clip fade" style="animation-delay:.3s">
@@ -241,6 +262,7 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
 </footer>
 </div>
 
+<script src="perf.js"></script>
 <script>
 /* ---------- CONFIG ---------- */
 const RAW = 'https://raw.githubusercontent.com/shubhamkumarsingh91-lgtm/AI-Paper-Trading-Bot/main/';
@@ -334,11 +356,11 @@ setInterval(tick, 15000); tick();
 /* ---------- data ---------- */
 let raceChart, sparks = [];
 async function loadAll(){
-  const [log1, hist1, log3, hist3, reg, shadow, dt] = await Promise.all([
+  const [log1, hist1, log3, hist3, reg, shadow, dt, card1, regState] = await Promise.all([
     get('state/trade_log.json','json'), get('state/learning_history.json','json'),
     get('state_dt100/trade_log.json','json'), get('state_dt100/learning_history.json','json'),
     get('state/regime_scorecard.csv'), get('state/regime_shadow_log.csv'),
-    get('state_dt100/scorecard.csv'),
+    get('state_dt100/scorecard.csv'), get('state/scorecard.csv'), get('state/regime_paper_state.json','json'),
   ]);
   const regRows = csv(reg), dtRows = csv(dt);
   const s1 = curveFromTrades(log1, 100000);
@@ -354,6 +376,7 @@ async function loadAll(){
   renderRegime(regRows, shadow);
   renderStats(extras);
   renderTrades(log1, log3);
+  renderPerf({log1, hist1, log3, hist3, card1: csv(card1), card3: dtRows, regRows, regState, spyNow});
   $('#synced').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function sells(log){ return Array.isArray(log) ? log.filter(t => (t.action||'').toUpperCase()==='SELL') : []; }
@@ -443,6 +466,17 @@ function renderStats(ex){
       <div class="bar"><i style="width:0" data-w="${it.v==null?0:Math.min(100,it.v*100)}"></i>${it.base?`<span class="mark" style="left:${it.base*100}%" title="Random guess"></span>`:''}</div>
     </div>`).join('');
   setTimeout(()=>document.querySelectorAll('.bar i').forEach(b=>b.style.width=b.dataset.w+'%'),150);
+}
+function renderPerf(d){
+  const regSpy = d.regRows.length ? +col(d.regRows[d.regRows.length-1],'spy_return',4) : null;
+  const P1 = perf({start:100000, log:d.log1, card:d.card1, hist:d.hist1, spyReturn:d.spyNow});
+  const P2 = perf({start:25000, log:[], card:d.regRows.map(r=>({date:col(r,'date',0), equity:col(r,'equity',2)})), hist:null, spyReturn:regSpy});
+  const P3 = perf({start:100000, log:d.log3, card:d.card3, hist:d.hist3, spyReturn:d.spyNow});
+  const hold = d.regState && d.regState.target ? Object.entries(d.regState.target).map(([s,w])=>`${s} ${Math.round(w*100)}%`).join(', ') : 'SPY';
+  $('#perf').innerHTML =
+    perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'No closed trades yet, so trade results are blank. Its Alpaca balance starts recording at today\u2019s close.'}) +
+    perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
+    perfTable(BOTS[2], P3, {});
 }
 let tradeRows = [];
 function renderTrades(l1, l3){

@@ -3091,6 +3091,31 @@ def load_runtime_state() -> None:
         log.warning(f'Runtime state load failed: {e}')
 
 
+# ── Daily scorecard: Alpaca balance vs SPY, one row per trading day (the dashboard reads it) ──
+SCORECARD_FILE = STATE_DIR / 'scorecard.csv'
+def write_scorecard() -> None:
+    """Appends today's closing balance. Without it the dashboard could only see closed-trade P&L,
+    not the real account balance (which also moves with open positions and fees)."""
+    if os.environ.get('DRY_RUN') == '1':
+        log.info('DRY_RUN — scorecard not saved'); return
+    import csv
+    today = now_et().strftime('%Y-%m-%d')
+    equity = get_account_equity()
+    spy = float(fetch_bars('SPY', days=5)['close'].iloc[-1])
+    rows = list(csv.reader(open(SCORECARD_FILE))) if SCORECARD_FILE.exists() else []
+    if rows and rows[-1][0] == today:
+        return                                   # already logged today
+    if not rows:
+        rows = [['date', 'equity', 'spy_close', 'bot_return', 'spy_return']]
+        start_eq, start_spy = equity, spy
+    else:
+        start_eq, start_spy = float(rows[1][1]), float(rows[1][2])
+    rows.append([today, round(equity, 2), round(spy, 2),
+                 round(equity / start_eq - 1, 4), round(spy / start_spy - 1, 4)])
+    csv.writer(open(SCORECARD_FILE, 'w', newline='')).writerows(rows)
+    log.info(f'Scorecard: balance ${equity:,.2f} · bot {rows[-1][3]:+.2%} vs SPY {rows[-1][4]:+.2%} since first row')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', required=True,
@@ -3119,6 +3144,10 @@ def main():
             if is_market_open() and get_positions():
                 close_all_positions('EOD')
             send_daily_report()
+            try:
+                write_scorecard()
+            except Exception as e:                       # never fail the EOD run over the scorecard
+                log.warning(f'Scorecard not written: {e}')
 
     save_runtime_state()
     log.info('Run complete — state saved')

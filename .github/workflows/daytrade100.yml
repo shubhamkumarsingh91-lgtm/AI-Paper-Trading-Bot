@@ -55,6 +55,7 @@ jobs:
         run: |
           git config user.name "daytrade100-bot"
           git config user.email "actions@github.com"
+          python events.py day --bot b3 --dir state_dt100 --out state_dt100/events.json || echo 'events skipped'   # Agent HQ story feed
           git add state_dt100/ || true
           git diff --cached --quiet || git commit -m "dt100 state [skip ci]"
           # Several bots save to main within seconds of each other (e.g. 15:50 EOD). Each writes its own

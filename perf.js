@@ -8,7 +8,21 @@
  */
 (function (root) {
 
-function perf({start, log, card, hist, spyReturn}) {
+// Pair the broker's filled buys and sells per stock, first in first out: one row per closed trade.
+function roundTrips(orders) {
+  const lots = {}, trips = [];
+  [...(orders || [])].sort((a, b) => String(a.filled_at).localeCompare(String(b.filled_at))).forEach(o => {
+    const q = +o.qty, px = +o.price; if (!q || !px) return;
+    const L = lots[o.symbol] = lots[o.symbol] || [];
+    if (o.side === 'buy'){ L.push({q, px, t:o.filled_at}); return; }
+    let left = q, cost = 0, got = 0, opened = null;
+    while (left > 1e-9 && L.length){ const lot = L[0], take = Math.min(left, lot.q); cost += take * lot.px; got += take; lot.q -= take; left -= take; opened = opened || lot.t; if (lot.q <= 1e-9) L.shift(); }
+    if (got > 0) trips.push({symbol:o.symbol, qty:got, cost, pnl:got * px - cost, pct:(got * px - cost) / cost, openedAt:opened, closedAt:o.filled_at});
+  });
+  return trips;
+}
+
+function perf({start, log, card, hist, spyReturn, baseline, baselineDate, broker}) {
   const rows = Array.isArray(log) ? log : [];
   const buys = rows.filter(t => (t.action || '').toUpperCase() === 'BUY');
   const sells = rows.filter(t => (t.action || '').toUpperCase() === 'SELL');
@@ -21,10 +35,11 @@ function perf({start, log, card, hist, spyReturn}) {
   // no daily balance yet and no trades: unknown (don't pretend it's still the starting amount)
   const balance = cardRows.length ? num(cardRows[cardRows.length - 1].equity) : (sells.length ? start + realised : null);
   const balanceDate = cardRows.length ? cardRows[cardRows.length - 1].date : null;
-  const totalPnl = balance == null ? null : balance - start;
+  const base = baseline ?? start;                     // what the account held when this bot's records begin
+  const totalPnl = balance == null ? null : balance - base;
 
   // max drawdown on the daily balance (peak to trough)
-  let peak = start, mdd = 0;
+  let peak = baseline ?? start, mdd = 0;   // drops are measured from when the bot's records begin
   for (const r of cardRows) { const e = num(r.equity); peak = Math.max(peak, e); mdd = Math.min(mdd, e / peak - 1); }
 
   // trade quality (closed round trips)
@@ -50,9 +65,11 @@ function perf({start, log, card, hist, spyReturn}) {
   });
 
   return {
-    start, balance, balanceDate, totalPnl, totalPct: totalPnl == null ? null : totalPnl / start,
-    vsSpy: spyReturn == null || totalPnl == null ? null : totalPnl / start - spyReturn,
-    realised, other: balance == null ? null : balance - start - sells.filter(t => !balanceDate || String(t.timestamp || '').slice(0, 10) <= balanceDate).reduce((a, t) => a + (num(t.pnl) ?? 0), 0),
+    start, base, baselineDate, before: baseline == null ? null : baseline - start,
+    balance, balanceDate, totalPnl, totalPct: totalPnl == null ? null : totalPnl / base,
+    vsSpy: spyReturn == null || totalPnl == null ? null : totalPnl / base - spyReturn,
+    trips: broker ? roundTrips(broker.orders) : null, brokerUpdated: broker ? broker.updated : null,
+    realised, other: balance == null ? null : balance - base - sells.filter(t => !balanceDate || String(t.timestamp || '').slice(0, 10) <= balanceDate).reduce((a, t) => a + (num(t.pnl) ?? 0), 0),
     maxDrawdown: cardRows.length ? mdd : null, days: cardRows.length,
     buys: buys.length, invested: sum(buys.map(cost)), peakInvested: buys.length ? peakCash : null, peakAt, avgSize: buys.length ? sum(buys.map(cost)) / buys.length : null,
     returnOnTraded: closedCost ? realised / closedCost : null,
@@ -83,7 +100,10 @@ function perfTable(bot, P, opts = {}) {
     H('Money'),
     R('Started with', $f(P.start), 'Fake money in this bot’s Alpaca paper account on day one.'),
     R('Balance now', P.balance == null ? 'from today’s close' : $f(P.balance, 2), P.balanceDate ? `Alpaca closing balance on ${P.balanceDate}. Updates once a day at the close.` : P.balance == null ? 'The bot starts recording its Alpaca balance at the end of the next trading day.' : 'Start + closed-trade profit (no daily balance recorded yet).'),
-    R('Total profit / loss', P.totalPnl == null ? '—' : `${$s(P.totalPnl)} · ${pc(P.totalPct, 2, true)}`, 'Balance now minus what it started with, in dollars and as % of the starting money.', cls(P.totalPnl)),
+    ...(P.before == null ? [] : [
+      R('Before this bot', $s(P.before), `Change in this Alpaca account before this bot’s records begin (${P.baselineDate}), from earlier bots that used the same account. Not this bot’s trading.`, cls(P.before)),
+      R(`Balance on ${P.baselineDate}`, $f(P.base, 2), 'What the account held when this bot’s own records begin. Its results below are measured from here.')]),
+    R(P.before == null ? 'Total profit / loss' : 'Profit / loss since then', P.totalPnl == null ? '—' : `${$s(P.totalPnl)} · ${pc(P.totalPct, 2, true)}`, P.before == null ? 'Balance now minus what it started with, in dollars and as % of the starting money.' : `Balance now minus the balance on ${P.baselineDate}: this bot’s own result.`, cls(P.totalPnl)),
     R('vs just holding SPY', P.vsSpy == null ? '—' : pc(P.vsSpy, 2, true) + ' pts', 'Positive = beating the market over the same days.', cls(P.vsSpy)),
     R('Biggest drop', P.maxDrawdown == null ? '—' : pc(P.maxDrawdown, 2), 'Worst fall from a high point in the daily balance. Smaller is safer.', P.maxDrawdown < 0 ? 'down' : ''),
   ];
@@ -112,12 +132,34 @@ function perfTable(bot, P, opts = {}) {
     R('Average per trade', $s(P.expectancy), 'What one trade earns on average (the “expectancy”).', cls(P.expectancy)),
     R('Best trade', P.best ? `${P.best.symbol} ${$s(+P.best.pnl)}` : '—', 'Single biggest gain.', P.best ? cls(+P.best.pnl) : ''),
     R('Worst trade', P.worst ? `${P.worst.symbol} ${$s(+P.worst.pnl)}` : '—', 'Single biggest loss.', P.worst ? cls(+P.worst.pnl) : ''),
+    ...brokerRows(P),
     H('How good are the buy calls'),
     R('Live precision', P.livePrecision == null ? '—' : pc(P.livePrecision, 1), 'Of the real trades it closed, how often the buy made money.'),
     R('Model precision (test)', pc(P.modelPrecision, 1), 'When the AI said “buy” on past data it hadn’t seen, how often it was right. Random ≈ 24%.'),
     R('Model accuracy (test)', pc(P.modelAccuracy, 1), 'Share of all buy/skip calls that were right in testing. Less useful than precision: skipping is easy.'),
   ], opts.note, P, false);
 }
+// Every trade on the account according to Alpaca: totals, the earlier-bot part, and the result per stock.
+function brokerRows(P) {
+  const R = (label, value, help, c = '') => `<tr><td>${label}<i class="tip" data-tip="${String(help).replace(/"/g, '&quot;')}">i</i></td><td class="mono ${c}">${value}</td></tr>`;
+  const out = [`<tr class="grp"><td colspan="2">Every trade on the account (Alpaca)</td></tr>`];
+  if (!P.trips) return [...out, R('Broker record', 'after the next run', 'Saved from Alpaca each morning (8:30 AM ET) and at the close. To get it now: GitHub → Actions → this bot → Run workflow → mode: history.')];
+  const sum = a => a.reduce((x, t) => x + t.pnl, 0), won = a => a.filter(t => t.pnl > 0).length;
+  const T = P.trips;
+  if (!T.length) return [...out, R('Closed trades', '0', `Alpaca has no completed buy-then-sell on this account in the last year (checked ${String(P.brokerUpdated || '').slice(0, 10)}).`)];
+  out.push(R('Closed trades', `${T.length} · ${won(T)} won, ${T.length - won(T)} lost`, `Every buy that was later sold, paired from Alpaca’s own order history (checked ${String(P.brokerUpdated || '').slice(0, 10)}).`));
+  out.push(R('Profit / loss from them', $s(sum(T)), 'Sum of all those closed trades, as Alpaca recorded the prices.', cls(sum(T))));
+  if (P.baselineDate){
+    const pre = T.filter(t => String(t.closedAt).slice(0, 10) < P.baselineDate);
+    if (pre.length) out.push(R('…by earlier bots', `${pre.length} trades · ${$s(sum(pre))}`, `Closed before ${P.baselineDate}, when this bot’s records begin.`, cls(sum(pre))));
+  }
+  const by = {};
+  T.forEach(t => { const b = by[t.symbol] = by[t.symbol] || {n:0, pnl:0, w:0, last:''}; b.n++; b.pnl += t.pnl; if (t.pnl > 0) b.w++; if (t.closedAt > b.last) b.last = t.closedAt; });
+  Object.entries(by).sort((a, b) => Math.abs(b[1].pnl) - Math.abs(a[1].pnl)).slice(0, 8).forEach(([sym, b]) =>
+    out.push(R(sym, `${$s(b.pnl)} · ${b.n} trade${b.n === 1 ? '' : 's'}`, `${b.w} won, ${b.n - b.w} lost; last closed ${String(b.last).slice(0, 10)}.`, cls(b.pnl))));
+  return out;
+}
+
 // Split the rows at each group heading so an opened table lays its groups out side by side.
 function groups(rows) {
   const out = []; let cur = [];
@@ -141,6 +183,6 @@ function tableHtml(bot, rows, note, P, holder) {
     <div class="ptable pgroups">${groups(rows)}</div></details>`;
 }
 
-root.perf = perf; root.perfTable = perfTable;
-if (typeof module !== 'undefined') module.exports = {perf, perfTable};
+root.perf = perf; root.perfTable = perfTable; root.roundTrips = roundTrips;
+if (typeof module !== 'undefined') module.exports = {perf, perfTable, roundTrips};
 })(typeof window !== 'undefined' ? window : globalThis);

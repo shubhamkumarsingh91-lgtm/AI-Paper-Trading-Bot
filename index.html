@@ -373,11 +373,12 @@ setInterval(tick, 15000); tick();
 /* ---------- data ---------- */
 let raceChart, sparks = [];
 async function loadAll(){
-  const [log1, hist1, log3, hist3, reg, shadow, dt, card1, regState] = await Promise.all([
+  const [log1, hist1, log3, hist3, reg, shadow, dt, card1, regState, brk1, brk3] = await Promise.all([
     get('state/trade_log.json','json'), get('state/learning_history.json','json'),
     get('state_dt100/trade_log.json','json'), get('state_dt100/learning_history.json','json'),
     get('state/regime_scorecard.csv'), get('state/regime_shadow_log.csv'),
     get('state_dt100/scorecard.csv'), get('state/scorecard.csv'), get('state/regime_paper_state.json','json'),
+    get('state/broker_orders.json','json'), get('state_dt100/broker_orders.json','json'),
   ]);
   const regRows = csv(reg), dtRows = csv(dt);
   const s1 = curveFromTrades(log1, 100000);
@@ -393,7 +394,7 @@ async function loadAll(){
   renderRegime(regRows, shadow);
   renderStats(extras);
   renderTrades(log1, log3);
-  renderPerf({log1, hist1, log3, hist3, card1: csv(card1), card3: dtRows, regRows, regState, spyNow});
+  renderPerf({log1, hist1, log3, hist3, card1: csv(card1), card3: dtRows, regRows, regState, spyNow, brk1, brk3});
   $('#synced').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function sells(log){ return Array.isArray(log) ? log.filter(t => (t.action||'').toUpperCase()==='SELL') : []; }
@@ -486,12 +487,13 @@ function renderStats(ex){
 }
 function renderPerf(d){
   const regSpy = d.regRows.length ? +col(d.regRows[d.regRows.length-1],'spy_return',4) : null;
-  const P1 = perf({start:100000, log:d.log1, card:d.card1, hist:d.hist1, spyReturn:d.spyNow});
+  // Bot 1 runs on the original paper account, which earlier bots used before this bot's records begin (Oct 19).
+  const P1 = perf({start:100000, baseline:99346.63, baselineDate:'2026-10-19', log:d.log1, card:d.card1, hist:d.hist1, spyReturn:d.spyNow, broker:d.brk1});
   const P2 = perf({start:25000, log:[], card:d.regRows.map(r=>({date:col(r,'date',0), equity:col(r,'equity',2)})), hist:null, spyReturn:regSpy});
-  const P3 = perf({start:100000, log:d.log3, card:d.card3, hist:d.hist3, spyReturn:d.spyNow});
+  const P3 = perf({start:100000, log:d.log3, card:d.card3, hist:d.hist3, spyReturn:d.spyNow, broker:d.brk3});
   const hold = d.regState && d.regState.target ? Object.entries(d.regState.target).map(([s,w])=>`${s} ${Math.round(w*100)}%`).join(', ') : 'SPY';
   $('#perf').innerHTML =
-    perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'No closed trades yet, so trade results are blank. Its Alpaca balance starts recording at today\u2019s close.'}) +
+    perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'This bot hasn\u2019t made a trade yet: its AI\u2019s buy calls keep getting vetoed by TradingView. The $653 drop happened before its records begin, from earlier bots on the same Alpaca account; the list from Alpaca below shows which stocks.'}) +
     perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
     perfTable(BOTS[2], P3, {});
   let open = []; try { open = JSON.parse(localStorage.getItem('perfOpen') || '[]'); } catch (e) {}

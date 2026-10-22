@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "premarket, scan, eod or retrain"
+        description: "premarket, scan, eod, retrain or history"
         default: "scan"
 
 concurrency:

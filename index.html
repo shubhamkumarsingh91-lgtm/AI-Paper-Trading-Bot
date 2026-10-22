@@ -164,6 +164,9 @@ html,body{overflow-x:clip}
 @media(max-width:640px){.panel table:not(.ptable table){display:block;overflow-x:auto;white-space:nowrap}}
 .grid2.eq{grid-template-columns:1fr 1fr}
 @media(max-width:1000px){.grid2.eq{grid-template-columns:1fr}}
+.gate{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px}
+.gate .ic{font-size:13px;text-align:center}.gate small{display:block;color:var(--mute);font-size:10.5px}.gate b{font-weight:600;white-space:nowrap}
+.rbar{height:8px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;margin:4px 0 12px}.rbar i{display:block;height:100%;background:linear-gradient(90deg,var(--a1),var(--up))}
 .learn{padding:18px}
 .learn h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .lk{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
@@ -258,6 +261,12 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
   <div class="perfhead"><h2>Is it learning? Buy-call precision<i class="tip" data-tip="Precision = when the AI says BUY, how often it is right. Tested every night on data the model never trained on, at the exact cutoff live trading uses. Random guessing would be right only as often as the grey line, so the gap above grey is what the AI has learned. Live hit rate = share of its real paper trades that made money.">i</i></h2>
   <span class="muted" style="font-size:12px">One point per nightly retrain · precision over accuracy</span></div>
   <div class="grid2 eq" id="learn"></div>
+</section>
+
+<section class="perfwrap fade" style="animation-delay:.29s">
+  <div class="perfhead"><h2>Ready for real money?<i class="tip" data-tip="Each bot must pass every gate before a small real-money test. Precision alone is not the goal: a bot right 40% of the time makes money if its wins are big enough, and one right 70% of the time loses if its losses are bigger. So the key gate compares the hit rate to its break-even point, worked out from the average win and average loss.">i</i></h2>
+  <span class="muted" style="font-size:12px">Ticks itself off from live results · paper first, then $1–2k real side by side</span></div>
+  <div class="grid2 eq" id="ready"></div>
 </section>
 
 <!-- TRADINGVIEW CHART + NEWS -->
@@ -516,6 +525,7 @@ function renderPerf(d){
     perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'This bot hasn\u2019t made a trade yet: until Oct 22 its AI\u2019s buy calls kept getting vetoed by TradingView (now it uses the precision-first rule). The $653 drop happened before its records begin, from earlier bots on the same Alpaca account; the list from Alpaca below shows which stocks.'}) +
     perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
     perfTable(BOTS[2], P3, {});
+  $('#ready').innerHTML = readyCard(BOTS[0], P1, d.hist1) + readyCard(BOTS[2], P3, d.hist3);
   let open = []; try { open = JSON.parse(localStorage.getItem('perfOpen') || '[]'); } catch (e) {}
   document.querySelectorAll('#perf details').forEach(d => {
     if (open.includes(d.dataset.bot)) d.open = true;
@@ -571,6 +581,33 @@ function learnCard(bot, hist, log){
 }
 function renderLearn(d){
   $('#learn').innerHTML = learnCard(BOTS[0], d.hist1, d.log1) + learnCard(BOTS[2], d.hist3, d.log3);
+}
+/* ---------- Ready for real money? ---------- */
+const SLIPPAGE = 5;   // $ per round trip that paper trading doesn't charge (worse real fills)
+function readyCard(bot, P, hist){
+  const H = (Array.isArray(hist)?hist:[]).filter(r => r.lift > 0).slice(-5);
+  const be = (P.avgWin != null && P.avgLoss != null) ? Math.abs(P.avgLoss) / (P.avgWin + Math.abs(P.avgLoss)) : null;
+  const pct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+  const usd = v => v == null ? '—' : (v<0?'−$':'$') + Math.abs(v).toFixed(0);
+  const enough = P.closed >= 30;   // below this, money gates show progress but can't pass
+  const G = [
+    ['Closed trades', 'Enough trades that luck averages out', `${P.closed}/100`, P.closed >= 100],
+    ['Hit rate above break-even', be == null ? 'Needs wins and losses to work out' : `Break-even is ${pct(be)} with these win/loss sizes; needs +5 pts margin`,
+       P.winRate == null ? '—' : `${pct(P.winRate)} vs ${pct(be)}`, enough && be != null && P.winRate >= be + 0.05],
+    ['Profit per trade after costs', `After ~$${SLIPPAGE} slippage per trade`, P.expectancy == null ? '—' : usd(P.expectancy - SLIPPAGE), enough && P.expectancy - SLIPPAGE > 0],
+    ['Profit factor', 'Total won ÷ total lost; ≥ 1.3', P.profitFactor == null ? '—' : P.profitFactor === Infinity ? '∞' : P.profitFactor.toFixed(2), enough && P.profitFactor >= 1.3],
+    ['Beating SPY', 'Ahead of just holding the market', P.vsSpy == null ? '—' : (P.vsSpy>=0?'+':'') + (P.vsSpy*100).toFixed(2) + '%', enough && P.vsSpy > 0],
+    ['Worst drop from a peak', 'Smaller than 8%', P.maxDrawdown == null ? '—' : pct(P.maxDrawdown), P.maxDrawdown != null && P.maxDrawdown > -0.08 && P.days >= 20],
+    ['AI better than random', 'Tested precision ≥ 20% above random, last 5 nights', H.length ? 'min +' + ((Math.min(...H.map(r=>r.lift))-1)*100).toFixed(0) + '%' + (H.length < 5 ? ` (${H.length}/5 nights)` : '') : '—', H.length >= 5 && Math.min(...H.map(r=>r.lift)) >= 1.2],
+    ['Time in the market', '≥ 30 trading days, so it has seen a bad week', `${P.days}/30 days`, P.days >= 30],
+  ];
+  const passed = G.filter(g => g[3]).length;
+  const verdict = passed === G.length ? '🟢 Ready for a small real-money test ($1–2k, side by side with paper).' :
+    `${passed} of ${G.length} gates passed. ${P.closed < 100 ? `About ${Math.max(0, 100 - P.closed)} more trades to go.` : ''}`;
+  return `<div class="card learn"><h3><span class="sw" style="background:${bot.color}"></span>${bot.name}<span class="muted" style="margin-left:auto;font-size:12px">${passed}/${G.length}</span></h3>
+    <div class="rbar"><i style="width:${passed/G.length*100}%"></i></div>
+    ${G.map(([t,sub,val,ok]) => `<div class="gate"><span class="ic">${ok?'✅':'⬜'}</span><span>${t}<small>${sub}</small></span><b class="${ok?'up':''}">${val}</b></div>`).join('')}
+    <div class="lverdict">${verdict} Also check: 2 weeks with no failed runs in GitHub Actions.</div></div>`;
 }
 let tradeRows = [];
 function renderTrades(l1, l3){

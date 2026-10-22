@@ -14,7 +14,7 @@ on:
         default: "scan"
 
 concurrency:
-  group: state-commits           # same group as the other bots, so commits never clash
+  group: daytrade100             # one DT100 run at a time; saves to main retry on a race
   cancel-in-progress: false
 
 permissions:
@@ -57,4 +57,11 @@ jobs:
           git config user.email "actions@github.com"
           git add state_dt100/ || true
           git diff --cached --quiet || git commit -m "dt100 state [skip ci]"
-          git pull --rebase && git push
+          # Several bots save to main within seconds of each other (e.g. 15:50 EOD). Each writes its own
+          # files, so on a rejected push we just pull the other bot's commit and try again.
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "Push raced with another bot (attempt $i); retrying"
+            sleep $(( i * 4 + RANDOM % 5 ))
+          done
+          echo "Could not push after 5 attempts"; exit 1

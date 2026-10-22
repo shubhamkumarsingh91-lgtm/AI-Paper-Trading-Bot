@@ -257,6 +257,8 @@ TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 
 ET = pytz.timezone('America/New_York')     # all time checks use ET, not UTC
 
+NO_NEW_BUYS_AFTER = (15, 45)              # (hour, minute) ET; EOD closes at 15:50
+
 def now_et() -> datetime:
     """Return current time in Eastern Time (handles EST/EDT automatically)."""
     return datetime.now(ET)
@@ -2948,6 +2950,15 @@ def scan() -> None:
 
     if open_watch >= MAX_POSITIONS:
         log.info(f'  Max positions ({MAX_POSITIONS}) reached — watching only')
+        return
+
+    # FIX (Oct 22, 2026): the 15:50 scan and the 15:50 end-of-day run start at the
+    # same minute. If the scan ran second it could buy right after EOD closed
+    # everything, leaving a position open overnight. No new buys after 15:45 ET;
+    # open positions are still checked above.
+    t = now_et()
+    if (t.hour, t.minute) >= NO_NEW_BUYS_AFTER:
+        log.info(f'  ⏰ After {NO_NEW_BUYS_AFTER[0]}:{NO_NEW_BUYS_AFTER[1]:02d} ET — no new buys today')
         return
 
     # ── Step 2: score every symbol ────────────────────────

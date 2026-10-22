@@ -1,30 +1,7 @@
 {
 "bot": "b3",
-"generated": "2026-10-22T19:02:05Z",
+"generated": "2026-10-22T19:11:22Z",
 "events": [
-{
-"t": "2026-10-21T14:10:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 5 of 5 positions, balance $100,578).",
-"count": 0
-},
-{
-"t": "2026-10-21T14:10:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "All 5 position slots are full, so it is only watching what it already holds."
-},
-{
-"t": "2026-10-21T14:20:51Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 5 of 5 positions, balance $100,741).",
-"count": 0
-},
 {
 "t": "2026-10-21T14:20:51Z",
 "bot": "b3",
@@ -1228,6 +1205,29 @@
 "kind": "skip",
 "text": "Picked PM (66% confident) but skipped it: in a falling market it needs 68% before buying.",
 "symbol": "PM"
+},
+{
+"t": "2026-10-22T19:10:41Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,648). 38 passed all its checks: GM 67%, PM 67%, INTU 66%….",
+"count": 100
+},
+{
+"t": "2026-10-22T19:11:21Z",
+"bot": "b3",
+"place": "tower",
+"kind": "regime",
+"text": "Noticed the market turned BEAR: SPY ($762.02) is below its 50-day average ($767.22)."
+},
+{
+"t": "2026-10-22T19:11:21Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked GM (67% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "GM"
 }
 ]
 }

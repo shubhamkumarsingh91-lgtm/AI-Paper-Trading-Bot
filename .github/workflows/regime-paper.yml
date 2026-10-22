@@ -24,6 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # FIX (Oct 22, 2026): without this, a run that waited in the queue starts from the code as it was
+          # when it was TRIGGERED, missing the commit the run ahead of it just pushed -> rebase clash.
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -44,7 +48,11 @@ jobs:
           # Several bots save to main within seconds of each other (e.g. 15:50 EOD). Each writes its own
           # files, so on a rejected push we just pull the other bot's commit and try again.
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            # Attempts 1-2: normal rebase. Attempt 3+: on a clash keep THIS run's lines (-X theirs means
+            # "our commit" during a rebase), so one run's save is never thrown away like on Oct 22.
+            X=""; [ $i -ge 3 ] && X="-X theirs"
+            if git pull --rebase $X origin main; then git push origin HEAD:main && exit 0
+            else git rebase --abort 2>/dev/null || true; fi
             echo "Push raced with another bot (attempt $i); retrying"
             sleep $(( i * 4 + RANDOM % 5 ))
           done

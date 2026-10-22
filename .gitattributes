@@ -1,0 +1,3 @@
+# Bot logs only ever get lines appended. If two saves touch the same log, keep both sets of lines
+# instead of stopping with a merge conflict (cause of the lost Oct 22 end-of-day save).
+*.log merge=union

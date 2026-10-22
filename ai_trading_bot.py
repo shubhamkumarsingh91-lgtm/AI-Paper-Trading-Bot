@@ -3091,6 +3091,35 @@ def load_runtime_state() -> None:
         log.warning(f'Runtime state load failed: {e}')
 
 
+# ── Broker history: every filled order on this Alpaca account, straight from Alpaca ──
+BROKER_FILE = STATE_DIR / 'broker_orders.json'
+def export_broker_orders(days: int = 365) -> None:
+    """Saves the account's filled orders (the broker's own record). The dashboard uses it to show
+    which stocks made or lost money, including trades made before this bot's own log existed."""
+    from alpaca.trading.requests import GetOrdersRequest
+    from alpaca.trading.enums import QueryOrderStatus
+    from datetime import timezone as _tz
+    after = datetime.now(_tz.utc) - timedelta(days=days)
+    out, until, seen = [], None, set()
+    for _ in range(20):                                   # page backwards, 500 orders at a time
+        req = GetOrdersRequest(status=QueryOrderStatus.CLOSED, limit=500, after=after, until=until)
+        batch = trade_client.get_orders(filter=req) or []
+        for o in batch:
+            q = float(o.filled_qty or 0)
+            if q <= 0 or not o.filled_at or str(o.id) in seen:
+                continue
+            seen.add(str(o.id))
+            side = getattr(o.side, 'value', str(o.side)).lower()
+            out.append({'symbol': o.symbol, 'side': side, 'qty': q, 'price': float(o.filled_avg_price or 0),
+                        'filled_at': o.filled_at.isoformat()})
+        if len(batch) < 500:
+            break
+        until = min(o.submitted_at for o in batch)
+    out.sort(key=lambda x: x['filled_at'])
+    BROKER_FILE.write_text(json.dumps({'updated': datetime.now(_tz.utc).isoformat(timespec='seconds'), 'orders': out}, indent=0))
+    log.info(f'Broker history: {len(out)} filled orders saved from Alpaca')
+
+
 # ── Daily scorecard: Alpaca balance vs SPY, one row per trading day (the dashboard reads it) ──
 SCORECARD_FILE = STATE_DIR / 'scorecard.csv'
 def write_scorecard() -> None:
@@ -3119,9 +3148,13 @@ def write_scorecard() -> None:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', required=True,
-                        choices=['premarket', 'scan', 'eod', 'retrain'])
+                        choices=['premarket', 'scan', 'eod', 'retrain', 'history'])
     mode = parser.parse_args().mode
     log.info(f'Run mode: {mode.upper()}')
+    if mode == 'history':                       # on demand: just refresh the broker record
+        export_broker_orders()
+        log.info('Run complete — state saved')
+        return
 
     load_log()
     load_runtime_state()
@@ -3130,6 +3163,11 @@ def main():
         nightly_retrain()
     else:
         load_or_train()
+        if mode in ('premarket', 'eod'):
+            try:
+                export_broker_orders()
+            except Exception as e:                   # never block trading over a report
+                log.warning(f'Broker history not saved: {e}')
         if mode == 'premarket':
             refresh_earnings_cache()
             run_news_intelligence()

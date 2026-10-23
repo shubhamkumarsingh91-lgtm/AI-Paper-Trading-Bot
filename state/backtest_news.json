@@ -1,0 +1,144 @@
+{
+  "fake_data": false,
+  "generated": "2026-10-22T23:27:34-04:00",
+  "period": [
+    "2025-10-17",
+    "2026-10-22"
+  ],
+  "symbols": 100,
+  "articles": 45922,
+  "overnight_news_stock_days": 12048,
+  "stock_days": 25483,
+  "buckets": [
+    {
+      "bucket": "strong positive (+2 or more)",
+      "stock_days": 990,
+      "avg_gap": 0.009172493696381354,
+      "buy_at_open": {
+        "n": 990,
+        "hit_rate": 0.4414141414141414,
+        "avg_ret": 0.001270767690355816,
+        "profit_factor": 1.1463771766626132
+      },
+      "buy_at_10_if_holding": {
+        "n": 502,
+        "hit_rate": 0.5,
+        "avg_ret": 0.0003119439234771832,
+        "profit_factor": 1.0457252558968422
+      },
+      "months_positive_open": "8 of 13"
+    },
+    {
+      "bucket": "positive (+1)",
+      "stock_days": 1900,
+      "avg_gap": 0.002506361654891869,
+      "buy_at_open": {
+        "n": 1900,
+        "hit_rate": 0.45263157894736844,
+        "avg_ret": -0.0007403584992546332,
+        "profit_factor": 0.9074273316914849
+      },
+      "buy_at_10_if_holding": {
+        "n": 953,
+        "hit_rate": 0.46799580272822666,
+        "avg_ret": -0.0008376562218156987,
+        "profit_factor": 0.8680010084332163
+      },
+      "months_positive_open": "5 of 13"
+    },
+    {
+      "bucket": "neutral news (0)",
+      "stock_days": 7108,
+      "avg_gap": 0.0005983482486137182,
+      "buy_at_open": {
+        "n": 7108,
+        "hit_rate": 0.4665166010129432,
+        "avg_ret": -0.00013636334484728893,
+        "profit_factor": 0.9803899193509081
+      },
+      "buy_at_10_if_holding": {
+        "n": 3729,
+        "hit_rate": 0.4658085277554304,
+        "avg_ret": -0.0008236083833654715,
+        "profit_factor": 0.853803515959292
+      },
+      "months_positive_open": "7 of 13"
+    },
+    {
+      "bucket": "negative (-1 or less)",
+      "stock_days": 2050,
+      "avg_gap": -0.0034436608833897393,
+      "buy_at_open": {
+        "n": 2050,
+        "hit_rate": 0.45170731707317074,
+        "avg_ret": -0.0001661526874197184,
+        "profit_factor": 0.9777578098218235
+      },
+      "buy_at_10_if_holding": {
+        "n": 1016,
+        "hit_rate": 0.49606299212598426,
+        "avg_ret": -3.2896783319072554e-05,
+        "profit_factor": 0.99412029065952
+      },
+      "months_positive_open": "7 of 13"
+    },
+    {
+      "bucket": "no overnight news",
+      "stock_days": 13435,
+      "avg_gap": 0.0004486811705150847,
+      "buy_at_open": {
+        "n": 13435,
+        "hit_rate": 0.4744324525493115,
+        "avg_ret": -0.0003138710947753786,
+        "profit_factor": 0.9490074872603353
+      },
+      "buy_at_10_if_holding": {
+        "n": 6810,
+        "hit_rate": 0.4723935389133627,
+        "avg_ret": -0.0005187401215350236,
+        "profit_factor": 0.895858900354879
+      },
+      "months_positive_open": "7 of 13"
+    }
+  ],
+  "positive_earnings_news": {
+    "stock_days": 1273,
+    "avg_gap": 0.0049432774916168655,
+    "buy_at_open": {
+      "n": 1273,
+      "hit_rate": 0.45011783189316573,
+      "avg_ret": 0.0003234052622555085,
+      "profit_factor": 1.0357486210202007
+    },
+    "buy_at_10_if_holding": {
+      "n": 611,
+      "hit_rate": 0.513911620294599,
+      "avg_ret": 0.0005300778651608685,
+      "profit_factor": 1.0804615472647863
+    }
+  },
+  "account": {
+    "rule": "each day buy up to 3 stocks with news score >= +2 that are above their 9:30 open at 10:00; 12% of equity each; live exit rules",
+    "trades": 410,
+    "wins": 203,
+    "losses": 207,
+    "hit_rate": 0.4951219512195122,
+    "avg_win": 173.46948809520038,
+    "avg_loss": -158.88309248350194,
+    "break_even_hit": 0.4780558411998785,
+    "profit_per_trade": 5.6719657054653165,
+    "profit_factor": 1.0707081416486097,
+    "total_pnl": 2325.5059392407798,
+    "total_return": 0.0232550593924078,
+    "max_drawdown": -0.03967612985436386,
+    "exits": {
+      "EOD": 325,
+      "PROFIT_LOCK": 11,
+      "STOP_LOSS": 72,
+      "TRAILING_STOP": 2
+    }
+  },
+  "spy_buy_hold_return": 0.17099898844373596,
+  "runtime_sec": 501,
+  "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and news only, paper money. Backtest estimate; not financial advice."
+}

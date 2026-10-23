@@ -42,6 +42,10 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+try:
+    import meta_filter as mf
+except Exception:          # bot still runs without it
+    mf = None
 from sklearn.metrics import accuracy_score, precision_score
 import schedule
 from tradingview_ta import TA_Handler, Interval
@@ -218,6 +222,10 @@ ML_WEIGHT    = 0.50    # XGBoost prediction
 TV_WEIGHT    = 0.35    # TradingView technical analysis
 RSI_WEIGHT   = 0.15    # RSI quality filter
 BUY_RULE     = os.getenv('BUY_RULE', 'precision_first')   # 'blend' = the old 3-source score
+# Meta filter (meta_filter.py): a second AI that scores each BUY call.
+#   shadow = watch-only: logs keep/skip and saves it on the trade, never blocks (default)
+#   on     = skips calls it scores below its cut     off = not used
+META_MODE    = os.getenv('META_MODE', 'shadow')
 CONFIDENCE   = 0.62    # minimum ML confidence to consider BUY
 
 # ── Schedule ─────────────────────────────────────────────
@@ -227,6 +235,7 @@ EOD_MIN      = 50
 
 # ── Files ────────────────────────────────────────────────
 MODEL_FILE   = STATE_DIR / 'ai_model.xgb'
+META_FILE    = STATE_DIR / 'meta_filter.pkl'
 LOG_FILE     = STATE_DIR / 'trade_log.json'
 BRIEF_FILE   = STATE_DIR / 'morning_brief.txt'
 REPORT_FILE  = STATE_DIR / 'daily_picks.json'   # today's AI stock picks with explanations
@@ -1033,6 +1042,13 @@ def train_model(retrain: bool = False) -> None:
     ML_DECISION_THRESHOLD, calib_prec, calib_n = calibrate_threshold(final_probs, y_va, min_signals)
     global _calib_prec, _calib_n, _base_rate
     _calib_prec, _calib_n, _base_rate = calib_prec, calib_n, float(y_va.mean())
+
+    # Meta filter: replay the final model's BUY calls on the validation slice (data it did
+    # not train on) with the real exit rules, and teach the filter which calls made money.
+    try:
+        train_meta_filter(all_data.iloc[split_idx:], final_probs)
+    except Exception as _me:
+        log.warning(f'  Meta filter training skipped: {_me}')
     log.info(
         f'  Calibrated decision threshold: {ML_DECISION_THRESHOLD:.2f} '
         f'(precision {calib_prec:.1%} on {calib_n} signals in validation) '
@@ -1095,6 +1111,75 @@ def train_model(retrain: bool = False) -> None:
     log.info(f'Model saved -> {MODEL_FILE}')
 
 
+meta_bundle = None          # loaded/trained meta filter (dict from mf.train_bundle)
+ETF_SYMBOLS = {'SPY', 'QQQ', 'SOXX'}
+
+
+def train_meta_filter(va: pd.DataFrame, probs) -> None:
+    """Train + save the meta filter from replayed BUY calls on the validation slice."""
+    global meta_bundle
+    if mf is None or META_MODE == 'off':
+        return
+    va = va.copy()
+    va['p'] = np.asarray(probs, dtype=float)
+    spy = fetch_bars('SPY', days=TRAIN_DAYS)
+    bear = mf.bear_days(spy)
+    cands, n_sym = [], 0
+    for sid, g in va.groupby('sym_id'):
+        sym = TRAINING_UNIVERSE[int(sid)]
+        if sym in ETF_SYMBOLS:
+            continue
+        n_sym += 1
+        cands += mf.candidates_for_symbol(sym, g.sort_index(), ML_DECISION_THRESHOLD, bear, BEAR_MIN_CONF)
+    C = mf.add_market_context(pd.DataFrame(cands), spy, n_sym)
+    bundle = mf.train_bundle(C)
+    if bundle is None:
+        log.info(f'  Meta filter: only {len(C)} replayed BUY calls — need 60+, not trained this time')
+        return
+    bundle['trained_at'] = datetime.now().isoformat()
+    joblib.dump(bundle, META_FILE)
+    meta_bundle = bundle
+    t = {r['keep']: r for r in bundle['table']}
+    log.info(
+        f'  Meta filter ({META_MODE}): {bundle["calls"]} replayed BUY calls, hit rate {bundle["hit_all"]:.1%}, '
+        f'avg {bundle["avg_ret_all"]:+.2%}/trade | best on unseen calls: keep top {bundle["keep"]:.0%} '
+        f'(hit {t[bundle["keep"]]["hit"]:.1%}, avg {t[bundle["keep"]]["avg_ret"]:+.2%} vs all '
+        f'{t[1.0]["hit"]:.1%}, {t[1.0]["avg_ret"]:+.2%}) | top inputs: {", ".join(list(bundle["importance"])[:3])}'
+    )
+
+
+def load_meta_filter() -> None:
+    global meta_bundle
+    if mf is None or META_MODE == 'off' or not META_FILE.exists():
+        return
+    try:
+        meta_bundle = joblib.load(META_FILE)
+        log.info(f'🧪 Meta filter loaded ({META_MODE}): keep top {meta_bundle["keep"]:.0%}, '
+                 f'cut {meta_bundle["cut"]:.2f}, trained {str(meta_bundle.get("trained_at", "?"))[:10]}')
+    except Exception as e:
+        log.warning(f'Meta filter load failed: {e}')
+
+
+def meta_check(sym: str, ml: dict, breadth: float, spy_day: float, is_bear: bool = False) -> tuple:
+    """Returns (filter probability, keep?) or (None, True) when no filter is available."""
+    if meta_bundle is None or mf is None:
+        return None, True
+    feats = dict(
+        p=ml.get('confidence', 0.0), p_margin=ml.get('confidence', 0.0) - ML_DECISION_THRESHOLD,
+        minute=ml.get('minute', 0), dow=ml.get('dow', 0), rsi=ml.get('rsi', 50), vol_ratio=ml.get('vol_ratio', 1),
+        bb_pct=ml.get('bb_pct', 0.5), atr_pct=ml.get('atr_pct', 0), adx=ml.get('adx', 0), ret_5=ml.get('ret_5', 0),
+        ret_30=ml.get('ret_30', 0), macd_rel=ml.get('macd_hist', 0) / (ml.get('price') or 1),
+        stock_day_ret=ml.get('stock_day_ret', 0), spy_day_ret=spy_day, spy_ret_5=ml.get('spy_ret_5', 0),
+        spy_above_ema20=ml.get('spy_above_ema20', 0), breadth=breadth,
+        bear=1 if is_bear else 0,
+    )
+    try:
+        return mf.score(meta_bundle, feats)
+    except Exception as e:
+        log.warning(f'Meta filter score error {sym}: {e}')
+        return None, True
+
+
 def load_or_train() -> None:
     """Load saved model or train fresh if none exists."""
     global model, lgb_model, model_accuracy, model_precision, \
@@ -1118,6 +1203,7 @@ def load_or_train() -> None:
                 f'threshold={ML_DECISION_THRESHOLD:.2f}  '
                 f'trained={model_trained_at[:10]}'
             )
+            load_meta_filter()
             return
         except Exception as e:
             log.warning(f'Model load failed ({e}), retraining from scratch')
@@ -1209,6 +1295,16 @@ def ml_predict(symbol: str, sym_id: int = None) -> dict:
             'above_ema50':  int(df['above_ema50'].iloc[-1]),
             'bb_pct':       float(df['bb_pct'].iloc[-1]),
             'spy_ret_1':    float(df['spy_ret_1'].iloc[-1]),
+            # extra context for the meta filter
+            'spy_ret_5':       float(df['spy_ret_5'].iloc[-1]),
+            'spy_above_ema20': float(df['spy_above_ema20'].iloc[-1]),
+            'atr_pct':      float(df['atr_pct'].iloc[-1]),
+            'adx':          float(df['adx'].iloc[-1]),
+            'ret_5':        float(df['ret_5'].iloc[-1]),
+            'ret_30':       float(df['ret_30'].iloc[-1]),
+            'minute':       int(df.index[-1].hour * 60 + df.index[-1].minute - 570),
+            'dow':          int(df.index[-1].dayofweek),
+            'stock_day_ret': mf.day_return(df) if mf else 0.0,
         }
     except Exception as e:
         log.warning(f'ML predict error {symbol}: {e}')
@@ -2999,6 +3095,7 @@ def scan() -> None:
 
     # ── Step 2: score every symbol ────────────────────────
     best_sym, best_score, best_state = None, 0.45, {}
+    buys = []                     # every BUY call this scan: (score, sym, state)
 
     for sym in WATCHLIST:
         if sym in positions:
@@ -3032,8 +3129,33 @@ def scan() -> None:
             f'vol×{ml.get("vol_ratio",1):.1f}'
         )
 
-        if sig['signal'] == 'BUY' and sig['score'] > best_score:
-            best_sym, best_score, best_state = sym, sig['score'], {'ml': ml, 'sig': sig}
+        if sig['signal'] == 'BUY' and sig['score'] > 0.45:
+            buys.append((sig['score'], sym, {'ml': ml, 'sig': sig}))
+
+    # ── Step 2b: meta filter checks the BUY calls (best first) ──
+    buys.sort(key=lambda b: -b[0])
+    if buys and meta_bundle is not None and META_MODE != 'off':
+        breadth = len(buys) / max(1, len(WATCHLIST))
+        is_bear = REGIME_GATE and get_market_regime() == 'BEAR'
+        try:
+            spy_day = mf.day_return(fetch_bars('SPY', days=3))
+        except Exception:
+            spy_day = 0.0
+        for score_, sym, st in buys:
+            mp, keep = meta_check(sym, st['ml'], breadth, spy_day, is_bear)
+            if mp is None:
+                continue
+            st['sig']['meta_p'], st['sig']['meta_keep'], st['sig']['meta_mode'] = round(mp, 4), bool(keep), META_MODE
+            log.info(f'  🧪 FILTER ({META_MODE}): {sym} {"KEEP" if keep else "SKIP"} '
+                     f'(win chance {mp:.0%} vs cut {meta_bundle["cut"]:.0%})')
+            if META_MODE == 'on' and not keep:
+                continue
+            best_sym, best_score, best_state = sym, score_, st
+            break
+        if best_sym is None and META_MODE != 'on':      # filter couldn't score: behave as before
+            best_score, best_sym, best_state = buys[0]
+    elif buys:
+        best_score, best_sym, best_state = buys[0]
 
     # ── Step 3: enter best opportunity ────────────────────
     if best_sym:

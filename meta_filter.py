@@ -177,3 +177,48 @@ def pick_cut(meta_p: np.ndarray, ret: np.ndarray, keeps=(0.3, 0.4, 0.5, 0.6, 0.7
         if avg > best[2] + 1e-12:
             best = (cut, k, avg)
     return best[0], best[1], table
+
+
+# ── shared by the backtest and the live bot ──────────────────────────────────
+
+def bear_days(spy: pd.DataFrame) -> dict:
+    """bear[day] = 1 if the PREVIOUS day's SPY close was below the 50-day average of closes up to then."""
+    daily = spy['close'].resample('1D').last().dropna()
+    sma = daily.rolling(50).mean()
+    flag = (daily < sma).astype(int).shift(1).fillna(0).astype(int)
+    return {pd.Timestamp(d).normalize(): int(v) for d, v in flag.items()}
+
+
+def day_return(df: pd.DataFrame) -> float:
+    """Move since today's 9:30 open, using the latest bar's close (live bot)."""
+    last_day = df.index[-1].normalize()
+    today = df[(df.index.normalize() == last_day) & (minutes_of(df.index) >= OPEN_MINUTE)]
+    return float(df['close'].iloc[-1] / today['open'].iloc[0] - 1) if len(today) else 0.0
+
+
+def train_bundle(cands: pd.DataFrame, min_calls: int = 60):
+    """
+    Train the filter on replayed BUY calls: fit on the older 2/3, choose strictness on the
+    newest 1/3 (unseen). Returns a dict to save with joblib, or None if there are too few calls.
+    """
+    if cands is None or len(cands) < min_calls:
+        return None
+    c = cands.sort_values('t')
+    cut_at = c['t'].iloc[int(len(c) * 2 / 3)]
+    fit, pick = c[c['t'] < cut_at], c[c['t'] >= cut_at]
+    if fit['win'].nunique() < 2 or len(pick) < 10:
+        return None
+    m = train_meta(fit, fit['win'])
+    mp = m.predict_proba(pick[META_FEATURES].astype(float))[:, 1]
+    cut, keep, table = pick_cut(mp, pick['ret'].to_numpy())
+    return dict(model=m, cut=cut, keep=keep, table=table, calls=int(len(c)),
+                hit_all=float(c['win'].mean()), avg_ret_all=float(c['ret'].mean()),
+                period=[str(c['t'].iloc[0]), str(c['t'].iloc[-1])],
+                importance=dict(sorted(zip(META_FEATURES, map(float, m.feature_importances_)), key=lambda x: -x[1])[:6]))
+
+
+def score(bundle, feats: dict):
+    """Filter probability that this BUY call makes money, and whether it clears the chosen cut."""
+    x = pd.DataFrame([{k: float(feats.get(k, 0.0)) for k in META_FEATURES}])
+    p = float(bundle['model'].predict_proba(x)[:, 1][0])
+    return p, p >= bundle['cut']

@@ -85,14 +85,6 @@ def spy_context(spy):
     return ctx.fillna(0.0)
 
 
-def bear_days(spy):
-    """bear[day] = 1 if the PREVIOUS day's SPY close was below the 50-day average of closes up to then."""
-    daily = spy['close'].resample('1D').last().dropna()
-    sma = daily.rolling(50).mean()
-    flag = (daily < sma).astype(int).shift(1).fillna(0).astype(int)
-    return {pd.Timestamp(d).normalize(): int(v) for d, v in flag.items()}
-
-
 def prep(sym, raw, ctx, sym_id):
     df = bot.add_features(raw)
     df = df.join(ctx, how='left', rsuffix='_spy')
@@ -217,7 +209,7 @@ def main():
           f'{span} calendar days of 15-min bars{" (FAKE DATA)" if a.fake else ""}', flush=True)
 
     spy_raw = get('SPY')
-    ctx, bear = spy_context(spy_raw), bear_days(spy_raw)
+    ctx, bear = spy_context(spy_raw), mf.bear_days(spy_raw)
     data = {}
     for i, s in enumerate(train_syms):
         try:
@@ -323,6 +315,8 @@ def main():
     out = Path(a.out or f'state/backtest_meta_{a.bot}{"_fake" if a.fake else ""}.json')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str))
+    if not T.empty:   # every test BUY call, so the call-level numbers can be re-checked independently
+        T.drop(columns=[c for c in ('day',) if c in T]).to_csv(out.with_name(out.stem + '_calls.csv'), index=False)
     trades_out = out.with_name(out.stem + '_trades.csv')
     pd.concat([pd.DataFrame(base_trades).assign(variant='no_filter'),
                pd.DataFrame(filt_trades).assign(variant='filter')]).to_csv(trades_out, index=False)

@@ -158,3 +158,28 @@ def test_pick_cut():
     # top 30% = .02,.01,.01 -> avg .01333 (best); top 40% adds -.01 -> .0075 ...
     assert keep == 0.3 and cut == 0.7
     assert table[0]['avg_ret'] == pytest.approx(0.04 / 3)
+
+
+def test_live_wiring_train_save_score(monkeypatch, tmp_path):
+    """Nightly retrain path -> saved filter -> live score, on random data (no network)."""
+    syms = ['AAA', 'BBB', 'CCC', 'SPY']
+    monkeypatch.setattr(bot, 'fetch_bars', lambda s, days=None, bars=550: bm.fake_bars(s, days or 60))
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', syms)
+    monkeypatch.setattr(bot, 'META_FILE', tmp_path / 'meta_filter.pkl')
+    monkeypatch.setattr(bot, 'ML_DECISION_THRESHOLD', 0.6)
+    spy = bm.fake_bars('SPY', 200)
+    ctx = bm.spy_context(spy)
+    va = pd.concat([bm.prep(s, bm.fake_bars(s, 200), ctx, i) for i, s in enumerate(syms)]).sort_index()
+    probs = np.random.default_rng(1).uniform(0.4, 0.9, len(va))
+    bot.train_meta_filter(va, probs)
+    assert (tmp_path / 'meta_filter.pkl').exists() and bot.meta_bundle is not None
+    b = bot.meta_bundle
+    assert b['calls'] >= 60 and 0 < b['keep'] <= 1 and {r['keep'] for r in b['table']} >= {0.3, 1.0}
+    # live call
+    ml = dict(confidence=0.7, rsi=55, vol_ratio=1.2, bb_pct=0.5, atr_pct=0.01, adx=20, ret_5=0.001,
+              ret_30=0.002, macd_hist=0.01, price=100, stock_day_ret=0.003, spy_ret_5=0.001,
+              spy_above_ema20=1, minute=60, dow=2)
+    p, keep = bot.meta_check('AAA', ml, 0.2, 0.001)
+    assert 0 <= p <= 1 and keep == (p >= b['cut'])
+    bot.meta_bundle = None
+    assert bot.meta_check('AAA', ml, 0.2, 0.001) == (None, True)     # no filter -> never blocks

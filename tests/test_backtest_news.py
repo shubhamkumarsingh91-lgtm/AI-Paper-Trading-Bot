@@ -69,3 +69,36 @@ def test_overnight_window():
     assert got == {('NVDA', days[1]): [(1, False), (1, False)],
                    ('AVGO', days[1]): [(-1, False)],
                    ('AVGO', days[2]): [(1, True)]}       # 'revenue' marks it as earnings news; ZZZ ignored
+
+
+def _D(rows):
+    D = pd.DataFrame(rows, columns=['sym', 'day', 'score', 'n_news', 'gap', 'open_ret', 'open_exit'])
+    D['day'] = pd.to_datetime(D['day']).dt.date
+    D['month'] = pd.to_datetime(D['day']).dt.to_period('M').astype(str)
+    return D
+
+
+def test_fixed_rule_and_account_by_hand():
+    D = _D([
+        ('A', '2024-01-02', 3, 2, 0.020, 0.010, 'EOD'),    # rule: score>=2, gap>1%
+        ('B', '2024-01-02', 2, 5, 0.015, -0.005, 'EOD'),   # rule
+        ('C', '2024-01-02', 2, 1, 0.012, 0.004, 'EOD'),    # rule
+        ('D', '2024-01-02', 2, 1, 0.011, 0.020, 'EOD'),    # rule, but 4th that day -> not bought (top 3)
+        ('E', '2024-01-02', 5, 9, 0.009, 0.050, 'EOD'),    # gap 0.9% -> NOT rule
+        ('F', '2024-01-03', 1, 3, 0.050, 0.030, 'EOD'),    # score 1 -> NOT rule
+        ('G', '2024-01-03', 2, 1, 0.030, 0.020, 'EOD'),    # rule
+    ])
+    R = bn.rule_rows(D)
+    assert list(R['sym']) == ['A', 'B', 'C', 'D', 'G']
+    T = bn.account_open(R, top=3)
+    # day 1 picks by score then articles: A(3), B(2, 5 news), then C vs D both (2, 1 news) -> stable order keeps C
+    assert [t['sym'] for t in T] == ['A', 'B', 'C', 'G']
+    # day 1: 12% of 100,000 = 12,000 each -> 120 - 60 + 48 = +108 ; day 2: 12% of 100,108 = 12,012.96 * 2% = 240.2592
+    assert [round(t['pnl'], 4) for t in T] == [120.0, -60.0, 48.0, 240.2592]
+    spy = pd.DataFrame(dict(open=[100.0, 101.0], close=[100.5, 102.0]),
+                       index=pd.DatetimeIndex([pd.Timestamp('2024-01-02 09:30', tz=ET), pd.Timestamp('2024-01-03 15:45', tz=ET)]))
+    rr, _ = bn.rule_report(R, spy, top=3)
+    assert rr['calls']['n'] == 5 and rr['calls']['avg_ret'] == pytest.approx((0.010 - 0.005 + 0.004 + 0.020 + 0.020) / 5)
+    assert rr['account']['trades'] == 4 and rr['account']['total_pnl'] == pytest.approx(348.2592)
+    assert rr['spy_buy_hold'] == pytest.approx(102.0 / 100.0 - 1)          # first 9:30 open -> last close
+    assert rr['months_positive'] == '1 of 1'

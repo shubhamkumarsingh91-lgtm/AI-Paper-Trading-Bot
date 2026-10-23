@@ -173,12 +173,57 @@ def assign_news(news, trade_days, known_syms):
     return news_by_day
 
 
+RULE_TEXT = 'strong good news (score +2 or more) AND opened more than 1% above the previous close -> buy at 9:30; top 3 a day'
+
+
+def rule_rows(D):
+    """The fixed rule, decided in advance (found on Oct 2025-Oct 2026, never tuned on earlier data)."""
+    return D[(D['score'] >= 2) & (D['gap'] > 0.01)]
+
+
+def account_open(R, top=3):
+    """$100k: each day buy up to `top` rule stocks at 9:30 (highest score, then most articles), 12% of equity each."""
+    P = R.sort_values(['day', 'score', 'n_news'], ascending=[True, False, False]).groupby('day').head(top)
+    eq, trades = 100_000.0, []
+    for day, g in P.groupby('day'):
+        size = eq * 0.12
+        for _, r in g.iterrows():
+            trades.append(dict(sym=r['sym'], day=str(day), ret=float(r['open_ret']), size=size,
+                               pnl=float(size * r['open_ret']), reason=r['open_exit'], exit_t=str(day)))
+        eq += float((size * g['open_ret']).sum())
+    return trades
+
+
+def rule_report(R, spy, top=3, seed=0):
+    """Per-trade stats with a bootstrap 90% range, months positive, and the $100k account vs SPY."""
+    out = dict(calls=summarize(R['open_ret']))
+    x = R['open_ret'].dropna().to_numpy()
+    if len(x) > 2:
+        rng = np.random.default_rng(seed)
+        boots = [rng.choice(x, len(x)).mean() for _ in range(5000)]
+        out.update(avg_90pct_range=[float(np.percentile(boots, 5)), float(np.percentile(boots, 95))],
+                   t_stat=float(x.mean() / (x.std(ddof=1) / np.sqrt(len(x)))))
+    m = R.groupby('month')['open_ret'].mean()
+    out['months_positive'] = f'{int((m > 0).sum())} of {len(m)}'
+    out['by_month'] = {k: [int(c), float(v)] for k, (c, v) in R.groupby('month')['open_ret'].agg(['count', 'mean']).iterrows()}
+    t = account_open(R, top)
+    out['account'] = bm.stats(t)
+    if len(R):
+        d0, d1 = pd.Timestamp(R['day'].min()).tz_localize(ET), pd.Timestamp(R['day'].max()).tz_localize(ET) + pd.Timedelta(days=1)
+        sp = spy[(spy.index >= d0) & (spy.index < d1)]
+        sp = sp[(mf.minutes_of(sp.index) >= mf.OPEN_MINUTE) & (mf.minutes_of(sp.index) < 16 * 60)]
+        out['spy_buy_hold'] = float(sp['close'].iloc[-1] / sp['open'].iloc[0] - 1) if len(sp) else None
+    return out, t
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--days', type=int, default=365)
     ap.add_argument('--top', type=int, default=3, help='account: buys per day (best news first)')
     ap.add_argument('--fake', action='store_true')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--split', default=None,
+                    help='YYYY-MM-DD: report the FIXED RULE separately before (unseen) and from (seen) this date')
     a = ap.parse_args()
     t0 = time.time()
     syms = bm.dt100_universe()
@@ -237,7 +282,21 @@ def main():
     spy_rth = spy_rth[spy_rth.index >= first_day]
     spy_ret = float(spy_rth['close'].iloc[-1] / spy_rth['open'].iloc[0] - 1)
 
+    fixed = {}
+    if a.split:
+        cut = pd.Timestamp(a.split).date()
+        R = rule_rows(D)
+        for name, part in [('unseen (before ' + a.split + ')', R[R['day'] < cut]), ('seen (from ' + a.split + ')', R[R['day'] >= cut]),
+                           ('all', R)]:
+            rr, tt = rule_report(part, bars['SPY'], a.top)
+            base = D[(D['n_news'] == 0) & ((D['day'] < cut) if name.startswith('unseen') else (D['day'] >= cut) if name.startswith('seen') else True)]
+            rr['no_news_baseline'] = summarize(base['open_ret'])
+            fixed[name] = rr
+            pd.DataFrame(tt).to_csv(Path(a.out or 'state/backtest_news.json').with_name(
+                'backtest_news_rule_' + name.split()[0] + '_trades.csv'), index=False)
+
     report = dict(
+        fixed_rule=dict(rule=RULE_TEXT, results=fixed) if fixed else None,
         fake_data=a.fake, generated=pd.Timestamp.now(tz=ET).isoformat(timespec='seconds'),
         period=[str(D['day'].min()), str(D['day'].max())], symbols=len(bars) - 1, articles=len(news),
         overnight_news_stock_days=int((D['n_news'] > 0).sum()), stock_days=int(len(D)),
@@ -262,6 +321,12 @@ def main():
     if acct.get('trades'):
         print(f"Account: {acct['trades']} trades, hit {acct['hit_rate']:.1%}, ${acct['profit_per_trade']:.2f}/trade, "
               f"total {acct['total_return']:+.2%}, max drop {acct['max_drawdown']:.2%}")
+    for name, rr in fixed.items():
+        c, ac = rr['calls'], rr['account']
+        print(f"FIXED RULE {name:28s}: {c.get('n', 0)} stock-days, hit {c.get('hit_rate', 0):.1%}, avg {c.get('avg_ret', 0) * 100:+.3f}% "
+              f"(90% range {rr.get('avg_90pct_range', [0, 0])[0] * 100:+.3f}..{rr.get('avg_90pct_range', [0, 0])[1] * 100:+.3f}%), "
+              f"months+ {rr['months_positive']} | account {ac.get('trades', 0)} trades {ac.get('total_return', 0):+.2%} "
+              f"DD {ac.get('max_drawdown', 0):.2%} | SPY {rr.get('spy_buy_hold') or 0:+.2%} | no-news avg {rr['no_news_baseline'].get('avg_ret', 0) * 100:+.3f}%")
     print(f'Saved {out} ({report["runtime_sec"]}s)')
 
 

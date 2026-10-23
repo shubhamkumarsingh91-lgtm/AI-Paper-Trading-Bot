@@ -30,7 +30,9 @@ jobs:
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-        run: python backtest_news.py | tee state/backtest_news.txt
+        # 3 years: Oct 2023 - Oct 2026. The fixed rule is judged on Oct 2023 - Oct 2025 (never seen);
+        # Oct 2025 - Oct 2026 is where the rule was found, reported separately.
+        run: python backtest_news.py --days 1100 --split 2025-10-17 --out state/backtest_news_3y.json | tee state/backtest_news_3y.txt
       - name: Save results
         run: |
           git config user.name "trading-bot"

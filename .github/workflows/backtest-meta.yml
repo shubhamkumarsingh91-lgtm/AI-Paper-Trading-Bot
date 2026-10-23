@@ -8,7 +8,7 @@ on:
         description: "dt100, b1 or both"
         default: both
       variant:
-        description: "12m-today, 12m-3perday, 12m-2hexit, 12m-2hexit-3perday or all"
+        description: "12m-<label: today|classicday|trade>[-3perday][-2hexit][-reentry], or all"
         default: all
   pull_request:
     paths: [backtest_meta.py, meta_filter.py, .github/workflows/backtest-meta.yml]
@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         bot: [dt100, b1]
-        variant: [12m-today, 12m-3perday, 12m-2hexit, 12m-2hexit-3perday]
+        variant: [12m-classicday, 12m-trade, 12m-trade-3perday, 12m-trade-reentry]
     steps:
       - name: Skip bots not asked for
         id: want
@@ -61,6 +61,13 @@ jobs:
           esac
           case "$VARIANT" in
             *2hexit*) ARGS="$ARGS --max-hold-bars 8" ;;
+          esac
+          case "$VARIANT" in
+            *classicday*) ARGS="$ARGS --label classic_day" ;;
+            *trade*) ARGS="$ARGS --label trade" ;;
+          esac
+          case "$VARIANT" in
+            *reentry*) ARGS="$ARGS --reentry-rules" ;;
           esac
           python backtest_meta.py --bot ${{ matrix.bot }} $ARGS | tee state/backtest_meta_${{ matrix.bot }}_${VARIANT}.txt
       - name: Save results

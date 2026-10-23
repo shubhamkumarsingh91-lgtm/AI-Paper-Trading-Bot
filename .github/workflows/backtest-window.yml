@@ -33,6 +33,7 @@ jobs:
       - name: Hand-checked unit tests
         run: python -m pytest -q tests/test_meta_filter.py
       - name: Run backtest
+        shell: bash          # = bash -eo pipefail: a crash piped through tee must FAIL the step
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
@@ -50,6 +51,7 @@ jobs:
           python backtest_meta.py --bot ${{ matrix.bot }} $ARGS --out state/window/${{ matrix.bot }}_${SETUP}_s${{ matrix.seed }}.json \
             | tee state/window/${{ matrix.bot }}_${SETUP}_s${{ matrix.seed }}.txt
       - name: Save results
+        if: always()         # keep the output (including any error) even when the run fails
         run: |
           git config user.name "trading-bot"
           git config user.email "bot@users.noreply.github.com"

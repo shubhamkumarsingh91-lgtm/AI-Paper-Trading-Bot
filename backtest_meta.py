@@ -291,7 +291,9 @@ def main():
         train_syms = list(bot.TRAINING_UNIVERSE)
         train_days = a.train_days or bot.TRAIN_DAYS
     span = train_days + a.meta_days + a.folds * a.fold_days + 45
-    end_ts = pd.Timestamp(a.end + ' 20:00', tz='America/New_York').tz_convert('UTC') if a.end else None
+    # 16:30 ET on the end day: after the close, and never in the future on that day's evening runs
+    end_ts = min(pd.Timestamp(a.end + ' 16:30', tz='America/New_York').tz_convert('UTC'),
+                 pd.Timestamp.now(tz='UTC') - pd.Timedelta(minutes=20)) if a.end else None
     get = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: fetch_bars_until(s, span, end_ts))
     win = None
     if a.window:
@@ -429,4 +431,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:                       # print the error into the saved output too, then fail loudly
+        import traceback
+        traceback.print_exc(file=sys.stdout)
+        sys.exit(1)

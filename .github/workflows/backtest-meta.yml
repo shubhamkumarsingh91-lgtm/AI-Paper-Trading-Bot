@@ -8,7 +8,7 @@ on:
         description: "dt100, b1 or both"
         default: both
       variant:
-        description: "classic-precision, trade-precision, trade-expectancy or all"
+        description: "12m-today, 12m-3perday, 12m-2hexit, 12m-2hexit-3perday or all"
         default: all
   pull_request:
     paths: [backtest_meta.py, meta_filter.py, .github/workflows/backtest-meta.yml]
@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         bot: [dt100, b1]
-        variant: [classic-precision, trade-precision, trade-expectancy]
+        variant: [12m-today, 12m-3perday, 12m-2hexit, 12m-2hexit-3perday]
     steps:
       - name: Skip bots not asked for
         id: want
@@ -54,8 +54,15 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           VARIANT: ${{ matrix.variant }}
         run: |
-          L=${VARIANT%-*}; C=${VARIANT#*-}
-          python backtest_meta.py --bot ${{ matrix.bot }} --label $L --cutoff $C | tee state/backtest_meta_${{ matrix.bot }}_${VARIANT}.txt
+          # 12 months of tests = 9 back-to-back periods of 41 days
+          ARGS="--folds 9 --fold-days 41 --tag $VARIANT"
+          case "$VARIANT" in
+            *3perday*) ARGS="$ARGS --cutoff rate --per-day 3" ;;
+          esac
+          case "$VARIANT" in
+            *2hexit*) ARGS="$ARGS --max-hold-bars 8" ;;
+          esac
+          python backtest_meta.py --bot ${{ matrix.bot }} $ARGS | tee state/backtest_meta_${{ matrix.bot }}_${VARIANT}.txt
       - name: Save results
         if: steps.want.outputs.go == '1'
         run: |

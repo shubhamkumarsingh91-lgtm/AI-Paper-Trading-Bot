@@ -212,3 +212,42 @@ def test_calibrate_expectancy():
     # grid steps 0.02: th 0.66, 0.68, 0.70 all select the same calls .006,.004 (0.80 vetoed) -> avg .005 best;
     # ties keep the first (lowest) cutoff -> 0.66. th >= 0.72 -> 1 call (< 2) skipped
     assert th == 0.66 and avg == pytest.approx(0.005) and n == 2 and hit == 1.0
+
+
+def test_time_exit_after_two_hours():
+    # 10:00..13:00 bars. Buy at bar 1 open (10:15, $100). Drifts up but never hits +1.5%.
+    # max_hold=8 -> sell at the OPEN of bar 9 (12:15, exactly 2h later) = 100.9
+    closes = [100, 100.1, 100.2, 100.3, 100.4, 100.5, 100.6, 100.7, 100.8, 100.9, 101.0, 101.1, 101.2]
+    opens = [100] * 2 + [c - 0.0 for c in closes[1:-1]]
+    opens = [100, 100] + closes[1:11]      # open of bar k = close of bar k-1 (bar 9 open = 100.8)
+    o, c, m, d, idx = day_bars(closes, start='2026-10-21 10:00', opens=opens)
+    ex, reason, j = mf.simulate_exit(o, c, m, d, 1, max_hold=8)
+    assert (reason, j, str(idx[j].time())) == ('TIME_EXIT', 9, '12:15:00') and ex == o[9] == 100.8
+    # without the time exit the same trade is still open at bar 12
+    assert mf.simulate_exit(o, c, m, d, 1)[1] == 'END_OF_DATA'
+
+
+def test_time_exit_does_not_override_stop():
+    # stop hits at bar 3 (-2.1%) before the 2h mark -> STOP_LOSS, not TIME_EXIT
+    o, c, m, d, _ = day_bars([100, 99.5, 98.5, 97.9, 101], opens=[100, 100, 99, 98, 98])
+    assert mf.simulate_exit(o, c, m, d, 1, max_hold=8)[1:] == ('STOP_LOSS', 3)
+
+
+def test_calibrate_rate():
+    # 2 days, 4 eligible calls a day at p = .55/.60/.65/.70 ; per_day=1 -> need <= 2 calls/day
+    p = np.array([.55, .60, .65, .70] * 2)
+    mins = np.array([600] * 8)                                  # 10:00, eligible
+    dates = np.array(['d1'] * 4 + ['d2'] * 4)
+    th, per = mf.calibrate_rate(p, mins, dates, np.ones(8, bool), per_day=1)
+    # th .50-.55 -> 4/day ; .56-.60 -> 3/day ; .61 -> 2/day (first <= 2)
+    assert th == 0.61 and per == 2.0
+    # calls after 15:15 don't count
+    th2, _ = mf.calibrate_rate(p, np.array([960] * 8), dates, np.ones(8, bool), per_day=1)
+    assert th2 == 0.50
+
+
+def test_portfolio_per_day_cap():
+    rows = [_c(s, f'2026-10-21 {10 + i // 4}:{(i % 4) * 15:02d}', '2026-10-21 10:50', 0.01, 0.7) for i, s in enumerate('ABCD')]
+    rows += [_c('E', '2026-10-22 10:00', '2026-10-22 15:45', 0.01, 0.7)]
+    T = bm.portfolio(pd.DataFrame(rows), per_day=2)
+    assert [t['sym'] for t in T] == ['A', 'B', 'E']        # 2 on day 1 (first come), then the next day resets

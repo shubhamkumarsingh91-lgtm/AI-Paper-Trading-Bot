@@ -85,11 +85,11 @@ def spy_context(spy):
     return ctx.fillna(0.0)
 
 
-def prep(sym, raw, ctx, sym_id, label='classic'):
+def prep(sym, raw, ctx, sym_id, label='classic', max_hold=None):
     df = bot.add_features(raw)
     df = df.join(ctx, how='left', rsuffix='_spy')
     df[SPY_COLS] = df[SPY_COLS].ffill().fillna(0.0)
-    df['trade_ret'] = mf.trade_labels(df)              # what a trade from this bar earned (NaN = can't buy here)
+    df['trade_ret'] = mf.trade_labels(df, max_hold)             # what a trade from this bar earned (NaN = can't buy here)
     if label == 'trade':
         df['target'] = (df['trade_ret'] > 0).astype(float).where(df['trade_ret'].notna())
     else:
@@ -101,7 +101,7 @@ def prep(sym, raw, ctx, sym_id, label='classic'):
     return df
 
 
-def train_primary(train, cutoff='precision'):
+def train_primary(train, cutoff='precision', trade_ids=None, per_day=3):
     """Same models and settings as train_model(): XGB + LGB, 60/40 blend.
     cutoff='precision' = the live rule (best precision); 'expectancy' = most money per call."""
     import xgboost as xgb
@@ -131,6 +131,15 @@ def train_primary(train, cutoff='precision'):
         if n:
             info.update(threshold=th, val_avg_ret=avg, val_calls=n, val_hit=hit,
                         val_precision=float(precision_score(yv, (pv >= th).astype(int), zero_division=0)))
+    if cutoff == 'rate':
+        V = train.iloc[k:]
+        ok = (V['rsi'] <= 78) & (V['above_ema50'] == 1) & (V['bb_pct'] <= 0.95)
+        if trade_ids is not None:
+            ok &= V['sym_id'].isin(trade_ids)
+        mins = V.index.hour * 60 + V.index.minute
+        th, per = mf.calibrate_rate(pv, mins, V.index.normalize(), ok, per_day)
+        info.update(threshold=th, val_calls_per_day=per,
+                    val_precision=float(precision_score(yv, (pv >= th).astype(int), zero_division=0)))
     return blend, info
 
 
@@ -158,11 +167,12 @@ def stats(trades, start_equity=100_000.0):
     )
 
 
-def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06):
-    """$100k account: one buy per bar (highest main-AI confidence), max 5 open, 12% per trade (6% bear)."""
+def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06, per_day=None):
+    """$100k account: one buy per bar (highest main-AI confidence), max 5 open, 12% per trade (6% bear).
+    per_day = optional cap on new buys per day (first come, first served: no peeking at later calls)."""
     if cands.empty:
         return []
-    equity, open_pos, done = start_equity, [], []
+    equity, open_pos, done, bought = start_equity, [], [], {}
     for t, grp in cands.sort_values('t').groupby('t', sort=True):
         entry_t = grp['entry_t'].iloc[0]
         still = []
@@ -174,12 +184,16 @@ def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06)
         open_pos = still
         if len(open_pos) >= max_pos:
             continue
+        day = pd.Timestamp(t).normalize()
+        if per_day and bought.get(day, 0) >= per_day:
+            continue
         held = {q['sym'] for q in open_pos}
         g = grp[~grp['sym'].isin(held)]
         if g.empty:
             continue
         best = g.loc[g['p'].idxmax()]
         size = equity * (bear_cap if best['bear'] == 1 else cap)
+        bought[day] = bought.get(day, 0) + 1
         open_pos.append(dict(sym=best['sym'], t=best['t'], entry_t=best['entry_t'], exit_t=best['exit_t'],
                              ret=float(best['ret']), pnl=float(size * best['ret']), size=float(size),
                              reason=best['reason'], p=float(best['p']),
@@ -205,7 +219,11 @@ def main():
     ap.add_argument('--train-days', type=int, default=None)
     ap.add_argument('--label', choices=['classic', 'trade'], default='classic',
                     help='classic = live label (+0.5%% in 2h); trade = did the real trade make money')
-    ap.add_argument('--cutoff', choices=['precision', 'expectancy'], default='precision')
+    ap.add_argument('--cutoff', choices=['precision', 'expectancy', 'rate'], default='precision',
+                    help='rate = steady cutoff giving ~per-day calls; account takes at most --per-day buys a day')
+    ap.add_argument('--per-day', type=int, default=3)
+    ap.add_argument('--max-hold-bars', type=int, default=None, help='time exit, e.g. 8 = sell after 2 hours')
+    ap.add_argument('--tag', default=None, help='name used in the output file')
     ap.add_argument('--fake', action='store_true', help='offline self-test on random data')
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
@@ -232,7 +250,7 @@ def main():
             raw = spy_raw if s == 'SPY' else get(s)
             if len(raw) < 500:
                 print(f'  skip {s}: only {len(raw)} bars'); continue
-            data[s] = prep(s, raw, ctx, i, a.label)
+            data[s] = prep(s, raw, ctx, i, a.label, a.max_hold_bars)
         except Exception as e:
             print(f'  skip {s}: {e}')
     print(f'  loaded {len(data)} symbols in {time.time() - t_start:.0f}s', flush=True)
@@ -247,7 +265,7 @@ def main():
         P0 = M0 - pd.Timedelta(days=train_days)
         P1 = M0 - pd.Timedelta(days=1)                         # 1-day gap: labels look 8 bars ahead
         train = pd.concat([df[(df.index >= P0) & (df.index < P1)] for df in data.values()])
-        blend, pinfo = train_primary(train, a.cutoff)
+        blend, pinfo = train_primary(train, a.cutoff, [data[s]['sym_id'].iloc[0] for s in trade_syms], a.per_day)
         del train
 
         meta_c, test_c = [], []
@@ -257,8 +275,8 @@ def main():
             if w.empty:
                 continue
             w['p'] = blend(w[bot.FEATURES + ['sym_id']])
-            meta_c += mf.candidates_for_symbol(s, w[w.index < T0], pinfo['threshold'], bear)
-            test_c += mf.candidates_for_symbol(s, w[w.index >= T0], pinfo['threshold'], bear)
+            meta_c += mf.candidates_for_symbol(s, w[w.index < T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars)
+            test_c += mf.candidates_for_symbol(s, w[w.index >= T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars)
         meta_c = mf.add_market_context(pd.DataFrame(meta_c), spy_raw, len(trade_syms))
         test_c = mf.add_market_context(pd.DataFrame(test_c), spy_raw, len(trade_syms))
 
@@ -291,16 +309,16 @@ def main():
               f'calls {len(test_c)} -> kept {fold["test_calls_kept"]} (keep {fold["filter_keep"]:.0%})', flush=True)
 
     T = pd.concat(test_all, ignore_index=True) if test_all else pd.DataFrame()
-    base_trades = portfolio(T)
-    filt_trades = portfolio(T[T['keep']]) if not T.empty else []
+    base_trades = portfolio(T, per_day=a.per_day if a.cutoff == 'rate' else None)
+    filt_trades = portfolio(T[T['keep']], per_day=a.per_day if a.cutoff == 'rate' else None) if not T.empty else []
     spy_rth = spy_raw[(spy_raw.index >= end - pd.Timedelta(days=a.folds * a.fold_days))]
     spy_ret = float(spy_rth['close'].iloc[-1] / spy_rth['open'].iloc[0] - 1) if len(spy_rth) else None
 
     # per-fold portfolio comparison (did the filter help in this period?)
     for f in folds:
         Tf = T[T['fold'] == f['fold']] if not T.empty else T
-        f['account_without_filter'] = stats(portfolio(Tf))
-        f['account_with_filter'] = stats(portfolio(Tf[Tf['keep']])) if not Tf.empty else dict(trades=0)
+        f['account_without_filter'] = stats(portfolio(Tf, per_day=a.per_day if a.cutoff == 'rate' else None))
+        f['account_with_filter'] = stats(portfolio(Tf[Tf['keep']], per_day=a.per_day if a.cutoff == 'rate' else None)) if not Tf.empty else dict(trades=0)
     helped = sum(1 for f in folds if f['account_with_filter'].get('trades', 0) and
                  f['account_with_filter'].get('profit_per_trade', -1e9) > f['account_without_filter'].get('profit_per_trade', -1e9))
 
@@ -315,7 +333,7 @@ def main():
 
     report = dict(
         bot=a.bot, fake_data=a.fake, generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
-        settings=dict(label=a.label, cutoff=a.cutoff, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
+        settings=dict(label=a.label, cutoff=a.cutoff, per_day=a.per_day if a.cutoff == 'rate' else None, max_hold_bars=a.max_hold_bars, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
                       cost_per_side=mf.COST_PER_SIDE, traded_symbols=len(trade_syms), training_symbols=len(data)),
         test_period=[folds[0]['test'][0], folds[-1]['test'][1]] if folds else None,
         spy_buy_hold_return=spy_ret,
@@ -328,7 +346,7 @@ def main():
         disclaimer='Independent personal project, not tied to any employer or agency. Public market data and paper money only. '
                    'Backtest estimate with stated simplifications; not financial advice.',
     )
-    tag = '' if (a.label, a.cutoff) == ('classic', 'precision') else f'_{a.label}_{a.cutoff}'
+    tag = f'_{a.tag}' if a.tag else ('' if (a.label, a.cutoff) == ('classic', 'precision') else f'_{a.label}_{a.cutoff}')
     out = Path(a.out or f'state/backtest_meta_{a.bot}{tag}{"_fake" if a.fake else ""}.json')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str))

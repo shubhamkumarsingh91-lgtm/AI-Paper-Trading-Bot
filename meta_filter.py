@@ -57,8 +57,10 @@ def minutes_of(index: pd.DatetimeIndex) -> np.ndarray:
     return (index.hour * 60 + index.minute).to_numpy()
 
 
-def simulate_exit(o, c, mins, days, i_entry, rules=RULES):
-    """Replay one trade bought at the OPEN of bar i_entry. Returns (exit_price, reason, exit_bar)."""
+def simulate_exit(o, c, mins, days, i_entry, rules=RULES, max_hold=None):
+    """Replay one trade bought at the OPEN of bar i_entry. Returns (exit_price, reason, exit_bar).
+    max_hold = optional time exit: sell at the open of the bar max_hold bars after entry
+    (8 bars = 2 hours), if no other rule has sold it first."""
     entry = o[i_entry]
     peak = entry
     d0 = days[i_entry]
@@ -69,6 +71,8 @@ def simulate_exit(o, c, mins, days, i_entry, rules=RULES):
             return c[j - 1], 'EOD', j - 1
         if mins[j] >= EOD_MINUTE:
             return o[j], 'EOD', j
+        if max_hold and j - i_entry >= max_hold:
+            return o[j], 'TIME_EXIT', j
         price = c[j]
         peak = max(peak, price)
         pct, peak_pct = price / entry - 1, peak / entry - 1
@@ -92,7 +96,7 @@ def net_return(entry, exit_, cost=COST_PER_SIDE):
     return exit_ * (1 - cost) / (entry * (1 + cost)) - 1
 
 
-def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68):
+def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68, max_hold=None):
     """
     BUY calls the live precision-first rule would make on this symbol's bars, each replayed
     as an independent trade. df needs open/high/low/close, 'p' (main-model probability) and
@@ -118,7 +122,7 @@ def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68):
     for i in np.flatnonzero(ok):
         if i + 1 >= n or days[i + 1] != days[i]:
             continue
-        ex, reason, j = simulate_exit(o, c, mins, days, i + 1)
+        ex, reason, j = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         r = net_return(o[i + 1], ex)
         row = d.iloc[i]
         out.append(dict(
@@ -230,7 +234,7 @@ def score(bundle, feats: dict):
 # trades: "if I bought at the next bar's open and used my real exits (stop,
 # profit locks, trailing stop, 15:45 close), did I make money after costs?"
 
-def trade_labels(df: pd.DataFrame) -> pd.Series:
+def trade_labels(df: pd.DataFrame, max_hold=None) -> pd.Series:
     """Net return of a trade decided at each regular-hours bar (NaN where the bot can't buy)."""
     out = pd.Series(np.nan, index=df.index, dtype=float)
     mins_all = minutes_of(df.index)
@@ -246,7 +250,7 @@ def trade_labels(df: pd.DataFrame) -> pd.Series:
     for i in range(n - 1):
         if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i]:
             continue
-        ex, _, _ = simulate_exit(o, c, mins, days, i + 1)
+        ex, _, _ = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         ret[i] = net_return(o[i + 1], ex)
     out.loc[d.index] = ret
     return out
@@ -260,7 +264,7 @@ def calibrate_expectancy(probs, rets, ok_mask, min_signals: int):
     """
     probs, rets, ok_mask = np.asarray(probs), np.asarray(rets), np.asarray(ok_mask, bool)
     best = (0.5, -np.inf, 0, 0.0)
-    for th in np.arange(0.50, 0.91, 0.02):
+    for th in np.round(np.arange(0.50, 0.91, 0.02), 2):
         sel = ok_mask & (probs >= th) & ~np.isnan(rets)
         n = int(sel.sum())
         if n < min_signals:
@@ -269,3 +273,19 @@ def calibrate_expectancy(probs, rets, ok_mask, min_signals: int):
         if avg > best[1]:
             best = (round(float(th), 2), avg, n, float((rets[sel] > 0).mean()))
     return best
+
+
+def calibrate_rate(probs, minutes, dates, ok_mask, per_day: float):
+    """
+    Steady cutoff: the lowest cutoff (0.50-0.95, 1-pt steps) at which the BUY calls that pass the
+    vetoes and come before the 15:15 decision bar average no more than 2 x per_day calls a day on
+    validation data. The account then takes at most per_day buys a day. Returns (cutoff, calls_per_day).
+    """
+    probs, minutes, ok_mask = np.asarray(probs), np.asarray(minutes), np.asarray(ok_mask, bool)
+    elig = ok_mask & (minutes >= OPEN_MINUTE) & (minutes <= LAST_DECISION_MINUTE)
+    n_days = max(1, len(set(np.asarray(dates)[elig])))
+    for th in np.round(np.arange(0.50, 0.951, 0.01), 2):       # round: arange gives 0.6000000000000001
+        per = float((elig & (probs >= th)).sum()) / n_days
+        if per <= 2 * per_day:
+            return round(float(th), 2), per
+    return 0.95, float((elig & (probs >= 0.95)).sum()) / n_days

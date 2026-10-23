@@ -222,3 +222,50 @@ def score(bundle, feats: dict):
     x = pd.DataFrame([{k: float(feats.get(k, 0.0)) for k in META_FEATURES}])
     p = float(bundle['model'].predict_proba(x)[:, 1][0])
     return p, p >= bundle['cut']
+
+
+# ── trade-matched labels (López de Prado ch. 3, "triple-barrier" idea) ─────────
+# The classic label asks "+0.5% within 2 hours without a -1% dip?", but the bot
+# holds most trades to 15:45. This label asks the question the bot actually
+# trades: "if I bought at the next bar's open and used my real exits (stop,
+# profit locks, trailing stop, 15:45 close), did I make money after costs?"
+
+def trade_labels(df: pd.DataFrame) -> pd.Series:
+    """Net return of a trade decided at each regular-hours bar (NaN where the bot can't buy)."""
+    out = pd.Series(np.nan, index=df.index, dtype=float)
+    mins_all = minutes_of(df.index)
+    rth = (mins_all >= OPEN_MINUTE) & (mins_all < 16 * 60)
+    d = df[rth]
+    if len(d) < 3:
+        return out
+    o, c = d['open'].to_numpy(float), d['close'].to_numpy(float)
+    mins = minutes_of(d.index)
+    days = d.index.normalize().to_numpy()
+    n = len(d)
+    ret = np.full(n, np.nan)
+    for i in range(n - 1):
+        if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i]:
+            continue
+        ex, _, _ = simulate_exit(o, c, mins, days, i + 1)
+        ret[i] = net_return(o[i + 1], ex)
+    out.loc[d.index] = ret
+    return out
+
+
+def calibrate_expectancy(probs, rets, ok_mask, min_signals: int):
+    """
+    Pick the cutoff whose BUY calls (that also pass the safety vetoes) made the most money
+    per call on validation data, instead of the best precision. Needs >= min_signals calls
+    so a handful of lucky calls can't win. Returns (cutoff, avg_ret, n_calls, hit_rate).
+    """
+    probs, rets, ok_mask = np.asarray(probs), np.asarray(rets), np.asarray(ok_mask, bool)
+    best = (0.5, -np.inf, 0, 0.0)
+    for th in np.arange(0.50, 0.91, 0.02):
+        sel = ok_mask & (probs >= th) & ~np.isnan(rets)
+        n = int(sel.sum())
+        if n < min_signals:
+            continue
+        avg = float(rets[sel].mean())
+        if avg > best[1]:
+            best = (round(float(th), 2), avg, n, float((rets[sel] > 0).mean()))
+    return best

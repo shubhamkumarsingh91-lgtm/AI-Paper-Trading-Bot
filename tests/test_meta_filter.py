@@ -183,3 +183,32 @@ def test_live_wiring_train_save_score(monkeypatch, tmp_path):
     assert 0 <= p <= 1 and keep == (p >= b['cut'])
     bot.meta_bundle = None
     assert bot.meta_check('AAA', ml, 0.2, 0.001) == (None, True)     # no filter -> never blocks
+
+
+def test_trade_labels_match_hand_replay():
+    # day 14:45..15:45. Bar 0 (14:45) decides -> buy 15:00 open 100 -> nothing triggers -> exit 15:45 open 100.7
+    o, c, m, d, idx = day_bars([100, 100.2, 100.4, 100.6, 100.8], start='2026-10-21 14:45',
+                               opens=[99.9, 100, 100.3, 100.5, 100.7])
+    df = pd.DataFrame(dict(open=o, close=c), index=idx)
+    r = mf.trade_labels(df)
+    assert r.iloc[0] == pytest.approx(100.7 * 0.9997 / (100 * 1.0003) - 1)
+    assert r.iloc[1] == pytest.approx(100.7 * 0.9997 / (100.3 * 1.0003) - 1)   # 15:00 decides, buys 15:15 open
+
+
+def test_trade_labels_last_decision_bar():
+    o, c, m, d, idx = day_bars([100, 100.2, 100.4, 100.6, 100.8], start='2026-10-21 14:45',
+                               opens=[99.9, 100, 100.3, 100.5, 100.7])
+    r = mf.trade_labels(pd.DataFrame(dict(open=o, close=c), index=idx))
+    # bar 2 = 15:15 -> buy 15:30 open 100.5 -> exit 15:45 open 100.7 ; bars 3 (15:30) and 4 (15:45): no buy
+    assert r.iloc[2] == pytest.approx(100.7 * 0.9997 / (100.5 * 1.0003) - 1)
+    assert r.iloc[3:].isna().all()
+
+
+def test_calibrate_expectancy():
+    p = np.array([0.55, 0.6, 0.65, 0.7, 0.75, 0.8])
+    r = np.array([-.01, .002, -.004, .006, .004, .002])
+    ok = np.array([1, 1, 1, 1, 1, 0], bool)            # last call vetoed
+    th, avg, n, hit = mf.calibrate_expectancy(p, r, ok, min_signals=2)
+    # grid steps 0.02: th 0.66, 0.68, 0.70 all select the same calls .006,.004 (0.80 vetoed) -> avg .005 best;
+    # ties keep the first (lowest) cutoff -> 0.66. th >= 0.72 -> 1 call (< 2) skipped
+    assert th == 0.66 and avg == pytest.approx(0.005) and n == 2 and hit == 1.0

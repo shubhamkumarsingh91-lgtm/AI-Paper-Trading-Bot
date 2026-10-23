@@ -7,8 +7,12 @@ on:
       bot:
         description: "dt100, b1 or both"
         default: both
+      variant:
+        description: "classic-precision, trade-precision, trade-expectancy or all"
+        default: all
   pull_request:
     paths: [backtest_meta.py, meta_filter.py, .github/workflows/backtest-meta.yml]
+    types: [opened, synchronize]
 permissions:
   contents: write
 concurrency:
@@ -22,12 +26,13 @@ jobs:
       fail-fast: false
       matrix:
         bot: [dt100, b1]
+        variant: [classic-precision, trade-precision, trade-expectancy]
     steps:
       - name: Skip bots not asked for
         id: want
         run: |
-          IN="${{ github.event.inputs.bot || 'both' }}"
-          if [ "$IN" = "both" ] || [ "$IN" = "${{ matrix.bot }}" ]; then echo "go=1" >> $GITHUB_OUTPUT; fi
+          IN="${{ github.event.inputs.bot || 'both' }}"; V="${{ github.event.inputs.variant || 'all' }}"
+          if { [ "$IN" = "both" ] || [ "$IN" = "${{ matrix.bot }}" ]; } && { [ "$V" = "all" ] || [ "$V" = "${{ matrix.variant }}" ]; }; then echo "go=1" >> $GITHUB_OUTPUT; fi
       - uses: actions/checkout@v4
         if: steps.want.outputs.go == '1'
         with:
@@ -47,7 +52,10 @@ jobs:
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-        run: python backtest_meta.py --bot ${{ matrix.bot }} | tee state/backtest_meta_${{ matrix.bot }}.txt
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          L=${VARIANT%-*}; C=${VARIANT#*-}
+          python backtest_meta.py --bot ${{ matrix.bot }} --label $L --cutoff $C | tee state/backtest_meta_${{ matrix.bot }}_${VARIANT}.txt
       - name: Save results
         if: steps.want.outputs.go == '1'
         run: |
@@ -55,7 +63,7 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add state/backtest_meta_${{ matrix.bot }}* || true
           git diff --cached --quiet && exit 0
-          git commit -m "meta-filter backtest results (${{ matrix.bot }}) [skip ci]"
+          git commit -m "backtest results (${{ matrix.bot }}, ${{ matrix.variant }}) [skip ci]"
           B="${{ github.head_ref || 'main' }}"
           for i in 1 2 3 4 5; do
             if git pull --rebase origin "$B"; then git push origin HEAD:"$B" && exit 0

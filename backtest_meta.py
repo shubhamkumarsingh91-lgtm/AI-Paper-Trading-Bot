@@ -37,7 +37,7 @@ Usage:
   python backtest_meta.py --bot b1             # Bot 1 (5-stock watchlist, 14-stock training set)
   python backtest_meta.py --bot b1 --fake      # offline self-test on random data
 """
-import argparse, ast, json, os, sys, time, tempfile
+import argparse, ast, json, os, sys, time, tempfile, zlib
 from datetime import timedelta
 from pathlib import Path
 
@@ -62,7 +62,7 @@ def dt100_universe():
 
 def fake_bars(symbol, days, seed_base=7):
     """Random-walk 15-min regular-hours bars, for the offline self-test only."""
-    rng = np.random.default_rng(abs(hash(symbol)) % 10_000 + seed_base)
+    rng = np.random.default_rng(zlib.crc32(symbol.encode()) % 10_000 + seed_base)   # same data every run
     end = pd.Timestamp('2026-10-22', tz='America/New_York')
     dates = pd.bdate_range(end - pd.Timedelta(days=days), end, tz='America/New_York')
     idx = [d + pd.Timedelta(hours=9, minutes=30) + pd.Timedelta(minutes=15 * k) for d in dates for k in range(26)]
@@ -85,23 +85,28 @@ def spy_context(spy):
     return ctx.fillna(0.0)
 
 
-def prep(sym, raw, ctx, sym_id):
+def prep(sym, raw, ctx, sym_id, label='classic'):
     df = bot.add_features(raw)
     df = df.join(ctx, how='left', rsuffix='_spy')
     df[SPY_COLS] = df[SPY_COLS].ffill().fillna(0.0)
-    df['target'] = bot.make_labels(df)
+    df['trade_ret'] = mf.trade_labels(df)              # what a trade from this bar earned (NaN = can't buy here)
+    if label == 'trade':
+        df['target'] = (df['trade_ret'] > 0).astype(float).where(df['trade_ret'].notna())
+    else:
+        df['target'] = bot.make_labels(df)
     df['sym_id'] = sym_id
-    df = df.dropna(subset=bot.FEATURES + ['target'])
+    df = df.dropna(subset=bot.FEATURES)                # keep every bar: exits need the bars after 15:15
     num = df.select_dtypes('float64').columns
     df[num] = df[num].astype('float32')
     return df
 
 
-def train_primary(train):
-    """Same models and settings as train_model(): XGB + LGB, 60/40 blend, cutoff calibrated for precision."""
+def train_primary(train, cutoff='precision'):
+    """Same models and settings as train_model(): XGB + LGB, 60/40 blend.
+    cutoff='precision' = the live rule (best precision); 'expectancy' = most money per call."""
     import xgboost as xgb
     import lightgbm as lgb
-    train = train.sort_index()
+    train = train[train['target'].notna()].sort_index()
     X, y = train[bot.FEATURES + ['sym_id']], train['target']
     k = int(len(X) * 0.8)
     spw = (y == 0).sum() / ((y == 1).sum() + 1)
@@ -117,8 +122,16 @@ def train_primary(train):
     pv = blend(X.iloc[k:])
     yv = y.iloc[k:]
     thr, prec, n_sig = bot.calibrate_threshold(pv, yv, max(10, int(0.01 * len(yv))))
-    return blend, dict(threshold=thr, val_precision=prec, val_signals=n_sig,
-                       base_rate=float(yv.mean()), train_rows=int(len(X)))
+    info = dict(threshold=thr, val_precision=prec, val_signals=n_sig,
+                base_rate=float(yv.mean()), train_rows=int(len(X)), cutoff_rule=cutoff)
+    if cutoff == 'expectancy':
+        V = train.iloc[k:]
+        ok = (V['rsi'] <= 78) & (V['above_ema50'] == 1) & (V['bb_pct'] <= 0.95)
+        th, avg, n, hit = mf.calibrate_expectancy(pv, V['trade_ret'], ok, max(30, int(0.002 * len(V))))
+        if n:
+            info.update(threshold=th, val_avg_ret=avg, val_calls=n, val_hit=hit,
+                        val_precision=float(precision_score(yv, (pv >= th).astype(int), zero_division=0)))
+    return blend, info
 
 
 def stats(trades, start_equity=100_000.0):
@@ -190,6 +203,9 @@ def main():
     ap.add_argument('--fold-days', type=int, default=42)
     ap.add_argument('--meta-days', type=int, default=120)
     ap.add_argument('--train-days', type=int, default=None)
+    ap.add_argument('--label', choices=['classic', 'trade'], default='classic',
+                    help='classic = live label (+0.5%% in 2h); trade = did the real trade make money')
+    ap.add_argument('--cutoff', choices=['precision', 'expectancy'], default='precision')
     ap.add_argument('--fake', action='store_true', help='offline self-test on random data')
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
@@ -216,7 +232,7 @@ def main():
             raw = spy_raw if s == 'SPY' else get(s)
             if len(raw) < 500:
                 print(f'  skip {s}: only {len(raw)} bars'); continue
-            data[s] = prep(s, raw, ctx, i)
+            data[s] = prep(s, raw, ctx, i, a.label)
         except Exception as e:
             print(f'  skip {s}: {e}')
     print(f'  loaded {len(data)} symbols in {time.time() - t_start:.0f}s', flush=True)
@@ -231,7 +247,7 @@ def main():
         P0 = M0 - pd.Timedelta(days=train_days)
         P1 = M0 - pd.Timedelta(days=1)                         # 1-day gap: labels look 8 bars ahead
         train = pd.concat([df[(df.index >= P0) & (df.index < P1)] for df in data.values()])
-        blend, pinfo = train_primary(train)
+        blend, pinfo = train_primary(train, a.cutoff)
         del train
 
         meta_c, test_c = [], []
@@ -299,7 +315,7 @@ def main():
 
     report = dict(
         bot=a.bot, fake_data=a.fake, generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
-        settings=dict(train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
+        settings=dict(label=a.label, cutoff=a.cutoff, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
                       cost_per_side=mf.COST_PER_SIDE, traded_symbols=len(trade_syms), training_symbols=len(data)),
         test_period=[folds[0]['test'][0], folds[-1]['test'][1]] if folds else None,
         spy_buy_hold_return=spy_ret,
@@ -312,7 +328,8 @@ def main():
         disclaimer='Independent personal project, not tied to any employer or agency. Public market data and paper money only. '
                    'Backtest estimate with stated simplifications; not financial advice.',
     )
-    out = Path(a.out or f'state/backtest_meta_{a.bot}{"_fake" if a.fake else ""}.json')
+    tag = '' if (a.label, a.cutoff) == ('classic', 'precision') else f'_{a.label}_{a.cutoff}'
+    out = Path(a.out or f'state/backtest_meta_{a.bot}{tag}{"_fake" if a.fake else ""}.json')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str))
     if not T.empty:   # every test BUY call, so the call-level numbers can be re-checked independently

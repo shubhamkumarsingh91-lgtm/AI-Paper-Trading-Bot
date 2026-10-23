@@ -1,0 +1,21 @@
+Backtest b1: 14 training symbols, 5 traded, 1434 calendar days of 15-min bars
+  skip PYPL: {"message": "too many requests."}
+
+  skip TSLA: {"message": "too many requests."}
+
+  loaded 12 symbols in 879s
+  fold 1: test ['2025-10-19', '2025-11-28'] | cutoff 0.63 (val precision 36.8% vs base 28.2%) | calls 77 -> kept 38 (keep 50%)
+  fold 2: test ['2025-11-28', '2026-01-08'] | cutoff 0.63 (val precision 35.9% vs base 27.5%) | calls 102 -> kept 24 (keep 30%)
+  fold 3: test ['2026-01-08', '2026-02-18'] | cutoff 0.63 (val precision 35.9% vs base 26.5%) | calls 66 -> kept 60 (keep 90%)
+  fold 4: test ['2026-02-18', '2026-04-01'] | cutoff 0.64 (val precision 37.0% vs base 25.0%) | calls 26 -> kept 26 (keep 70%)
+  fold 5: test ['2026-04-01', '2026-05-12'] | cutoff 0.63 (val precision 41.6% vs base 24.8%) | calls 141 -> kept 100 (keep 80%)
+  fold 6: test ['2026-05-12', '2026-06-22'] | cutoff 0.64 (val precision 41.8% vs base 24.0%) | calls 136 -> kept 136 (keep 100%)
+  fold 7: test ['2026-06-22', '2026-08-02'] | cutoff 0.63 (val precision 38.3% vs base 24.3%) | calls 121 -> kept 77 (keep 50%)
+  fold 8: test ['2026-08-02', '2026-09-12'] | cutoff 0.63 (val precision 35.3% vs base 24.7%) | calls 191 -> kept 98 (keep 50%)
+  fold 9: test ['2026-09-12', '2026-10-23'] | cutoff 0.63 (val precision 35.9% vs base 26.1%) | calls 127 -> kept 28 (keep 30%)
+
+=== RESULT ['2025-10-19', '2026-10-23'] (SPY buy & hold +15.93%)
+Without filter   trades  248 | hit 44.8% (break-even 52.0%) | avg win $49 / loss $-53 | per trade $-7.40 | PF 0.75 | total -1.84% | max DD -2.39%
+With filter      trades  182 | hit 44.5% (break-even 53.4%) | avg win $41 / loss $-47 | per trade $-7.81 | PF 0.7 | total -1.42% | max DD -1.98%
+Filter helped profit per trade in 5 of 9 test periods
+Saved state/backtest_meta_b1_12m-2hexit-3perday.json and state/backtest_meta_b1_12m-2hexit-3perday_trades.csv (934s)

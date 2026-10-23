@@ -31,6 +31,7 @@ os.environ.pop('GEMINI_API_KEY', None)       # no Gemini for this test
 os.environ.pop('TELEGRAM_BOT_TOKEN', None)   # keep alerts from mixing with bot #1
 
 import ai_trading_bot as bot   # reads the env vars above at import time
+bot.USER_WATCHLIST = []        # watchlist.txt is Bot 1's; this bot always trades its 100
 
 # ── 3: the 100 most heavily traded S&P 500 names (fixed list) ──
 UNIVERSE_100 = [

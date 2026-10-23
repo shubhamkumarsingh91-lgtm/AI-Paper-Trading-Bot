@@ -213,9 +213,9 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
     <h3>What am I looking at?</h3>
     <p>Three computer programs that buy and sell stocks on their own, using <b style="color:var(--text)">practice accounts with fake money</b>. Each one tries a different approach. The question: can any of them beat simply buying the whole stock market (an index fund called <b style="color:var(--text)">SPY</b>) and holding it?</p>
   </div>
-  <div class="step"><b><span class="sw" style="background:var(--a1)"></span>AI Day Trader</b><p>A machine-learning model that watches a short list of stocks every 10 minutes and makes quick trades within the day.</p></div>
-  <div class="step"><b><span class="sw" style="background:var(--a2)"></span>Regime</b><p>Slow and steady. Reads the overall market mood once a day and adjusts. Most days it just holds the market.</p></div>
-  <div class="step"><b><span class="sw" style="background:var(--a3)"></span>Day-Trade-100</b><p>The same AI as the first bot, but hunting across 100 of the biggest US companies instead of a few.</p></div>
+  <div class="step"><b><span class="sw" style="background:var(--a1)"></span>Bot 1 · Watchlist</b><p>A machine-learning model that watches a short list of stocks you pick every 10 minutes and makes quick trades within the day.</p></div>
+  <div class="step"><b><span class="sw" style="background:var(--a3)"></span>Bot 2 · Day-Trade-100</b><p>The same AI as Bot 1, but hunting across 100 of the biggest US companies instead of a few.</p></div>
+  <div class="step"><b><span class="sw" style="background:var(--a2)"></span>Bot 3 · Regime (S&amp;P 500)</b><p>Slow and steady. Reads the overall market mood once a day and adjusts. Most days it just holds the S&amp;P 500.</p></div>
 </section>
 
 <!-- BOT CARDS -->
@@ -227,9 +227,9 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
     <div class="panel-head">
       <h2>The race<i class="tip" data-tip="How much each bot has gained or lost since it started, compared with just holding SPY (the dashed grey line). Above the grey line = winning.">i</i></h2>
       <div class="legend">
-        <span><i style="background:var(--a1)"></i>AI Day Trader</span>
-        <span><i style="background:var(--a2)"></i>Regime</span>
-        <span><i style="background:var(--a3)"></i>Day-Trade-100</span>
+        <span><i style="background:var(--a1)"></i>Bot 1 · Watchlist</span>
+        <span><i style="background:var(--a3)"></i>Bot 2 · Day-Trade-100</span>
+        <span><i style="background:var(--a2)"></i>Bot 3 · Regime</span>
         <span><i style="background:var(--spy)"></i>SPY (the benchmark)</span>
       </div>
     </div>
@@ -293,8 +293,8 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
     <h2>Recent trades<i class="tip" data-tip="Every buy and sell the day-trading bots made. P&amp;L = profit or loss on that trade, in fake dollars. Click a symbol to see its chart.">i</i></h2>
     <div class="filter">
       <button class="tab on" data-f="all">All</button>
-      <button class="tab" data-f="b1">AI Day Trader</button>
-      <button class="tab" data-f="b3">Day-Trade-100</button>
+      <button class="tab" data-f="b1">Bot 1 · Watchlist</button>
+      <button class="tab" data-f="b3">Bot 2 · Day-Trade-100</button>
     </div>
   </div>
   <table><thead><tr><th>Time</th><th>Bot</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>P&amp;L</th></tr></thead>
@@ -312,9 +312,9 @@ footer{margin-top:30px;font-size:11px;color:var(--dim);line-height:1.7;text-alig
 /* ---------- CONFIG ---------- */
 const RAW = 'https://raw.githubusercontent.com/shubhamkumarsingh91-lgtm/AI-Paper-Trading-Bot/main/';
 const BOTS = [
-  {id:'b1', name:'AI Day Trader', color:'#7c9cff', start:100000, desc:'Quick in-and-out trades on a short watchlist, every 10 minutes.'},
-  {id:'b2', name:'Regime',        color:'#41e1c3', start:25000,  desc:'Reads the market mood daily. Mostly holds the market.'},
-  {id:'b3', name:'Day-Trade-100', color:'#c58bff', start:100000, desc:'Same AI, scanning 100 of the biggest US companies.'},
+  {id:'b1', name:'Bot 1 · Watchlist', color:'#7c9cff', start:99346.63,   /* account value when Bot 1's records begin (Oct 19) */ desc:'The AI day-trading your own short watchlist (edit watchlist.txt), checked every 10 minutes.'},
+  {id:'b3', name:'Bot 2 · Day-Trade-100', color:'#c58bff', start:100000, desc:'Same AI, scanning 100 of the biggest US companies.'},
+  {id:'b2', name:'Bot 3 · Regime (S&P 500)', color:'#41e1c3', start:25000,  desc:'Reads the market mood daily. Mostly holds the S&P 500 (SPY).'},
 ];
 const TV_SYMBOLS = ['SPY','QQQ','NVDA','AAPL','MSFT','TSLA','AMD','PLTR'];
 const TIPS = {
@@ -415,8 +415,11 @@ async function loadAll(){
   const spy = dtRows.length ? dtRows.map(r=>({date:r.date, ret:+r.spy_return}))
                             : regRows.map(r=>({date:col(r,'date',0), ret:+(col(r,'spy_return',4)||0)}));
   const spyNow = spy.length ? spy[spy.length-1].ret : 0;
-  const series = [s1, s2, s3];
-  const extras = [stats(log1, hist1), {regime:lastRegime(regRows)}, stats(log3, hist3)];
+  const series = [s1, s3, s2];                 // display order: Bot 1, Bot 2 (100), Bot 3 (Regime)
+  const regSpyNow = regRows.length ? +(col(regRows[regRows.length-1],'spy_return',4)||0) : spyNow;   // SPY over Regime's own dates
+  const lastEq = (rows, k, i) => rows.length ? +(col(rows[rows.length-1], k, i)) || null : null;   // real balance from the daily record
+  const extras = [{...stats(log1, hist1), balance:lastEq(csv(card1),'equity',1)}, {...stats(log3, hist3), balance:lastEq(dtRows,'equity',1)},
+                  {regime:lastRegime(regRows), spy:regSpyNow, balance:lastEq(regRows,'equity',2)}];
   renderBots(series, extras, spyNow);
   renderRace(series, spy);
   renderRegime(regRows, shadow);
@@ -435,7 +438,9 @@ function stats(log, hist){
   const s = sells(log), w = s.filter(t=>t.win || (+t.pnl>0));
   const last = Array.isArray(hist) && hist.length ? hist[hist.length-1] : {};
   return {trades:s.length, winRate:s.length ? w.length/s.length : null,
-          pnl:s.reduce((a,t)=>a+(+t.pnl||0),0), precision:last.walk_forward_precision ?? last.precision,
+          pnl:s.reduce((a,t)=>a+(+t.pnl||0),0),
+          precision:last.precision_at_threshold ?? last.walk_forward_precision ?? last.precision,   // at the live cutoff when recorded
+          base:last.base_rate, accuracy:last.accuracy,
           retrains:Array.isArray(hist)?hist.length:0, lastRetrain:last.timestamp};
 }
 function lastRegime(rows){ const r = rows[rows.length-1]; return r ? col(r,'regime',1) : null; }
@@ -445,19 +450,19 @@ function renderBots(series, extras, spyNow){
   const host = $('#bots'); host.innerHTML = ''; sparks.forEach(c=>c.destroy()); sparks = [];
   BOTS.forEach((b,i) => {
     const s = series[i], ret = s.length ? s[s.length-1].ret : 0, ex = extras[i];
-    const ahead = ret - spyNow, has = s.length > 0;
+    const ahead = ret - (ex.spy ?? spyNow), has = s.length > 0;
     const el = document.createElement('div');
     el.className = 'card bot fade'; el.style.animationDelay = (i*.07)+'s';
     el.innerHTML = `
       <div class="glowbox"><div class="glow" style="background:${b.color}"></div></div>
       <div class="bot-head">
         <div class="bot-name"><span class="sw" style="background:${b.color}"></span>${b.name}</div>
-        <span class="tag ${!has?'':ahead>=0?'up':'down'}">${!has?'Starts Monday':(ahead>=0?'▲ ':'▼ ')+pct(ahead)+' vs SPY'}${tip('vsSpy')}</span>
+        <span class="tag ${!has?'':ahead>=0?'up':'down'}">${!has?'No trades yet':(ahead>=0?'▲ ':'▼ ')+pct(ahead)+' vs SPY'}${tip('vsSpy')}</span>
       </div>
       <div class="bot-desc">${b.desc}</div>
-      <div class="big"><span class="r">0.00%</span><small>${fmt$(b.start*(1+ret))}</small></div>
+      <div class="big"><span class="r">0.00%</span><small>${fmt$(ex.balance ?? b.start*(1+ret))}</small></div>
       <div class="spark"><canvas></canvas></div>
-      <div class="kv">${i===1
+      <div class="kv">${b.id==='b2'
         ? `<div>Mood${tip('regime')}<b>${ex.regime||'—'}</b></div><div>Started with${tip('capital')}<b>${fmt$(b.start)}</b></div><div>Days${tip('days')}<b>${s.length}</b></div>`
         : `<div>Trades${tip('trades')}<b>${ex.trades}</b></div><div>Win rate${tip('win')}<b>${ex.winRate==null?'—':(ex.winRate*100).toFixed(0)+'%'}</b></div><div>Profit${tip('realised')}<b class="${ex.pnl>=0?'up':'down'}">${fmt$(ex.pnl)}</b></div>`}
       </div>`;
@@ -500,16 +505,16 @@ function renderRegime(rows, shadowTxt){
 }
 function renderStats(ex){
   const items = [
-    {l:'AI Day Trader · buy-call accuracy', k:'precision', v:ex[0].precision, s:`${ex[0].retrains} retrains · last ${ex[0].lastRetrain?ex[0].lastRetrain.slice(0,10):'—'}`, base:.24},
-    {l:'Day-Trade-100 · buy-call accuracy', k:'precision', v:ex[2].precision, s:`${ex[2].retrains} retrains · last ${ex[2].lastRetrain?ex[2].lastRetrain.slice(0,10):'—'}`, base:.24},
-    {l:'Combined win rate', k:'combined', v:(()=>{const t=ex[0].trades+ex[2].trades; if(!t) return null;
-        return ((ex[0].winRate||0)*ex[0].trades+(ex[2].winRate||0)*ex[2].trades)/t;})(), s:`${ex[0].trades+ex[2].trades} closed trades`},
+    {l:'Bot 1 · buy-call precision', k:'precision', v:ex[0].precision, s:`accuracy ${ex[0].accuracy==null?'—':(ex[0].accuracy*100).toFixed(1)+'%'} · ${ex[0].retrains} retrains`, base:ex[0].base ?? .26},
+    {l:'Bot 2 · buy-call precision', k:'precision', v:ex[1].precision, s:`accuracy ${ex[1].accuracy==null?'—':(ex[1].accuracy*100).toFixed(1)+'%'} · ${ex[1].retrains} retrains`, base:ex[1].base ?? .24},
+    {l:'Combined win rate', k:'combined', v:(()=>{const t=ex[0].trades+ex[1].trades; if(!t) return null;
+        return ((ex[0].winRate||0)*ex[0].trades+(ex[1].winRate||0)*ex[1].trades)/t;})(), s:`${ex[0].trades+ex[1].trades} closed trades`},
   ];
   $('#stats').innerHTML = items.map((it,i)=>`
     <div class="card stat fade" style="animation-delay:${.25+i*.05}s">
       <div class="label">${it.l}${tip(it.k)}</div>
       <div class="v">${it.v==null?'—':(it.v*100).toFixed(1)+'%'}</div>
-      <div class="s">${it.s}${it.base?' · random guess ≈ 24%':''}</div>
+      <div class="s">${it.s}${it.base?` · random guess ≈ ${Math.round(it.base*100)}%`:''}</div>
       <div class="bar"><i style="width:0" data-w="${it.v==null?0:Math.min(100,it.v*100)}"></i>${it.base?`<span class="mark" style="left:${it.base*100}%" title="Random guess"></span>`:''}</div>
     </div>`).join('');
   setTimeout(()=>document.querySelectorAll('.bar i').forEach(b=>b.style.width=b.dataset.w+'%'),150);
@@ -523,9 +528,9 @@ function renderPerf(d){
   const hold = d.regState && d.regState.target ? Object.entries(d.regState.target).map(([s,w])=>`${s} ${Math.round(w*100)}%`).join(', ') : 'SPY';
   $('#perf').innerHTML =
     perfTable(BOTS[0], P1, {note: P1.closed ? '' : 'This bot hasn\u2019t made a trade yet: until Oct 22 its AI\u2019s buy calls kept getting vetoed by TradingView (now it uses the precision-first rule). The $653 drop happened before its records begin, from earlier bots on the same Alpaca account; the list from Alpaca below shows which stocks.'}) +
-    perfTable(BOTS[1], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)}) +
-    perfTable(BOTS[2], P3, {});
-  $('#ready').innerHTML = readyCard(BOTS[0], P1, d.hist1) + readyCard(BOTS[2], P3, d.hist3);
+    perfTable(BOTS[1], P3, {}) +
+    perfTable(BOTS[2], P2, {holder:true, holding:hold, regime:lastRegime(d.regRows)});
+  $('#ready').innerHTML = readyCard(BOTS[0], P1, d.hist1) + readyCard(BOTS[1], P3, d.hist3);
   let open = []; try { open = JSON.parse(localStorage.getItem('perfOpen') || '[]'); } catch (e) {}
   document.querySelectorAll('#perf details').forEach(d => {
     if (open.includes(d.dataset.bot)) d.open = true;
@@ -598,7 +603,7 @@ function filterLine(log){
   return `<div class="lverdict" style="margin-top:8px">🧪 <b>Filter (watch-only)</b>: ${body}</div>`;
 }
 function renderLearn(d){
-  $('#learn').innerHTML = learnCard(BOTS[0], d.hist1, d.log1) + learnCard(BOTS[2], d.hist3, d.log3);
+  $('#learn').innerHTML = learnCard(BOTS[0], d.hist1, d.log1) + learnCard(BOTS[1], d.hist3, d.log3);
 }
 /* ---------- Ready for real money? ---------- */
 const SLIPPAGE = 5;   // $ per round trip that paper trading doesn't charge (worse real fills)

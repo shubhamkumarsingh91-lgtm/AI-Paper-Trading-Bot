@@ -124,7 +124,9 @@ def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68, max_hol
     out = []
     n = len(d)
     for i in np.flatnonzero(ok):
-        if i + 1 >= n or days[i + 1] != days[i]:
+        # FIX (Oct 23, 2026): the next bar must be exactly 15 minutes later. On thin IEX data a stock can
+        # have no bars for hours; the old code then 'bought' at the next bar that existed (e.g. 2:45 PM).
+        if i + 1 >= n or days[i + 1] != days[i] or mins[i + 1] - mins[i] != 15:
             continue
         ex, reason, j = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         r = net_return(o[i + 1], ex)
@@ -252,7 +254,7 @@ def trade_labels(df: pd.DataFrame, max_hold=None) -> pd.Series:
     n = len(d)
     ret = np.full(n, np.nan)
     for i in range(n - 1):
-        if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i]:
+        if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i] or mins[i + 1] - mins[i] != 15:
             continue
         ex, _, _ = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         ret[i] = net_return(o[i + 1], ex)

@@ -326,3 +326,33 @@ def test_same_seed_same_model():
     b1, i1 = bm.train_primary(train, seed=7); b2, i2 = bm.train_primary(train, seed=7)
     X = train[bot.FEATURES + ['sym_id']].iloc[:500]
     assert np.array_equal(b1(X), b2(X)) and i1['threshold'] == i2['threshold']
+
+
+def test_no_buy_across_a_data_gap():
+    # bars 9:30..11:15, then nothing until 14:30 (thin IEX data), then to 15:45. A call at 11:15 must NOT buy at 14:30.
+    idx = list(pd.date_range('2026-10-21 09:30', '2026-10-21 11:15', freq='15min', tz=ET)) + \
+          list(pd.date_range('2026-10-21 14:30', '2026-10-21 15:45', freq='15min', tz=ET))
+    df = pd.DataFrame(dict(open=100.0, high=100.5, low=99.5, close=100.0, p=0.1, rsi=50.0, above_ema50=1.0, bb_pct=0.5,
+                           vol_ratio=1.0, atr_pct=0.01, adx=20.0, ret_5=0.0, ret_30=0.0, macd_hist=0.0, spy_ret_5=0.0,
+                           spy_above_ema20=1.0), index=pd.DatetimeIndex(idx))
+    df.loc[pd.Timestamp('2026-10-21 11:15', tz=ET), 'p'] = 0.9
+    assert mf.candidates_for_symbol('X', df, 0.62, {}) == []
+    assert mf.trade_labels(df).loc[pd.Timestamp('2026-10-21 11:15', tz=ET)] != mf.trade_labels(df).loc[pd.Timestamp('2026-10-21 11:15', tz=ET)]  # NaN
+
+
+def test_portfolio_now_is_bar_time_plus_15():
+    # A gapped row's late entry_t must not release open positions early (the TSLA double-hold case).
+    C = pd.DataFrame([
+        _c('T', '2026-10-21 10:45', '2026-10-21 14:00', -0.02, 0.9),
+        dict(_c('B', '2026-10-21 11:15', '2026-10-21 15:15', 0.0, 0.8), entry_t=pd.Timestamp('2026-10-21 14:45', tz=ET)),
+        _c('T', '2026-10-21 13:30', '2026-10-21 14:15', -0.02, 0.9),      # T still held until 14:00 -> must be skipped
+    ])
+    assert [t['sym'] for t in bm.portfolio(C)] == ['T', 'B']
+
+
+def test_drawdown_uses_end_of_day_balances():
+    T = [dict(pnl=500.0, exit_t='2026-10-21 15:45', reason='EOD'), dict(pnl=-800.0, exit_t='2026-10-21 15:45', reason='EOD'),
+         dict(pnl=-200.0, exit_t='2026-10-22 15:45', reason='EOD')]
+    # day balances 99,700 then 99,500 -> worst 99,500/100,000 - 1, whatever the order within the first day
+    assert bm.stats(T)['max_drawdown'] == pytest.approx(-0.005)
+    assert bm.stats([T[1], T[0], T[2]])['max_drawdown'] == pytest.approx(-0.005)

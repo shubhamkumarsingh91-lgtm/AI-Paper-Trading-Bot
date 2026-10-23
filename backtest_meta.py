@@ -182,7 +182,10 @@ def stats(trades, start_equity=100_000.0):
         return dict(trades=0)
     pnl = np.array([t['pnl'] for t in trades])
     wins, losses = pnl[pnl > 0], pnl[pnl <= 0]
-    eq = start_equity + np.cumsum(pnl[np.argsort([str(t['exit_t']) for t in trades], kind='stable')])   # stable: same-time exits keep their order
+    # Worst drop on END-OF-DAY balances: many trades close at the same 15:45 bell, and any order among them
+    # would be arbitrary (and change the answer). Daily balances don't depend on that order.
+    day_pnl = pd.Series(pnl).groupby([str(t['exit_t'])[:10] for t in trades]).sum().sort_index().to_numpy()
+    eq = start_equity + np.cumsum(day_pnl)
     peak = np.maximum.accumulate(np.r_[start_equity, eq])
     mdd = float(np.min(np.r_[start_equity, eq] / peak - 1))
     aw = float(wins.mean()) if len(wins) else 0.0
@@ -214,7 +217,7 @@ def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06,
     equity, open_pos, done, bought = start_equity, [], [], {}
     today_log = {}            # (sym, day) -> dict(entries, struck, last_exit)
     for t, grp in cands.sort_values('t').groupby('t', sort=True):
-        entry_t = grp['entry_t'].iloc[0]
+        entry_t = pd.Timestamp(t) + pd.Timedelta(minutes=15)    # 'now' = this bar's buy time, never a gapped bar's
         still = []
         for pos in sorted(open_pos, key=lambda q: q['exit_t']):
             if pos['exit_t'] < entry_t:

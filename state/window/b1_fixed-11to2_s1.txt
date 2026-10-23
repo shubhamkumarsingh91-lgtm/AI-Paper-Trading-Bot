@@ -1,0 +1,26 @@
+Backtest b1: 14 training symbols, 5 traded, 1803 calendar days of 15-min bars
+  loaded 14 symbols in 7s
+  fold 1: test ['2024-10-16', '2024-11-25'] | cutoff 0.66 (val precision 51.9% vs base 44.8%) | calls 5 -> kept 5 (keep 100%)
+  fold 2: test ['2024-11-25', '2025-01-05'] | cutoff 0.54 (val precision 47.3% vs base 45.3%) | calls 259 -> kept 135 (keep 50%)
+  fold 3: test ['2025-01-05', '2025-02-15'] | cutoff 0.54 (val precision 46.8% vs base 44.0%) | calls 291 -> kept 155 (keep 50%)
+  fold 4: test ['2025-02-15', '2025-03-29'] | cutoff 0.52 (val precision 49.0% vs base 45.6%) | calls 41 -> kept 16 (keep 30%)
+  fold 5: test ['2025-03-29', '2025-05-09'] | cutoff 0.66 (val precision 53.5% vs base 45.8%) | calls 0 -> kept 0 (keep 100%)
+  fold 6: test ['2025-05-09', '2025-06-19'] | cutoff 0.64 (val precision 51.2% vs base 44.6%) | calls 6 -> kept 6 (keep 100%)
+  fold 7: test ['2025-06-19', '2025-07-30'] | cutoff 0.66 (val precision 46.9% vs base 45.4%) | calls 1 -> kept 1 (keep 100%)
+  fold 8: test ['2025-07-30', '2025-09-09'] | cutoff 0.60 (val precision 47.7% vs base 45.3%) | calls 40 -> kept 40 (keep 30%)
+  fold 9: test ['2025-09-09', '2025-10-20'] | cutoff 0.50 (val precision 47.3% vs base 45.9%) | calls 619 -> kept 311 (keep 50%)
+  fold 10: test ['2025-10-20', '2025-11-29'] | cutoff 0.64 (val precision 54.6% vs base 44.9%) | calls 12 -> kept 12 (keep 100%)
+  fold 11: test ['2025-11-29', '2026-01-09'] | cutoff 0.64 (val precision 52.9% vs base 45.0%) | calls 2 -> kept 2 (keep 100%)
+  fold 12: test ['2026-01-09', '2026-02-19'] | cutoff 0.62 (val precision 49.8% vs base 45.6%) | calls 6 -> kept 6 (keep 30%)
+  fold 13: test ['2026-02-19', '2026-04-02'] | cutoff 0.64 (val precision 49.9% vs base 44.3%) | calls 2 -> kept 2 (keep 100%)
+  fold 14: test ['2026-04-02', '2026-05-13'] | cutoff 0.64 (val precision 54.4% vs base 44.8%) | calls 5 -> kept 5 (keep 100%)
+  fold 15: test ['2026-05-13', '2026-06-23'] | cutoff 0.50 (val precision 46.7% vs base 44.6%) | calls 482 -> kept 160 (keep 30%)
+  fold 16: test ['2026-06-23', '2026-08-03'] | cutoff 0.60 (val precision 46.7% vs base 43.8%) | calls 9 -> kept 9 (keep 70%)
+  fold 17: test ['2026-08-03', '2026-09-13'] | cutoff 0.54 (val precision 45.0% vs base 42.4%) | calls 250 -> kept 153 (keep 50%)
+  fold 18: test ['2026-09-13', '2026-10-24'] | cutoff 0.56 (val precision 48.6% vs base 45.3%) | calls 93 -> kept 56 (keep 30%)
+
+=== RESULT ['2024-10-16', '2026-10-24'] (SPY buy & hold +34.13%)
+Without filter   trades  389 | hit 48.6% (break-even 52.6%) | avg win $98 / loss $-109 | per trade $-8.26 | PF 0.85 | total -3.21% | max DD -5.83%
+With filter      trades  290 | hit 46.6% (break-even 53.4%) | avg win $94 / loss $-107 | per trade $-13.71 | PF 0.76 | total -3.98% | max DD -4.70%
+Filter helped profit per trade in 3 of 18 test periods
+Saved state/window/b1_fixed-11to2_s1.json and state/window/b1_fixed-11to2_s1_trades.csv (119s)

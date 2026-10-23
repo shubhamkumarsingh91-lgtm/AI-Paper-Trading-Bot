@@ -169,6 +169,32 @@ TRAINING_UNIVERSE = [
     'SOXX',
 ]
 
+# ── YOUR WATCHLIST (Bot 1) ─────────────────────────────────
+# Edit watchlist.txt (one ticker per line, # for comments, up to 10) to choose Bot 1's stocks.
+# When the file has tickers, Bot 1 trades exactly those and the morning news re-ranking is skipped.
+# A ticker that isn't in TRAINING_UNIVERSE is added to it; the AI learns it at the next nightly retrain.
+WATCHLIST_FILE = Path(__file__).with_name('watchlist.txt')
+
+
+def read_user_watchlist() -> list:
+    try:
+        lines = WATCHLIST_FILE.read_text().replace(',', '\n').splitlines()
+    except (FileNotFoundError, OSError):
+        return []
+    out = []
+    for ln in lines:
+        sym = ln.split('#')[0].strip().upper()
+        if sym and sym.replace('.', '').isalnum() and sym not in out:
+            out.append(sym)
+    return out[:10]
+
+
+USER_WATCHLIST = read_user_watchlist()
+if USER_WATCHLIST:
+    WATCHLIST = list(USER_WATCHLIST)
+    FALLBACK_WATCHLIST = list(USER_WATCHLIST)
+    TRAINING_UNIVERSE += [s_ for s_ in USER_WATCHLIST if s_ not in TRAINING_UNIVERSE]
+
 TV_EXCHANGE = {
     # Watchlist
     'NVDA': 'NASDAQ', 'PANW': 'NASDAQ', 'AVGO': 'NASDAQ',
@@ -2875,6 +2901,11 @@ def run_news_intelligence() -> None:
     """
     global WATCHLIST
 
+    if USER_WATCHLIST:
+        WATCHLIST = list(USER_WATCHLIST)
+        log.info(f'  📋 Using your watchlist.txt: {WATCHLIST} (news re-ranking skipped)')
+        return
+
     sep = '─' * 66
     log.info(f'\n{sep}')
     log.info(f'  📡 NEWS INTELLIGENCE PIPELINE — {now_et().strftime("%I:%M %p ET")}')
@@ -3059,10 +3090,12 @@ def scan() -> None:
     2. Score all watchlist stocks with combined signal
     3. Enter the best opportunity if signal strong enough
     """
-    global scan_count
+    global scan_count, WATCHLIST
 
     if not is_market_open():
         return
+    if USER_WATCHLIST:                      # your watchlist.txt always wins (also over intraday news additions)
+        WATCHLIST = list(USER_WATCHLIST)
 
     scan_count  += 1
     _scan_count_ref[0] = scan_count   # expose to status server
@@ -3244,7 +3277,7 @@ def load_runtime_state() -> None:
         return
     try:
         s = json.loads(RUNTIME_FILE.read_text())
-        WATCHLIST      = s.get('watchlist', FALLBACK_WATCHLIST)
+        WATCHLIST      = list(USER_WATCHLIST) or s.get('watchlist', FALLBACK_WATCHLIST)
         position_highs = s.get('position_highs', {})
         dip_watch = {
             sym: {**w, 'exit_time': datetime.fromisoformat(w['exit_time'])}

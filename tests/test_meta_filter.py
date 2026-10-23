@@ -251,3 +251,56 @@ def test_portfolio_per_day_cap():
     rows += [_c('E', '2026-10-22 10:00', '2026-10-22 15:45', 0.01, 0.7)]
     T = bm.portfolio(pd.DataFrame(rows), per_day=2)
     assert [t['sym'] for t in T] == ['A', 'B', 'E']        # 2 on day 1 (first come), then the next day resets
+
+
+def _cx(sym, t, exit_t, ret, p, entry, exit_, reason):
+    d = _c(sym, t, exit_t, ret, p); d.update(entry=entry, exit=exit_, reason=reason); return d
+
+
+def test_reentry_rules_users_example():
+    # Your example: trailing stop sells at $103 (+3%), then the bot re-buys dips that keep falling.
+    C = pd.DataFrame([
+        _cx('X', '2026-10-21 10:00', '2026-10-21 11:00', 0.03, 0.7, 100.0, 103.0, 'TRAILING_STOP'),
+        _cx('X', '2026-10-21 11:30', '2026-10-21 12:00', -0.02, 0.7, 102.0, 99.96, 'STOP_LOSS'),   # dip re-buy below $103
+        _cx('X', '2026-10-21 12:30', '2026-10-21 13:00', -0.02, 0.7, 99.0, 97.02, 'STOP_LOSS'),    # second dip re-buy
+    ])
+    free = bm.portfolio(C)
+    # 12% of equity, compounding: 12% of 100,000 x 3% = +360 ; 12% of 100,360 x -2% = -240.86 ; 12% of 100,119.14 x -2% = -240.29
+    assert [round(t['pnl']) for t in free] == [360, -241, -240]
+    assert round(sum(t['pnl'] for t in free)) == round(360 - 0.02 * 0.12 * 100360 - 0.02 * 0.12 * (100360 - 0.02 * 0.12 * 100360))
+    guarded = bm.portfolio(C, reentry_rules=True)
+    assert [t['sym'] for t in guarded] == ['X'] and round(guarded[0]['pnl']) == 360   # both dip re-buys blocked (below $103)
+
+
+def test_reentry_rules_allow_strength_once_half_size():
+    C = pd.DataFrame([
+        _cx('X', '2026-10-21 10:00', '2026-10-21 11:00', 0.03, 0.7, 100.0, 103.0, 'TRAILING_STOP'),
+        _cx('X', '2026-10-21 11:30', '2026-10-21 12:00', 0.01, 0.7, 103.5, 104.5, 'EOD'),          # above $103 -> allowed, half size
+        _cx('X', '2026-10-21 12:30', '2026-10-21 13:00', 0.01, 0.7, 105.0, 106.0, 'EOD'),          # 2nd re-entry -> blocked
+    ])
+    T = bm.portfolio(C, reentry_rules=True)
+    assert len(T) == 2 and T[1]['size'] == pytest.approx(0.5 * 0.12 * 100_360)
+
+
+def test_reentry_rules_one_strike_and_late():
+    C = pd.DataFrame([
+        _cx('X', '2026-10-21 10:00', '2026-10-21 10:30', -0.02, 0.7, 100.0, 98.0, 'STOP_LOSS'),
+        _cx('X', '2026-10-21 11:00', '2026-10-21 12:00', 0.02, 0.7, 101.0, 103.0, 'EOD'),          # struck -> blocked
+        _cx('Y', '2026-10-21 10:15', '2026-10-21 10:45', 0.02, 0.6, 50.0, 51.0, 'PROFIT_LOCK'),
+        _cx('Y', '2026-10-21 14:45', '2026-10-21 15:45', 0.01, 0.7, 52.0, 52.5, 'EOD'),            # after 14:30 -> blocked
+        _cx('X', '2026-10-22 10:00', '2026-10-22 15:45', 0.01, 0.7, 101.0, 102.0, 'EOD'),          # new day -> fine
+    ])
+    T = bm.portfolio(C, reentry_rules=True)
+    assert [(t['sym'], str(pd.Timestamp(t['t']).date())) for t in T] == [('X', '2026-10-21'), ('Y', '2026-10-21'), ('X', '2026-10-22')]
+
+
+def test_classic_day_label_never_crosses_the_close():
+    raw = bm.fake_bars('AAA', 30)
+    ctx = bm.spy_context(bm.fake_bars('SPY', 30))
+    df = bm.prep('AAA', raw, ctx, 0, label='classic_day')
+    m = df.index.hour * 60 + df.index.minute
+    lab = df['target'].notna()
+    assert lab.any() and m[lab].max() <= 13 * 60 + 45 and m[lab].min() >= 9 * 60 + 30
+    live = bm.prep('AAA', raw, ctx, 0, label='classic')      # today's live label DOES label 14:00-15:45 bars
+    m2 = live.index.hour * 60 + live.index.minute
+    assert (live['target'].notna() & (m2 >= 14 * 60)).any()

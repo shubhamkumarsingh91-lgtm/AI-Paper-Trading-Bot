@@ -94,6 +94,11 @@ def prep(sym, raw, ctx, sym_id, label='classic', max_hold=None):
         df['target'] = (df['trade_ret'] > 0).astype(float).where(df['trade_ret'].notna())
     else:
         df['target'] = bot.make_labels(df)
+        if label == 'classic_day':
+            # same +0.5%-in-2h label, but only for regular-hours bars whose 2-hour window ends by 15:45
+            # (the live label lets bars after 13:45 look into the NEXT morning)
+            m = df.index.hour * 60 + df.index.minute
+            df.loc[(m < mf.OPEN_MINUTE) | (m > mf.EOD_MINUTE - 8 * 15), 'target'] = np.nan
     df['sym_id'] = sym_id
     df = df.dropna(subset=bot.FEATURES)                # keep every bar: exits need the bars after 15:15
     num = df.select_dtypes('float64').columns
@@ -167,18 +172,28 @@ def stats(trades, start_equity=100_000.0):
     )
 
 
-def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06, per_day=None):
+def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06, per_day=None,
+              reentry_rules=False):
     """$100k account: one buy per bar (highest main-AI confidence), max 5 open, 12% per trade (6% bear).
-    per_day = optional cap on new buys per day (first come, first served: no peeking at later calls)."""
+    per_day = optional cap on new buys per day (first come, first served: no peeking at later calls).
+    reentry_rules = guard against re-buying a stock that already topped out today:
+      1. after a STOP_LOSS on a stock, no more buys of it that day ("one strike")
+      2. after a profit exit, re-buy only if the new entry price is ABOVE the price it sold at
+      3. at most 1 re-entry per stock per day        4. no re-entries after 14:30
+      5. a re-entry is half size"""
     if cands.empty:
         return []
     equity, open_pos, done, bought = start_equity, [], [], {}
+    today_log = {}            # (sym, day) -> dict(entries, struck, last_exit)
     for t, grp in cands.sort_values('t').groupby('t', sort=True):
         entry_t = grp['entry_t'].iloc[0]
         still = []
         for pos in sorted(open_pos, key=lambda q: q['exit_t']):
             if pos['exit_t'] < entry_t:
                 equity += pos['pnl']; done.append(pos)
+                L = today_log.setdefault((pos['sym'], pd.Timestamp(pos['t']).normalize()), dict(entries=0, struck=False))
+                L['last_exit'] = pos['exit']
+                L['struck'] |= pos['reason'] == 'STOP_LOSS'
             else:
                 still.append(pos)
         open_pos = still
@@ -189,13 +204,28 @@ def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06,
             continue
         held = {q['sym'] for q in open_pos}
         g = grp[~grp['sym'].isin(held)]
+        if reentry_rules and not g.empty:
+            late = (pd.Timestamp(t).hour * 60 + pd.Timestamp(t).minute) > 14 * 60 + 30
+            def allowed(r):
+                L = today_log.get((r['sym'], day))
+                if not L or L['entries'] == 0:
+                    return True                                  # first buy of this stock today
+                return (not L['struck'] and L['entries'] < 2 and not late
+                        and 'last_exit' in L and r['entry'] > L['last_exit'])
+            g = g[g.apply(allowed, axis=1)]
         if g.empty:
             continue
         best = g.loc[g['p'].idxmax()]
         size = equity * (bear_cap if best['bear'] == 1 else cap)
+        if reentry_rules:
+            L = today_log.setdefault((best['sym'], day), dict(entries=0, struck=False))
+            if L['entries'] >= 1:
+                size *= 0.5                                      # re-entry = half size
+            L['entries'] += 1
         bought[day] = bought.get(day, 0) + 1
         open_pos.append(dict(sym=best['sym'], t=best['t'], entry_t=best['entry_t'], exit_t=best['exit_t'],
                              ret=float(best['ret']), pnl=float(size * best['ret']), size=float(size),
+                             entry=float(best.get('entry', np.nan)), exit=float(best.get('exit', np.nan)),
                              reason=best['reason'], p=float(best['p']),
                              meta_p=float(best['meta_p']) if 'meta_p' in best else None))
     done += open_pos
@@ -217,13 +247,14 @@ def main():
     ap.add_argument('--fold-days', type=int, default=42)
     ap.add_argument('--meta-days', type=int, default=120)
     ap.add_argument('--train-days', type=int, default=None)
-    ap.add_argument('--label', choices=['classic', 'trade'], default='classic',
+    ap.add_argument('--label', choices=['classic', 'classic_day', 'trade'], default='classic',
                     help='classic = live label (+0.5%% in 2h); trade = did the real trade make money')
     ap.add_argument('--cutoff', choices=['precision', 'expectancy', 'rate'], default='precision',
                     help='rate = steady cutoff giving ~per-day calls; account takes at most --per-day buys a day')
     ap.add_argument('--per-day', type=int, default=3)
     ap.add_argument('--max-hold-bars', type=int, default=None, help='time exit, e.g. 8 = sell after 2 hours')
     ap.add_argument('--tag', default=None, help='name used in the output file')
+    ap.add_argument('--reentry-rules', action='store_true', help='one strike / re-buy only above the sell price / 1 re-entry / none after 14:30 / half size')
     ap.add_argument('--fake', action='store_true', help='offline self-test on random data')
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
@@ -309,16 +340,16 @@ def main():
               f'calls {len(test_c)} -> kept {fold["test_calls_kept"]} (keep {fold["filter_keep"]:.0%})', flush=True)
 
     T = pd.concat(test_all, ignore_index=True) if test_all else pd.DataFrame()
-    base_trades = portfolio(T, per_day=a.per_day if a.cutoff == 'rate' else None)
-    filt_trades = portfolio(T[T['keep']], per_day=a.per_day if a.cutoff == 'rate' else None) if not T.empty else []
+    base_trades = portfolio(T, per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules)
+    filt_trades = portfolio(T[T['keep']], per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules) if not T.empty else []
     spy_rth = spy_raw[(spy_raw.index >= end - pd.Timedelta(days=a.folds * a.fold_days))]
     spy_ret = float(spy_rth['close'].iloc[-1] / spy_rth['open'].iloc[0] - 1) if len(spy_rth) else None
 
     # per-fold portfolio comparison (did the filter help in this period?)
     for f in folds:
         Tf = T[T['fold'] == f['fold']] if not T.empty else T
-        f['account_without_filter'] = stats(portfolio(Tf, per_day=a.per_day if a.cutoff == 'rate' else None))
-        f['account_with_filter'] = stats(portfolio(Tf[Tf['keep']], per_day=a.per_day if a.cutoff == 'rate' else None)) if not Tf.empty else dict(trades=0)
+        f['account_without_filter'] = stats(portfolio(Tf, per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules))
+        f['account_with_filter'] = stats(portfolio(Tf[Tf['keep']], per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules)) if not Tf.empty else dict(trades=0)
     helped = sum(1 for f in folds if f['account_with_filter'].get('trades', 0) and
                  f['account_with_filter'].get('profit_per_trade', -1e9) > f['account_without_filter'].get('profit_per_trade', -1e9))
 
@@ -333,7 +364,7 @@ def main():
 
     report = dict(
         bot=a.bot, fake_data=a.fake, generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
-        settings=dict(label=a.label, cutoff=a.cutoff, per_day=a.per_day if a.cutoff == 'rate' else None, max_hold_bars=a.max_hold_bars, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
+        settings=dict(label=a.label, cutoff=a.cutoff, per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules, max_hold_bars=a.max_hold_bars, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
                       cost_per_side=mf.COST_PER_SIDE, traded_symbols=len(trade_syms), training_symbols=len(data)),
         test_period=[folds[0]['test'][0], folds[-1]['test'][1]] if folds else None,
         spy_buy_hold_return=spy_ret,

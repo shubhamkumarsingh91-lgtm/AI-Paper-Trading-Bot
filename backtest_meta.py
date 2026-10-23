@@ -84,7 +84,16 @@ def fetch_bars_until(symbol, days, end_ts=None):
     from alpaca.data.requests import StockBarsRequest
     req = StockBarsRequest(symbol_or_symbols=symbol, timeframe=bot.TF, start=end_ts - pd.Timedelta(days=days),
                            end=end_ts, adjustment='all', feed='iex')
-    df = bot.data_client.get_stock_bars(req).df
+    for attempt in range(10):                      # Alpaca allows ~200 requests/minute per key: back off and retry
+        try:
+            df = bot.data_client.get_stock_bars(req).df
+            break
+        except Exception as e:
+            if 'too many' not in str(e).lower() or attempt == 9:
+                raise
+            wait = 15 * (attempt + 1)
+            print(f'  {symbol}: rate limited, waiting {wait}s', flush=True)
+            time.sleep(wait)
     if isinstance(df.index, pd.MultiIndex):
         df = df.xs(symbol, level='symbol')
     if isinstance(df.columns, pd.MultiIndex):
@@ -278,6 +287,8 @@ def main():
     ap.add_argument('--out', default=None)
     ap.add_argument('--seed', type=int, default=42, help='model seed; run several to see how much is luck')
     ap.add_argument('--end', default=None, help='YYYY-MM-DD: last day of data (fixed, so every run sees the same bars)')
+    ap.add_argument('--cache', default=None, help='folder to save/read downloaded bars')
+    ap.add_argument('--fetch-only', action='store_true', help='download (into --cache) and stop')
     ap.add_argument('--window', default=None, help='buy only between these ET times, e.g. 10:00-14:00')
     a = ap.parse_args()
     t_start = time.time()
@@ -294,7 +305,19 @@ def main():
     # 16:30 ET on the end day: after the close, and never in the future on that day's evening runs
     end_ts = min(pd.Timestamp(a.end + ' 16:30', tz='America/New_York').tz_convert('UTC'),
                  pd.Timestamp.now(tz='UTC') - pd.Timedelta(minutes=20)) if a.end else None
-    get = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: fetch_bars_until(s, span, end_ts))
+    fetch = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: fetch_bars_until(s, span, end_ts))
+
+    def get(sym):
+        """--cache DIR: read bars saved by a --fetch-only run, so all runs use identical data and hit Alpaca once."""
+        if not a.cache:
+            return fetch(sym)
+        f = Path(a.cache) / f'{a.bot}_{sym}_{span}d_{a.end or "now"}.pkl.gz'
+        if f.exists():
+            return pd.read_pickle(f)
+        df = fetch(sym)
+        f.parent.mkdir(parents=True, exist_ok=True)
+        df.to_pickle(f)
+        return df
     win = None
     if a.window:
         w0, w1 = [int(x.split(':')[0]) * 60 + int(x.split(':')[1]) for x in a.window.split('-')]
@@ -314,6 +337,8 @@ def main():
         except Exception as e:
             print(f'  skip {s}: {e}')
     print(f'  loaded {len(data)} symbols in {time.time() - t_start:.0f}s', flush=True)
+    if a.fetch_only:
+        print('fetch-only: bars saved to', a.cache); return
     trade_syms = [s for s in trade_syms if s in data]
 
     end = max(df.index.max() for df in data.values()).normalize() + pd.Timedelta(days=1)

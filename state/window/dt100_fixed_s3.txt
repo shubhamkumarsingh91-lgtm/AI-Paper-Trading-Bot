@@ -1,0 +1,38 @@
+Backtest dt100: 101 training symbols, 100 traded, 1268 calendar days of 15-min bars
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/common/rest.py", line 198, in _one_request
+    response.raise_for_status()
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/requests/models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://data.alpaca.markets/v2/stocks/bars?start=2023-05-04T20%3A27%3A28.926460%2B00%3A00&end=2026-10-23T20%3A27%3A28.926460%2B00%3A00&timeframe=15Min&adjustment=all&feed=iex&symbols=SPY&limit=10000&page_token=U1BZfE18MTY5MjgxOTAwMDAwMDAwMDAwMA%3D%3D
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/AI-Paper-Trading-Bot/AI-Paper-Trading-Bot/backtest_meta.py", line 435, in <module>
+    main()
+  File "/home/runner/work/AI-Paper-Trading-Bot/AI-Paper-Trading-Bot/backtest_meta.py", line 305, in main
+    spy_raw = get('SPY')
+              ^^^^^^^^^^
+  File "/home/runner/work/AI-Paper-Trading-Bot/AI-Paper-Trading-Bot/backtest_meta.py", line 297, in <lambda>
+    get = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: fetch_bars_until(s, span, end_ts))
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/AI-Paper-Trading-Bot/AI-Paper-Trading-Bot/backtest_meta.py", line 87, in fetch_bars_until
+    df = bot.data_client.get_stock_bars(req).df
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/data/historical/stock.py", line 87, in get_stock_bars
+    raw_bars = self._get_marketdata(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/common/rest.py", line 393, in _get_marketdata
+    response = self.get(path=path, data=params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/common/rest.py", line 225, in get
+    return self._request("GET", path, data, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/common/rest.py", line 131, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/alpaca/common/rest.py", line 207, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"message": "too many requests."}
+

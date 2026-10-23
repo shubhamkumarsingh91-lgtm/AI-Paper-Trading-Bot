@@ -1,8 +1,10 @@
 {
   "bot": "b1",
   "fake_data": false,
-  "generated": "2026-10-22T19:59:57-04:00",
+  "generated": "2026-10-22T20:32:30-04:00",
   "settings": {
+    "label": "classic",
+    "cutoff": "precision",
     "train_days": 900,
     "meta_days": 120,
     "fold_days": 42,
@@ -110,7 +112,8 @@
         "val_precision": 0.47557603686635946,
         "val_signals": 1085,
         "base_rate": 0.2461844437718881,
-        "train_rows": 231289
+        "train_rows": 231289,
+        "cutoff_rule": "precision"
       },
       "filter_calls": 105,
       "test_calls": 55,
@@ -251,7 +254,8 @@
         "val_precision": 0.43435114503816796,
         "val_signals": 1310,
         "base_rate": 0.24602472545254483,
-        "train_rows": 231742
+        "train_rows": 231742,
+        "cutoff_rule": "precision"
       },
       "filter_calls": 115,
       "test_calls": 30,
@@ -392,7 +396,8 @@
         "val_precision": 0.39125,
         "val_signals": 800,
         "base_rate": 0.24827556659954586,
-        "train_rows": 233408
+        "train_rows": 233408,
+        "cutoff_rule": "precision"
       },
       "filter_calls": 60,
       "test_calls": 23,
@@ -533,7 +538,8 @@
         "val_precision": 0.3661814109742441,
         "val_signals": 8037,
         "base_rate": 0.26367936589107643,
-        "train_rows": 234658
+        "train_rows": 234658,
+        "cutoff_rule": "precision"
       },
       "filter_calls": 684,
       "test_calls": 199,
@@ -657,6 +663,6 @@
       }
     }
   ],
-  "runtime_sec": 260,
+  "runtime_sec": 560,
   "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and paper money only. Backtest estimate with stated simplifications; not financial advice."
 }

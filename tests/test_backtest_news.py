@@ -102,3 +102,10 @@ def test_fixed_rule_and_account_by_hand():
     assert rr['account']['trades'] == 4 and rr['account']['total_pnl'] == pytest.approx(348.2592)
     assert rr['spy_buy_hold'] == pytest.approx(102.0 / 100.0 - 1)          # first 9:30 open -> last close
     assert rr['months_positive'] == '1 of 1'
+
+
+def test_daily_drawdown_ignores_same_day_order():
+    T = [dict(day='d1', pnl=500.0), dict(day='d1', pnl=-800.0), dict(day='d2', pnl=-200.0), dict(day='d3', pnl=900.0)]
+    # end-of-day balances: 100,000 -> 99,700 -> 99,500 -> 100,400 ; peak 100,000 -> worst 99,500/100,000 - 1
+    assert bn.daily_drawdown(T) == pytest.approx(-0.005)
+    assert bn.daily_drawdown([T[1], T[0], T[2], T[3]]) == pytest.approx(-0.005)   # same-day trades swapped -> same answer

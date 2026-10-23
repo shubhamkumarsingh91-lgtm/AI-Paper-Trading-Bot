@@ -181,6 +181,16 @@ def rule_rows(D):
     return D[(D['score'] >= 2) & (D['gap'] > 0.01)]
 
 
+def daily_drawdown(trades, start=100_000.0):
+    """Worst drop from a peak on END-OF-DAY balances. Several trades close at the same 15:45 bell, so an
+    intraday order would be arbitrary (and change the answer); daily balances don't depend on it."""
+    if not trades:
+        return None
+    d = pd.DataFrame(trades).groupby('day', sort=True)['pnl'].sum().to_numpy()
+    c = np.r_[start, start + np.cumsum(d)]
+    return float((c / np.maximum.accumulate(c) - 1).min())
+
+
 def account_open(R, top=3):
     """$100k: each day buy up to `top` rule stocks at 9:30 (highest score, then most articles), 12% of equity each."""
     P = R.sort_values(['day', 'score', 'n_news'], ascending=[True, False, False]).groupby('day').head(top)
@@ -208,6 +218,8 @@ def rule_report(R, spy, top=3, seed=0):
     out['by_month'] = {k: [int(c), float(v)] for k, (c, v) in R.groupby('month')['open_ret'].agg(['count', 'mean']).iterrows()}
     t = account_open(R, top)
     out['account'] = bm.stats(t)
+    if t:
+        out['account']['max_drawdown'] = daily_drawdown(t)
     if len(R):
         d0, d1 = pd.Timestamp(R['day'].min()).tz_localize(ET), pd.Timestamp(R['day'].max()).tz_localize(ET) + pd.Timedelta(days=1)
         sp = spy[(spy.index >= d0) & (spy.index < d1)]
@@ -276,6 +288,8 @@ def main():
                                pnl=float(size * r['confirm_ret']), reason=r['confirm_exit'], exit_t=str(day)))
         eq += pnl
     acct = bm.stats(trades)
+    if trades:
+        acct['max_drawdown'] = daily_drawdown(trades)
     spy = bars['SPY']
     spy_rth = spy[(mf.minutes_of(spy.index) >= mf.OPEN_MINUTE) & (mf.minutes_of(spy.index) < 16 * 60)]
     first_day = pd.Timestamp(D['day'].min()).tz_localize(ET)

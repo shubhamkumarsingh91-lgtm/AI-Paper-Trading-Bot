@@ -577,7 +577,25 @@ function learnCard(bot, hist, log){
       <div><small>Profit per trade</small><b class="${per==null?'':per>=0?'up':'down'}">${money(per)}</b></div>
     </div>${svg}
     <div class="lleg"><span><i style="background:${bot.color}"></i>Tested precision at live cutoff</span><span><i style="background:#8a8f9c"></i>Random guess</span><span><i style="background:var(--up)"></i>Live hit rate</span></div>
-    <div class="lverdict">${verdict}</div></div>`;
+    <div class="lverdict">${verdict}</div>${filterLine(log)}</div>`;
+}
+/* Meta filter, watch-only: pair each BUY's filter verdict with how that trade ended */
+function filterLine(log){
+  const open = {}, kept = [], skipped = [];
+  (Array.isArray(log) ? log : []).forEach(t => {
+    const a = (t.action||'').toUpperCase();
+    if (a === 'BUY') open[t.symbol] = t.signal && t.signal.meta_keep;
+    else if (a === 'SELL' && t.symbol in open) {
+      const k = open[t.symbol]; delete open[t.symbol];
+      if (k === true) kept.push(t); else if (k === false) skipped.push(t);
+    }
+  });
+  const hit = a => a.length ? Math.round(100 * a.filter(t => t.win).length / a.length) + '%' : '—';
+  const per = a => a.length ? (a.reduce((x,t)=>x+(+t.pnl||0),0)/a.length >= 0 ? '+$' : '−$') + Math.abs(a.reduce((x,t)=>x+(+t.pnl||0),0)/a.length).toFixed(0) : '—';
+  const body = (kept.length + skipped.length)
+    ? `Would keep <b>${kept.length}</b> trades: hit ${hit(kept)}, ${per(kept)}/trade · would skip <b>${skipped.length}</b>: hit ${hit(skipped)}, ${per(skipped)}/trade. If the filter works, the skipped ones should do worse.`
+    : 'Scoring every buy from Oct 23 without blocking any. Its record appears here after its first scored trades close.';
+  return `<div class="lverdict" style="margin-top:8px">🧪 <b>Filter (watch-only)</b>: ${body}</div>`;
 }
 function renderLearn(d){
   $('#learn').innerHTML = learnCard(BOTS[0], d.hist1, d.log1) + learnCard(BOTS[2], d.hist3, d.log3);

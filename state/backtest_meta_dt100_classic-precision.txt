@@ -1,0 +1,16 @@
+Backtest dt100: 101 training symbols, 100 traded, 698 calendar days of 15-min bars
+  skip MSFT: {"message": "too many requests."}
+
+  skip NVDA: {"message": "too many requests."}
+
+  loaded 99 symbols in 1695s
+  fold 1: test ['2026-05-08', '2026-06-19'] | cutoff 0.70 (val precision 37.0% vs base 22.6%) | calls 501 -> kept 301 (keep 30%)
+  fold 2: test ['2026-06-19', '2026-07-31'] | cutoff 0.60 (val precision 34.6% vs base 23.3%) | calls 3986 -> kept 1590 (keep 30%)
+  fold 3: test ['2026-07-31', '2026-09-11'] | cutoff 0.72 (val precision 34.8% vs base 25.1%) | calls 112 -> kept 76 (keep 40%)
+  fold 4: test ['2026-09-11', '2026-10-23'] | cutoff 0.70 (val precision 42.0% vs base 24.5%) | calls 86 -> kept 62 (keep 70%)
+
+=== RESULT ['2026-05-08', '2026-10-23'] (SPY buy & hold +4.44%)
+Without filter   trades  259 | hit 43.6% (break-even 41.7%) | avg win $120 / loss $-86 | per trade $3.94 | PF 1.08 | total +1.02% | max DD -2.31%
+With filter      trades  232 | hit 41.8% (break-even 43.6%) | avg win $123 / loss $-95 | per trade $-3.86 | PF 0.93 | total -0.89% | max DD -2.67%
+Filter helped profit per trade in 2 of 4 test periods
+Saved state/backtest_meta_dt100.json and state/backtest_meta_dt100_trades.csv (1766s)

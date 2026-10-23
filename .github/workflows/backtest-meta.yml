@@ -1,0 +1,87 @@
+# Walk-forward backtest of the main AI with and without the meta filter (see backtest_meta.py).
+# Independent personal project, not tied to any employer or agency. Public market data, paper money only.
+name: Meta-Filter Backtest
+on:
+  workflow_dispatch:
+    inputs:
+      bot:
+        description: "dt100, b1 or both"
+        default: both
+      variant:
+        description: "12m-<label: today|classicday|trade>[-3perday][-2hexit][-reentry], or all"
+        default: all
+  pull_request:
+    paths: [backtest_meta.py, meta_filter.py, .github/workflows/backtest-meta.yml]
+    types: [opened, synchronize]
+permissions:
+  contents: write
+concurrency:
+  group: backtest-meta-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        bot: [dt100, b1]
+        variant: [12m-classicday, 12m-trade, 12m-trade-3perday, 12m-trade-reentry]
+    steps:
+      - name: Skip bots not asked for
+        id: want
+        run: |
+          IN="${{ github.event.inputs.bot || 'both' }}"; V="${{ github.event.inputs.variant || 'all' }}"
+          if { [ "$IN" = "both" ] || [ "$IN" = "${{ matrix.bot }}" ]; } && { [ "$V" = "all" ] || [ "$V" = "${{ matrix.variant }}" ]; }; then echo "go=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.want.outputs.go == '1'
+        with:
+          ref: ${{ github.head_ref || 'main' }}
+      - uses: actions/setup-python@v5
+        if: steps.want.outputs.go == '1'
+        with:
+          python-version: "3.11"
+          cache: pip
+      - if: steps.want.outputs.go == '1'
+        run: pip install -r requirements.txt pytest
+      - name: Hand-checked unit tests
+        if: steps.want.outputs.go == '1'
+        run: python -m pytest -q tests/test_meta_filter.py
+      - name: Run backtest
+        if: steps.want.outputs.go == '1'
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          # 12 months of tests = 9 back-to-back periods of 41 days
+          ARGS="--folds 9 --fold-days 41 --tag $VARIANT"
+          case "$VARIANT" in
+            *3perday*) ARGS="$ARGS --cutoff rate --per-day 3" ;;
+          esac
+          case "$VARIANT" in
+            *2hexit*) ARGS="$ARGS --max-hold-bars 8" ;;
+          esac
+          case "$VARIANT" in
+            *classicday*) ARGS="$ARGS --label classic_day" ;;
+            *trade*) ARGS="$ARGS --label trade" ;;
+          esac
+          case "$VARIANT" in
+            *reentry*) ARGS="$ARGS --reentry-rules" ;;
+          esac
+          python backtest_meta.py --bot ${{ matrix.bot }} $ARGS | tee state/backtest_meta_${{ matrix.bot }}_${VARIANT}.txt
+      - name: Save results
+        if: steps.want.outputs.go == '1'
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/backtest_meta_${{ matrix.bot }}* || true
+          git diff --cached --quiet && exit 0
+          git commit -m "backtest results (${{ matrix.bot }}, ${{ matrix.variant }}) [skip ci]"
+          B="${{ github.head_ref || 'main' }}"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase origin "$B"; then git push origin HEAD:"$B" && exit 0
+            else git rebase --abort 2>/dev/null || true; fi
+            sleep $(( i * 5 ))
+          done
+          exit 1

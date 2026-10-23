@@ -1,0 +1,12 @@
+Backtest b1: 14 training symbols, 5 traded, 1233 calendar days of 15-min bars
+  loaded 14 symbols in 610s
+  fold 1: test ['2026-05-08', '2026-06-19'] | cutoff 0.56 (val precision 46.2% vs base 45.0%) | calls 259 -> kept 109 (keep 40%)
+  fold 2: test ['2026-06-19', '2026-07-31'] | cutoff 0.56 (val precision 46.6% vs base 43.7%) | calls 205 -> kept 34 (keep 30%)
+  fold 3: test ['2026-07-31', '2026-09-11'] | cutoff 0.58 (val precision 43.3% vs base 42.4%) | calls 94 -> kept 94 (keep 70%)
+  fold 4: test ['2026-09-11', '2026-10-23'] | cutoff 0.58 (val precision 48.0% vs base 44.7%) | calls 66 -> kept 66 (keep 30%)
+
+=== RESULT ['2026-05-08', '2026-10-23'] (SPY buy & hold +4.44%)
+Without filter   trades  149 | hit 49.0% (break-even 50.3%) | avg win $128 / loss $-129 | per trade $-3.32 | PF 0.95 | total -0.49% | max DD -2.67%
+With filter      trades  103 | hit 52.4% (break-even 49.1%) | avg win $128 / loss $-124 | per trade $8.44 | PF 1.14 | total +0.87% | max DD -1.64%
+Filter helped profit per trade in 2 of 4 test periods
+Saved state/backtest_meta_b1_trade_expectancy.json and state/backtest_meta_b1_trade_expectancy_trades.csv (623s)

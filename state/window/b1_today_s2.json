@@ -1,0 +1,2346 @@
+{
+  "bot": "b1",
+  "fake_data": false,
+  "generated": "2026-10-23T17:10:37-04:00",
+  "settings": {
+    "seed": 2,
+    "end": "2026-10-23",
+    "window": null,
+    "label": "classic",
+    "cutoff": "precision",
+    "per_day": null,
+    "reentry_rules": false,
+    "max_hold_bars": null,
+    "train_days": 900,
+    "meta_days": 120,
+    "fold_days": 41,
+    "folds": 18,
+    "cost_per_side": 0.0003,
+    "traded_symbols": 5,
+    "training_symbols": 14
+  },
+  "test_period": [
+    "2024-10-16",
+    "2026-10-24"
+  ],
+  "spy_buy_hold_return": 0.3413213806733961,
+  "calls_without_filter": {
+    "n": 1718,
+    "hit_rate": 0.40570430733410945,
+    "avg_ret": -0.0008560282649318277,
+    "profit_factor": 0.6919137010569544
+  },
+  "calls_with_filter": {
+    "n": 1444,
+    "hit_rate": 0.3988919667590028,
+    "avg_ret": -0.0007622170171949862,
+    "profit_factor": 0.7263294254191712
+  },
+  "account_without_filter": {
+    "trades": 448,
+    "wins": 189,
+    "losses": 259,
+    "hit_rate": 0.421875,
+    "avg_win": 69.2354131220101,
+    "avg_loss": -65.22742340309296,
+    "break_even_hit": 0.48509629194766807,
+    "profit_per_trade": -8.500914244065093,
+    "profit_factor": 0.7745689875411346,
+    "total_pnl": -3808.409581341162,
+    "total_return": -0.03808409581341162,
+    "max_drawdown": -0.0658938722378758,
+    "exits": {
+      "EOD": 430,
+      "PROFIT_LOCK": 3,
+      "STOP_LOSS": 15
+    }
+  },
+  "account_with_filter": {
+    "trades": 398,
+    "wins": 168,
+    "losses": 230,
+    "hit_rate": 0.4221105527638191,
+    "avg_win": 71.95436295791305,
+    "avg_loss": -65.37476286614962,
+    "break_even_hit": 0.47604441136473563,
+    "profit_per_trade": -7.406689653982478,
+    "profit_factor": 0.8039489117921431,
+    "total_pnl": -2947.862482285026,
+    "total_return": -0.029478624822850262,
+    "max_drawdown": -0.05692604757966413,
+    "exits": {
+      "EOD": 381,
+      "PROFIT_LOCK": 3,
+      "STOP_LOSS": 14
+    }
+  },
+  "folds_where_filter_helped": "2 of 18",
+  "test_keep_grid_for_reference_only": [
+    {
+      "keep": 0.3,
+      "n": 515,
+      "hit_rate": 0.43106796116504853,
+      "avg_ret": -4.461137916216575e-05
+    },
+    {
+      "keep": 0.5,
+      "n": 859,
+      "hit_rate": 0.42840512223515714,
+      "avg_ret": -0.0003565994594348133
+    },
+    {
+      "keep": 0.7,
+      "n": 1203,
+      "hit_rate": 0.42144638403990026,
+      "avg_ret": -0.00044788728617964433
+    },
+    {
+      "keep": 1.0,
+      "n": 1718,
+      "hit_rate": 0.40570430733410945,
+      "avg_ret": -0.0008560282649318277
+    }
+  ],
+  "folds": [
+    {
+      "fold": 1,
+      "primary_train": [
+        "2021-12-30",
+        "2024-06-17"
+      ],
+      "filter_window": [
+        "2024-06-18",
+        "2024-10-16"
+      ],
+      "test": [
+        "2024-10-16",
+        "2024-11-25"
+      ],
+      "primary": {
+        "threshold": 0.56,
+        "val_precision": 0.356140350877193,
+        "val_signals": 7980,
+        "base_rate": 0.2610381598660439,
+        "train_rows": 226936,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 869,
+      "test_calls": 349,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 87,
+          "avg_ret": 0.0014193974011468768,
+          "hit": 0.6781609195402298,
+          "cut": 0.6019668579101562
+        },
+        {
+          "keep": 0.4,
+          "n": 116,
+          "avg_ret": 0.0008165702385103075,
+          "hit": 0.646551724137931,
+          "cut": 0.5564337372779846
+        },
+        {
+          "keep": 0.5,
+          "n": 145,
+          "avg_ret": 0.0011535911609572064,
+          "hit": 0.6275862068965518,
+          "cut": 0.4937000274658203
+        },
+        {
+          "keep": 0.6,
+          "n": 174,
+          "avg_ret": 0.0008966040919854978,
+          "hit": 0.5977011494252874,
+          "cut": 0.44558119773864746
+        },
+        {
+          "keep": 0.7,
+          "n": 203,
+          "avg_ret": 0.0009834115300750583,
+          "hit": 0.6059113300492611,
+          "cut": 0.40012073516845703
+        },
+        {
+          "keep": 0.8,
+          "n": 232,
+          "avg_ret": 0.0015303668765753028,
+          "hit": 0.6163793103448276,
+          "cut": 0.3421247899532318
+        },
+        {
+          "keep": 0.9,
+          "n": 261,
+          "avg_ret": 0.001675482844691826,
+          "hit": 0.6053639846743295,
+          "cut": 0.27753111720085144
+        },
+        {
+          "keep": 1.0,
+          "n": 290,
+          "avg_ret": 0.0017003593750368302,
+          "hit": 0.603448275862069,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "bb_pct": 0.09484978020191193,
+        "minute": 0.08602796494960785,
+        "adx": 0.08011632412672043,
+        "macd_rel": 0.07871350646018982,
+        "ret_30": 0.07077297568321228,
+        "atr_pct": 0.06968370825052261,
+        "stock_day_ret": 0.06584282964468002,
+        "ret_5": 0.06583864241838455
+      },
+      "test_calls_kept": 349,
+      "calls_without_filter": {
+        "n": 349,
+        "hit_rate": 0.501432664756447,
+        "avg_ret": 0.0010987822534089722,
+        "profit_factor": 1.3552375184726053
+      },
+      "calls_with_filter": {
+        "n": 349,
+        "hit_rate": 0.501432664756447,
+        "avg_ret": 0.0010987822534089722,
+        "profit_factor": 1.3552375184726053
+      },
+      "account_without_filter": {
+        "trades": 75,
+        "wins": 42,
+        "losses": 33,
+        "hit_rate": 0.56,
+        "avg_win": 120.70636608817789,
+        "avg_loss": -98.20542904266568,
+        "break_even_hit": 0.448607298587855,
+        "profit_per_trade": 24.385176230606707,
+        "profit_factor": 1.5643359599343833,
+        "total_pnl": 1828.888217295503,
+        "total_return": 0.018288882172955028,
+        "max_drawdown": -0.0063144035380852115,
+        "exits": {
+          "EOD": 70,
+          "STOP_LOSS": 5
+        }
+      },
+      "account_with_filter": {
+        "trades": 75,
+        "wins": 42,
+        "losses": 33,
+        "hit_rate": 0.56,
+        "avg_win": 120.70636608817789,
+        "avg_loss": -98.20542904266568,
+        "break_even_hit": 0.448607298587855,
+        "profit_per_trade": 24.385176230606707,
+        "profit_factor": 1.5643359599343833,
+        "total_pnl": 1828.888217295503,
+        "total_return": 0.018288882172955028,
+        "max_drawdown": -0.0063144035380852115,
+        "exits": {
+          "EOD": 70,
+          "STOP_LOSS": 5
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "primary_train": [
+        "2022-02-09",
+        "2024-07-28"
+      ],
+      "filter_window": [
+        "2024-07-29",
+        "2024-11-25"
+      ],
+      "test": [
+        "2024-11-25",
+        "2025-01-05"
+      ],
+      "primary": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.367032967032967,
+        "val_signals": 455,
+        "base_rate": 0.2621226487904915,
+        "train_rows": 226741,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 36,
+      "test_calls": 17,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "note": "too few calls to train the filter; filter off",
+      "test_calls_kept": 17,
+      "calls_without_filter": {
+        "n": 17,
+        "hit_rate": 0.4117647058823529,
+        "avg_ret": 0.0035911819193946573,
+        "profit_factor": 5.935441784062205
+      },
+      "calls_with_filter": {
+        "n": 17,
+        "hit_rate": 0.4117647058823529,
+        "avg_ret": 0.0035911819193946573,
+        "profit_factor": 5.935441784062205
+      },
+      "account_without_filter": {
+        "trades": 7,
+        "wins": 3,
+        "losses": 4,
+        "hit_rate": 0.42857142857142855,
+        "avg_win": 286.8168456285718,
+        "avg_loss": -18.96115136698321,
+        "break_even_hit": 0.062009534869374015,
+        "profit_per_trade": 112.08656163111179,
+        "profit_factor": 11.344914138283896,
+        "total_pnl": 784.6059314177826,
+        "total_return": 0.007846059314177825,
+        "max_drawdown": -0.0005520094564718248,
+        "exits": {
+          "EOD": 7
+        }
+      },
+      "account_with_filter": {
+        "trades": 7,
+        "wins": 3,
+        "losses": 4,
+        "hit_rate": 0.42857142857142855,
+        "avg_win": 286.8168456285718,
+        "avg_loss": -18.96115136698321,
+        "break_even_hit": 0.062009534869374015,
+        "profit_per_trade": 112.08656163111179,
+        "profit_factor": 11.344914138283896,
+        "total_pnl": 784.6059314177826,
+        "total_return": 0.007846059314177825,
+        "max_drawdown": -0.0005520094564718248,
+        "exits": {
+          "EOD": 7
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "primary_train": [
+        "2022-03-23",
+        "2024-09-07"
+      ],
+      "filter_window": [
+        "2024-09-08",
+        "2025-01-05"
+      ],
+      "test": [
+        "2025-01-05",
+        "2025-02-15"
+      ],
+      "primary": {
+        "threshold": 0.6000000000000001,
+        "val_precision": 0.33479332055844513,
+        "val_signals": 3653,
+        "base_rate": 0.2567882761959248,
+        "train_rows": 227230,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 394,
+      "test_calls": 118,
+      "filter_cut": 0.6026957631111145,
+      "filter_keep": 0.4,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 40,
+          "avg_ret": 0.000589765061582151,
+          "hit": 0.525,
+          "cut": 0.6267442107200623
+        },
+        {
+          "keep": 0.4,
+          "n": 53,
+          "avg_ret": 0.0021258804543660367,
+          "hit": 0.5283018867924528,
+          "cut": 0.6026957631111145
+        },
+        {
+          "keep": 0.5,
+          "n": 66,
+          "avg_ret": 0.0018102140838164103,
+          "hit": 0.5,
+          "cut": 0.577307939529419
+        },
+        {
+          "keep": 0.6,
+          "n": 79,
+          "avg_ret": 0.001499773570542874,
+          "hit": 0.4810126582278481,
+          "cut": 0.519241988658905
+        },
+        {
+          "keep": 0.7,
+          "n": 92,
+          "avg_ret": 0.0018311258922346265,
+          "hit": 0.5,
+          "cut": 0.43993663787841797
+        },
+        {
+          "keep": 0.8,
+          "n": 106,
+          "avg_ret": 0.0014563344564799423,
+          "hit": 0.46226415094339623,
+          "cut": 0.381238728761673
+        },
+        {
+          "keep": 0.9,
+          "n": 119,
+          "avg_ret": 0.001568906349898466,
+          "hit": 0.48739495798319327,
+          "cut": 0.3297230899333954
+        },
+        {
+          "keep": 1.0,
+          "n": 132,
+          "avg_ret": 0.0015765577005615343,
+          "hit": 0.48484848484848486,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "adx": 0.20665894448757172,
+        "minute": 0.09931299090385437,
+        "spy_day_ret": 0.08763038367033005,
+        "ret_5": 0.08548615872859955,
+        "stock_day_ret": 0.08190495520830154,
+        "macd_rel": 0.06873039156198502,
+        "bb_pct": 0.06050306186079979,
+        "ret_30": 0.06010626628994942
+      },
+      "test_calls_kept": 43,
+      "calls_without_filter": {
+        "n": 118,
+        "hit_rate": 0.3389830508474576,
+        "avg_ret": -0.002847689385268517,
+        "profit_factor": 0.41424300857536117
+      },
+      "calls_with_filter": {
+        "n": 43,
+        "hit_rate": 0.4186046511627907,
+        "avg_ret": -0.002160555300276502,
+        "profit_factor": 0.5867122523996151
+      },
+      "account_without_filter": {
+        "trades": 36,
+        "wins": 11,
+        "losses": 25,
+        "hit_rate": 0.3055555555555556,
+        "avg_win": 81.02479305512752,
+        "avg_loss": -81.52766211792375,
+        "break_even_hit": 0.5015467901184909,
+        "profit_per_trade": -31.858856370602535,
+        "profit_factor": 0.4372860452283017,
+        "total_pnl": -1146.9188293416912,
+        "total_return": -0.011469188293416912,
+        "max_drawdown": -0.01676210428983249,
+        "exits": {
+          "EOD": 33,
+          "PROFIT_LOCK": 2,
+          "STOP_LOSS": 1
+        }
+      },
+      "account_with_filter": {
+        "trades": 18,
+        "wins": 6,
+        "losses": 12,
+        "hit_rate": 0.3333333333333333,
+        "avg_win": 89.6186698260865,
+        "avg_loss": -82.47123584494118,
+        "break_even_hit": 0.4792334304755545,
+        "profit_per_trade": -25.107933954598614,
+        "profit_factor": 0.5433328899944195,
+        "total_pnl": -451.9428111827751,
+        "total_return": -0.004519428111827751,
+        "max_drawdown": -0.009074623311619456,
+        "exits": {
+          "EOD": 15,
+          "PROFIT_LOCK": 2,
+          "STOP_LOSS": 1
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "primary_train": [
+        "2022-05-03",
+        "2024-10-18"
+      ],
+      "filter_window": [
+        "2024-10-19",
+        "2025-02-15"
+      ],
+      "test": [
+        "2025-02-15",
+        "2025-03-29"
+      ],
+      "primary": {
+        "threshold": 0.5800000000000001,
+        "val_precision": 0.3564518529543087,
+        "val_signals": 6719,
+        "base_rate": 0.26873010646471296,
+        "train_rows": 227773,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 611,
+      "test_calls": 15,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 61,
+          "avg_ret": -0.009419661039709582,
+          "hit": 0.22950819672131148,
+          "cut": 0.6847795248031616
+        },
+        {
+          "keep": 0.4,
+          "n": 82,
+          "avg_ret": -0.00925206611961483,
+          "hit": 0.21951219512195122,
+          "cut": 0.6176663041114807
+        },
+        {
+          "keep": 0.5,
+          "n": 102,
+          "avg_ret": -0.007373571130354757,
+          "hit": 0.24509803921568626,
+          "cut": 0.5374895334243774
+        },
+        {
+          "keep": 0.6,
+          "n": 122,
+          "avg_ret": -0.006824321205493168,
+          "hit": 0.2459016393442623,
+          "cut": 0.4923614263534546
+        },
+        {
+          "keep": 0.7,
+          "n": 143,
+          "avg_ret": -0.006190989117125394,
+          "hit": 0.25874125874125875,
+          "cut": 0.41280195116996765
+        },
+        {
+          "keep": 0.8,
+          "n": 163,
+          "avg_ret": -0.0054856947806628436,
+          "hit": 0.26993865030674846,
+          "cut": 0.3529071807861328
+        },
+        {
+          "keep": 0.9,
+          "n": 184,
+          "avg_ret": -0.005109014078316536,
+          "hit": 0.2608695652173913,
+          "cut": 0.24856136739253998
+        },
+        {
+          "keep": 1.0,
+          "n": 204,
+          "avg_ret": -0.004665926660159346,
+          "hit": 0.2647058823529412,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "atr_pct": 0.17296618223190308,
+        "ret_30": 0.09247703105211258,
+        "minute": 0.06666892766952515,
+        "macd_rel": 0.06620912253856659,
+        "stock_day_ret": 0.06320791691541672,
+        "bb_pct": 0.06298480927944183,
+        "vol_ratio": 0.06240585818886757,
+        "rsi": 0.059427663683891296
+      },
+      "test_calls_kept": 15,
+      "calls_without_filter": {
+        "n": 15,
+        "hit_rate": 0.4666666666666667,
+        "avg_ret": -0.0011389131735117723,
+        "profit_factor": 0.73078367617506
+      },
+      "calls_with_filter": {
+        "n": 15,
+        "hit_rate": 0.4666666666666667,
+        "avg_ret": -0.0011389131735117723,
+        "profit_factor": 0.73078367617506
+      },
+      "account_without_filter": {
+        "trades": 8,
+        "wins": 3,
+        "losses": 5,
+        "hit_rate": 0.375,
+        "avg_win": 62.973887668682146,
+        "avg_loss": -111.00467659333174,
+        "break_even_hit": 0.6380365136601387,
+        "profit_per_trade": -45.76271499507652,
+        "profit_factor": 0.34038505188058954,
+        "total_pnl": -366.1017199606122,
+        "total_return": -0.003661017199606122,
+        "max_drawdown": -0.004103799077162407,
+        "exits": {
+          "EOD": 7,
+          "STOP_LOSS": 1
+        }
+      },
+      "account_with_filter": {
+        "trades": 8,
+        "wins": 3,
+        "losses": 5,
+        "hit_rate": 0.375,
+        "avg_win": 62.973887668682146,
+        "avg_loss": -111.00467659333174,
+        "break_even_hit": 0.6380365136601387,
+        "profit_per_trade": -45.76271499507652,
+        "profit_factor": 0.34038505188058954,
+        "total_pnl": -366.1017199606122,
+        "total_return": -0.003661017199606122,
+        "max_drawdown": -0.004103799077162407,
+        "exits": {
+          "EOD": 7,
+          "STOP_LOSS": 1
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "primary_train": [
+        "2022-06-13",
+        "2024-11-27"
+      ],
+      "filter_window": [
+        "2024-11-28",
+        "2025-03-29"
+      ],
+      "test": [
+        "2025-03-29",
+        "2025-05-09"
+      ],
+      "primary": {
+        "threshold": 0.6600000000000001,
+        "val_precision": 0.36622807017543857,
+        "val_signals": 456,
+        "base_rate": 0.2672175704703871,
+        "train_rows": 228110,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 30,
+      "test_calls": 2,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "note": "too few calls to train the filter; filter off",
+      "test_calls_kept": 2,
+      "calls_without_filter": {
+        "n": 2,
+        "hit_rate": 0.0,
+        "avg_ret": -0.005083054112605345,
+        "profit_factor": 0.0
+      },
+      "calls_with_filter": {
+        "n": 2,
+        "hit_rate": 0.0,
+        "avg_ret": -0.005083054112605345,
+        "profit_factor": 0.0
+      },
+      "account_without_filter": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "hit_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": -60.99664935126414,
+        "break_even_hit": 1.0,
+        "profit_per_trade": -60.99664935126414,
+        "profit_factor": 0.0,
+        "total_pnl": -121.99329870252828,
+        "total_return": -0.0012199329870252829,
+        "max_drawdown": -0.001219932987025274,
+        "exits": {
+          "EOD": 2
+        }
+      },
+      "account_with_filter": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "hit_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": -60.99664935126414,
+        "break_even_hit": 1.0,
+        "profit_per_trade": -60.99664935126414,
+        "profit_factor": 0.0,
+        "total_pnl": -121.99329870252828,
+        "total_return": -0.0012199329870252829,
+        "max_drawdown": -0.001219932987025274,
+        "exits": {
+          "EOD": 2
+        }
+      }
+    },
+    {
+      "fold": 6,
+      "primary_train": [
+        "2022-07-24",
+        "2025-01-07"
+      ],
+      "filter_window": [
+        "2025-01-08",
+        "2025-05-09"
+      ],
+      "test": [
+        "2025-05-09",
+        "2025-06-19"
+      ],
+      "primary": {
+        "threshold": 0.5800000000000001,
+        "val_precision": 0.3537198186052212,
+        "val_signals": 8159,
+        "base_rate": 0.2656325739214736,
+        "train_rows": 226930,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 338,
+      "test_calls": 316,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 34,
+          "avg_ret": -0.002944825696479858,
+          "hit": 0.38235294117647056,
+          "cut": 0.5362933278083801
+        },
+        {
+          "keep": 0.4,
+          "n": 46,
+          "avg_ret": -0.0024835801575464056,
+          "hit": 0.391304347826087,
+          "cut": 0.4721459746360779
+        },
+        {
+          "keep": 0.5,
+          "n": 57,
+          "avg_ret": -0.002049645261648977,
+          "hit": 0.43859649122807015,
+          "cut": 0.427962988615036
+        },
+        {
+          "keep": 0.6,
+          "n": 68,
+          "avg_ret": -0.0017791030976933118,
+          "hit": 0.4411764705882353,
+          "cut": 0.343922883272171
+        },
+        {
+          "keep": 0.7,
+          "n": 80,
+          "avg_ret": -0.001913213739141059,
+          "hit": 0.4125,
+          "cut": 0.2539007067680359
+        },
+        {
+          "keep": 0.8,
+          "n": 91,
+          "avg_ret": -0.0013757544430281715,
+          "hit": 0.43956043956043955,
+          "cut": 0.20468810200691223
+        },
+        {
+          "keep": 0.9,
+          "n": 103,
+          "avg_ret": -0.0013950031438207879,
+          "hit": 0.4174757281553398,
+          "cut": 0.16212545335292816
+        },
+        {
+          "keep": 1.0,
+          "n": 114,
+          "avg_ret": -0.0010138157079644919,
+          "hit": 0.4298245614035088,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p_margin": 0.1089850515127182,
+        "ret_5": 0.0980938971042633,
+        "breadth": 0.08853211253881454,
+        "minute": 0.08357488363981247,
+        "stock_day_ret": 0.06997561454772949,
+        "spy_day_ret": 0.0641065239906311,
+        "p": 0.0640387162566185,
+        "dow": 0.06344592571258545
+      },
+      "test_calls_kept": 316,
+      "calls_without_filter": {
+        "n": 316,
+        "hit_rate": 0.3227848101265823,
+        "avg_ret": -0.001250758796501338,
+        "profit_factor": 0.54156711027767
+      },
+      "calls_with_filter": {
+        "n": 316,
+        "hit_rate": 0.3227848101265823,
+        "avg_ret": -0.001250758796501338,
+        "profit_factor": 0.54156711027767
+      },
+      "account_without_filter": {
+        "trades": 76,
+        "wins": 31,
+        "losses": 45,
+        "hit_rate": 0.40789473684210525,
+        "avg_win": 73.43735818319453,
+        "avg_loss": -71.53754919643185,
+        "break_even_hit": 0.49344780065357136,
+        "profit_per_trade": -12.403047502110567,
+        "profit_factor": 0.7071835791137162,
+        "total_pnl": -942.631610160403,
+        "total_return": -0.009426316101604031,
+        "max_drawdown": -0.016783991863462466,
+        "exits": {
+          "EOD": 73,
+          "STOP_LOSS": 3
+        }
+      },
+      "account_with_filter": {
+        "trades": 76,
+        "wins": 31,
+        "losses": 45,
+        "hit_rate": 0.40789473684210525,
+        "avg_win": 73.43735818319453,
+        "avg_loss": -71.53754919643185,
+        "break_even_hit": 0.49344780065357136,
+        "profit_per_trade": -12.403047502110567,
+        "profit_factor": 0.7071835791137162,
+        "total_pnl": -942.631610160403,
+        "total_return": -0.009426316101604031,
+        "max_drawdown": -0.016783991863462466,
+        "exits": {
+          "EOD": 73,
+          "STOP_LOSS": 3
+        }
+      }
+    },
+    {
+      "fold": 7,
+      "primary_train": [
+        "2022-09-03",
+        "2025-02-17"
+      ],
+      "filter_window": [
+        "2025-02-18",
+        "2025-06-19"
+      ],
+      "test": [
+        "2025-06-19",
+        "2025-07-30"
+      ],
+      "primary": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.40743944636678203,
+        "val_signals": 1156,
+        "base_rate": 0.26988554603617365,
+        "train_rows": 225851,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 63,
+      "test_calls": 50,
+      "filter_cut": 0.5,
+      "filter_keep": 0.7,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 6,
+          "avg_ret": -0.0019824253159435403,
+          "hit": 0.3333333333333333,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.4,
+          "n": 8,
+          "avg_ret": -0.0016462477716799456,
+          "hit": 0.375,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.5,
+          "n": 10,
+          "avg_ret": -0.0017916987849285527,
+          "hit": 0.3,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.6,
+          "n": 13,
+          "avg_ret": -0.0013079738477438545,
+          "hit": 0.38461538461538464,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.7,
+          "n": 15,
+          "avg_ret": -0.001282775440396337,
+          "hit": 0.3333333333333333,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.8,
+          "n": 17,
+          "avg_ret": -0.0014785668729471572,
+          "hit": 0.29411764705882354,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.9,
+          "n": 19,
+          "avg_ret": -0.001560696728188371,
+          "hit": 0.2631578947368421,
+          "cut": 0.5
+        },
+        {
+          "keep": 1.0,
+          "n": 21,
+          "avg_ret": -0.0016214882086975106,
+          "hit": 0.23809523809523808,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p": 0.0,
+        "p_margin": 0.0,
+        "minute": 0.0,
+        "dow": 0.0,
+        "rsi": 0.0,
+        "vol_ratio": 0.0,
+        "bb_pct": 0.0,
+        "atr_pct": 0.0
+      },
+      "test_calls_kept": 50,
+      "calls_without_filter": {
+        "n": 50,
+        "hit_rate": 0.34,
+        "avg_ret": -0.0007760300185073899,
+        "profit_factor": 0.39893195805576936
+      },
+      "calls_with_filter": {
+        "n": 50,
+        "hit_rate": 0.34,
+        "avg_ret": -0.0007760300185073899,
+        "profit_factor": 0.39893195805576936
+      },
+      "account_without_filter": {
+        "trades": 17,
+        "wins": 6,
+        "losses": 11,
+        "hit_rate": 0.35294117647058826,
+        "avg_win": 21.72634185883797,
+        "avg_loss": -37.09988510894154,
+        "break_even_hit": 0.6306691253420351,
+        "profit_per_trade": -16.3376873556076,
+        "profit_factor": 0.31942772567094424,
+        "total_pnl": -277.7406850453292,
+        "total_return": -0.002777406850453292,
+        "max_drawdown": -0.002931370237412745,
+        "exits": {
+          "EOD": 17
+        }
+      },
+      "account_with_filter": {
+        "trades": 17,
+        "wins": 6,
+        "losses": 11,
+        "hit_rate": 0.35294117647058826,
+        "avg_win": 21.72634185883797,
+        "avg_loss": -37.09988510894154,
+        "break_even_hit": 0.6306691253420351,
+        "profit_per_trade": -16.3376873556076,
+        "profit_factor": 0.31942772567094424,
+        "total_pnl": -277.7406850453292,
+        "total_return": -0.002777406850453292,
+        "max_drawdown": -0.002931370237412745,
+        "exits": {
+          "EOD": 17
+        }
+      }
+    },
+    {
+      "fold": 8,
+      "primary_train": [
+        "2022-10-14",
+        "2025-03-31"
+      ],
+      "filter_window": [
+        "2025-04-01",
+        "2025-07-30"
+      ],
+      "test": [
+        "2025-07-30",
+        "2025-09-09"
+      ],
+      "primary": {
+        "threshold": 0.6600000000000001,
+        "val_precision": 0.4257748776508972,
+        "val_signals": 613,
+        "base_rate": 0.2664765946160987,
+        "train_rows": 226227,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 55,
+      "test_calls": 29,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "note": "too few calls to train the filter; filter off",
+      "test_calls_kept": 29,
+      "calls_without_filter": {
+        "n": 29,
+        "hit_rate": 0.3793103448275862,
+        "avg_ret": -0.0017961245041544275,
+        "profit_factor": 0.2176083661236845
+      },
+      "calls_with_filter": {
+        "n": 29,
+        "hit_rate": 0.3793103448275862,
+        "avg_ret": -0.0017961245041544275,
+        "profit_factor": 0.2176083661236845
+      },
+      "account_without_filter": {
+        "trades": 9,
+        "wins": 2,
+        "losses": 7,
+        "hit_rate": 0.2222222222222222,
+        "avg_win": 20.348216719483585,
+        "avg_loss": -43.67668880359211,
+        "break_even_hit": 0.6821827919425866,
+        "profit_per_trade": -29.448932020686396,
+        "profit_factor": 0.13310936256432965,
+        "total_pnl": -265.04038818617755,
+        "total_return": -0.0026504038818617754,
+        "max_drawdown": -0.0026504038818616626,
+        "exits": {
+          "EOD": 9
+        }
+      },
+      "account_with_filter": {
+        "trades": 9,
+        "wins": 2,
+        "losses": 7,
+        "hit_rate": 0.2222222222222222,
+        "avg_win": 20.348216719483585,
+        "avg_loss": -43.67668880359211,
+        "break_even_hit": 0.6821827919425866,
+        "profit_per_trade": -29.448932020686396,
+        "profit_factor": 0.13310936256432965,
+        "total_pnl": -265.04038818617755,
+        "total_return": -0.0026504038818617754,
+        "max_drawdown": -0.0026504038818616626,
+        "exits": {
+          "EOD": 9
+        }
+      }
+    },
+    {
+      "fold": 9,
+      "primary_train": [
+        "2022-11-23",
+        "2025-05-11"
+      ],
+      "filter_window": [
+        "2025-05-12",
+        "2025-09-09"
+      ],
+      "test": [
+        "2025-09-09",
+        "2025-10-20"
+      ],
+      "primary": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.3573717948717949,
+        "val_signals": 1872,
+        "base_rate": 0.28067197248616593,
+        "train_rows": 226793,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 180,
+      "test_calls": 56,
+      "filter_cut": 0.5010075569152832,
+      "filter_keep": 0.5,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 18,
+          "avg_ret": -0.000793099921638211,
+          "hit": 0.2777777777777778,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.4,
+          "n": 24,
+          "avg_ret": -0.0010650982183992713,
+          "hit": 0.25,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.5,
+          "n": 30,
+          "avg_ret": -0.0007132605669804745,
+          "hit": 0.3,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.6,
+          "n": 36,
+          "avg_ret": -0.0007183237675956466,
+          "hit": 0.3611111111111111,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.7,
+          "n": 42,
+          "avg_ret": -0.0009414196074316964,
+          "hit": 0.35714285714285715,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.8,
+          "n": 48,
+          "avg_ret": -0.0009593795312045327,
+          "hit": 0.3333333333333333,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 0.9,
+          "n": 54,
+          "avg_ret": -0.0011035277697686431,
+          "hit": 0.2962962962962963,
+          "cut": 0.5010075569152832
+        },
+        {
+          "keep": 1.0,
+          "n": 60,
+          "avg_ret": -0.0011382337664730328,
+          "hit": 0.31666666666666665,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p": 0.0,
+        "p_margin": 0.0,
+        "minute": 0.0,
+        "dow": 0.0,
+        "rsi": 0.0,
+        "vol_ratio": 0.0,
+        "bb_pct": 0.0,
+        "atr_pct": 0.0
+      },
+      "test_calls_kept": 56,
+      "calls_without_filter": {
+        "n": 56,
+        "hit_rate": 0.48214285714285715,
+        "avg_ret": -2.2739096441479596e-05,
+        "profit_factor": 0.9825648416604696
+      },
+      "calls_with_filter": {
+        "n": 56,
+        "hit_rate": 0.48214285714285715,
+        "avg_ret": -2.2739096441479596e-05,
+        "profit_factor": 0.9825648416604696
+      },
+      "account_without_filter": {
+        "trades": 17,
+        "wins": 9,
+        "losses": 8,
+        "hit_rate": 0.5294117647058824,
+        "avg_win": 49.16957718077467,
+        "avg_loss": -36.1180474528792,
+        "break_even_hit": 0.4234852079421999,
+        "profit_per_trade": 9.034224411996375,
+        "profit_factor": 1.5315272621128893,
+        "total_pnl": 153.58181500393837,
+        "total_return": 0.0015358181500393837,
+        "max_drawdown": -0.001944740894998076,
+        "exits": {
+          "EOD": 17
+        }
+      },
+      "account_with_filter": {
+        "trades": 17,
+        "wins": 9,
+        "losses": 8,
+        "hit_rate": 0.5294117647058824,
+        "avg_win": 49.16957718077467,
+        "avg_loss": -36.1180474528792,
+        "break_even_hit": 0.4234852079421999,
+        "profit_per_trade": 9.034224411996375,
+        "profit_factor": 1.5315272621128893,
+        "total_pnl": 153.58181500393837,
+        "total_return": 0.0015358181500393837,
+        "max_drawdown": -0.001944740894998076,
+        "exits": {
+          "EOD": 17
+        }
+      }
+    },
+    {
+      "fold": 10,
+      "primary_train": [
+        "2023-01-03",
+        "2025-06-21"
+      ],
+      "filter_window": [
+        "2025-06-22",
+        "2025-10-20"
+      ],
+      "test": [
+        "2025-10-20",
+        "2025-11-29"
+      ],
+      "primary": {
+        "threshold": 0.6600000000000001,
+        "val_precision": 0.38210399032648124,
+        "val_signals": 827,
+        "base_rate": 0.2823094263640542,
+        "train_rows": 228453,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 29,
+      "test_calls": 21,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "note": "too few calls to train the filter; filter off",
+      "test_calls_kept": 21,
+      "calls_without_filter": {
+        "n": 21,
+        "hit_rate": 0.3333333333333333,
+        "avg_ret": -0.00017763137899967375,
+        "profit_factor": 0.8740232804238225
+      },
+      "calls_with_filter": {
+        "n": 21,
+        "hit_rate": 0.3333333333333333,
+        "avg_ret": -0.00017763137899967375,
+        "profit_factor": 0.8740232804238225
+      },
+      "account_without_filter": {
+        "trades": 4,
+        "wins": 2,
+        "losses": 2,
+        "hit_rate": 0.5,
+        "avg_win": 42.540868925593884,
+        "avg_loss": -23.005058407364825,
+        "break_even_hit": 0.350976168061583,
+        "profit_per_trade": 9.767905259114528,
+        "profit_factor": 1.8491963016262056,
+        "total_pnl": 39.07162103645811,
+        "total_return": 0.0003907162103645811,
+        "max_drawdown": -0.0002759584076931221,
+        "exits": {
+          "EOD": 4
+        }
+      },
+      "account_with_filter": {
+        "trades": 4,
+        "wins": 2,
+        "losses": 2,
+        "hit_rate": 0.5,
+        "avg_win": 42.540868925593884,
+        "avg_loss": -23.005058407364825,
+        "break_even_hit": 0.350976168061583,
+        "profit_per_trade": 9.767905259114528,
+        "profit_factor": 1.8491963016262056,
+        "total_pnl": 39.07162103645811,
+        "total_return": 0.0003907162103645811,
+        "max_drawdown": -0.0002759584076931221,
+        "exits": {
+          "EOD": 4
+        }
+      }
+    },
+    {
+      "fold": 11,
+      "primary_train": [
+        "2023-02-13",
+        "2025-08-01"
+      ],
+      "filter_window": [
+        "2025-08-02",
+        "2025-11-29"
+      ],
+      "test": [
+        "2025-11-29",
+        "2026-01-09"
+      ],
+      "primary": {
+        "threshold": 0.6200000000000001,
+        "val_precision": 0.3586550435865504,
+        "val_signals": 4015,
+        "base_rate": 0.2749934457747094,
+        "train_rows": 228857,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 435,
+      "test_calls": 130,
+      "filter_cut": 0.5792683362960815,
+      "filter_keep": 0.3,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 44,
+          "avg_ret": 0.001082912076002234,
+          "hit": 0.38636363636363635,
+          "cut": 0.5792683362960815
+        },
+        {
+          "keep": 0.4,
+          "n": 59,
+          "avg_ret": 0.0001597927845032368,
+          "hit": 0.3389830508474576,
+          "cut": 0.5359258055686951
+        },
+        {
+          "keep": 0.5,
+          "n": 74,
+          "avg_ret": -0.00013776629686572582,
+          "hit": 0.32432432432432434,
+          "cut": 0.4866955280303955
+        },
+        {
+          "keep": 0.6,
+          "n": 88,
+          "avg_ret": -0.00022936851014958293,
+          "hit": 0.32954545454545453,
+          "cut": 0.4501156806945801
+        },
+        {
+          "keep": 0.7,
+          "n": 103,
+          "avg_ret": -0.0005452489597019838,
+          "hit": 0.3106796116504854,
+          "cut": 0.40068161487579346
+        },
+        {
+          "keep": 0.8,
+          "n": 118,
+          "avg_ret": -0.0006995380768444927,
+          "hit": 0.2966101694915254,
+          "cut": 0.3631659746170044
+        },
+        {
+          "keep": 0.9,
+          "n": 132,
+          "avg_ret": -0.0009745001349653716,
+          "hit": 0.2803030303030303,
+          "cut": 0.3154294788837433
+        },
+        {
+          "keep": 1.0,
+          "n": 147,
+          "avg_ret": -0.001168730544554864,
+          "hit": 0.2585034013605442,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "spy_day_ret": 0.13266906142234802,
+        "rsi": 0.09035244584083557,
+        "atr_pct": 0.08415716886520386,
+        "ret_30": 0.0802442878484726,
+        "adx": 0.07802151888608932,
+        "ret_5": 0.073252834379673,
+        "minute": 0.07138413190841675,
+        "macd_rel": 0.07056804746389389
+      },
+      "test_calls_kept": 42,
+      "calls_without_filter": {
+        "n": 130,
+        "hit_rate": 0.4230769230769231,
+        "avg_ret": -0.00024238151158720257,
+        "profit_factor": 0.8484298479192109
+      },
+      "calls_with_filter": {
+        "n": 42,
+        "hit_rate": 0.3333333333333333,
+        "avg_ret": -0.0013334070497022035,
+        "profit_factor": 0.3975810560005156
+      },
+      "account_without_filter": {
+        "trades": 36,
+        "wins": 15,
+        "losses": 21,
+        "hit_rate": 0.4166666666666667,
+        "avg_win": 40.56121128874627,
+        "avg_loss": -36.65452270226704,
+        "break_even_hit": 0.47470276856441,
+        "profit_per_trade": -4.481300206011491,
+        "profit_factor": 0.790415251427732,
+        "total_pnl": -161.32680741641366,
+        "total_return": -0.0016132680741641366,
+        "max_drawdown": -0.004726760460080914,
+        "exits": {
+          "EOD": 36
+        }
+      },
+      "account_with_filter": {
+        "trades": 21,
+        "wins": 7,
+        "losses": 14,
+        "hit_rate": 0.3333333333333333,
+        "avg_win": 42.098216362272304,
+        "avg_loss": -40.15404850740524,
+        "break_even_hit": 0.4881816758605526,
+        "profit_per_trade": -12.736626884179397,
+        "profit_factor": 0.5242088646990168,
+        "total_pnl": -267.46916456776734,
+        "total_return": -0.0026746916456776735,
+        "max_drawdown": -0.0036000182553261872,
+        "exits": {
+          "EOD": 21
+        }
+      }
+    },
+    {
+      "fold": 12,
+      "primary_train": [
+        "2023-03-27",
+        "2025-09-11"
+      ],
+      "filter_window": [
+        "2025-09-12",
+        "2026-01-09"
+      ],
+      "test": [
+        "2026-01-09",
+        "2026-02-19"
+      ],
+      "primary": {
+        "threshold": 0.5800000000000001,
+        "val_precision": 0.36761358012471546,
+        "val_signals": 10103,
+        "base_rate": 0.2660332541567696,
+        "train_rows": 229444,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 907,
+      "test_calls": 176,
+      "filter_cut": 0.22436906397342682,
+      "filter_keep": 0.9,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 92,
+          "avg_ret": -0.002363927365854592,
+          "hit": 0.32608695652173914,
+          "cut": 0.5683519840240479
+        },
+        {
+          "keep": 0.4,
+          "n": 122,
+          "avg_ret": -0.0024438249089964396,
+          "hit": 0.3114754098360656,
+          "cut": 0.5179398655891418
+        },
+        {
+          "keep": 0.5,
+          "n": 152,
+          "avg_ret": -0.0018065531584441497,
+          "hit": 0.34210526315789475,
+          "cut": 0.46824052929878235
+        },
+        {
+          "keep": 0.6,
+          "n": 183,
+          "avg_ret": -0.0017552318099984495,
+          "hit": 0.36065573770491804,
+          "cut": 0.41402316093444824
+        },
+        {
+          "keep": 0.7,
+          "n": 214,
+          "avg_ret": -0.0019011015657063297,
+          "hit": 0.35046728971962615,
+          "cut": 0.33814725279808044
+        },
+        {
+          "keep": 0.8,
+          "n": 244,
+          "avg_ret": -0.0016287696057017595,
+          "hit": 0.3483606557377049,
+          "cut": 0.28075337409973145
+        },
+        {
+          "keep": 0.9,
+          "n": 274,
+          "avg_ret": -0.0014964067300992873,
+          "hit": 0.3467153284671533,
+          "cut": 0.22436906397342682
+        },
+        {
+          "keep": 1.0,
+          "n": 305,
+          "avg_ret": -0.0015696111408314852,
+          "hit": 0.3442622950819672,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "spy_day_ret": 0.10964816063642502,
+        "minute": 0.0829191505908966,
+        "stock_day_ret": 0.07297949492931366,
+        "p_margin": 0.07238387316465378,
+        "rsi": 0.07070490717887878,
+        "vol_ratio": 0.06512340158224106,
+        "adx": 0.06415051966905594,
+        "bb_pct": 0.06391562521457672
+      },
+      "test_calls_kept": 166,
+      "calls_without_filter": {
+        "n": 176,
+        "hit_rate": 0.19318181818181818,
+        "avg_ret": -0.0043315664796196324,
+        "profit_factor": 0.1609033096875808
+      },
+      "calls_with_filter": {
+        "n": 166,
+        "hit_rate": 0.1927710843373494,
+        "avg_ret": -0.0043500060760129425,
+        "profit_factor": 0.16770370311404767
+      },
+      "account_without_filter": {
+        "trades": 40,
+        "wins": 8,
+        "losses": 32,
+        "hit_rate": 0.2,
+        "avg_win": 66.54474544653917,
+        "avg_loss": -82.52890361216144,
+        "break_even_hit": 0.5536116150189905,
+        "profit_per_trade": -52.714173800421314,
+        "profit_factor": 0.20158012082427915,
+        "total_pnl": -2108.5669520168526,
+        "total_return": -0.021085669520168528,
+        "max_drawdown": -0.02108566952016855,
+        "exits": {
+          "EOD": 36,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 3
+        }
+      },
+      "account_with_filter": {
+        "trades": 39,
+        "wins": 8,
+        "losses": 31,
+        "hit_rate": 0.20512820512820512,
+        "avg_win": 66.54474544653917,
+        "avg_loss": -84.04633797048699,
+        "break_even_hit": 0.5581096573808468,
+        "profit_per_trade": -53.155859320840605,
+        "profit_factor": 0.20432582726710857,
+        "total_pnl": -2073.0785135127835,
+        "total_return": -0.020730785135127834,
+        "max_drawdown": -0.020730785135127827,
+        "exits": {
+          "EOD": 35,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 3
+        }
+      }
+    },
+    {
+      "fold": 13,
+      "primary_train": [
+        "2023-05-07",
+        "2025-10-22"
+      ],
+      "filter_window": [
+        "2025-10-23",
+        "2026-02-19"
+      ],
+      "test": [
+        "2026-02-19",
+        "2026-04-02"
+      ],
+      "primary": {
+        "threshold": 0.6200000000000001,
+        "val_precision": 0.39196472317491426,
+        "val_signals": 4082,
+        "base_rate": 0.2537715751489066,
+        "train_rows": 230006,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 335,
+      "test_calls": 29,
+      "filter_cut": 0.4330713748931885,
+      "filter_keep": 0.8,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 34,
+          "avg_ret": -0.0019665059659006545,
+          "hit": 0.20588235294117646,
+          "cut": 0.6211243271827698
+        },
+        {
+          "keep": 0.4,
+          "n": 45,
+          "avg_ret": -0.0022566795392708772,
+          "hit": 0.17777777777777778,
+          "cut": 0.5527339577674866
+        },
+        {
+          "keep": 0.5,
+          "n": 56,
+          "avg_ret": -0.002119909444852301,
+          "hit": 0.17857142857142858,
+          "cut": 0.5300511717796326
+        },
+        {
+          "keep": 0.6,
+          "n": 68,
+          "avg_ret": -0.0018092148847433686,
+          "hit": 0.23529411764705882,
+          "cut": 0.49449270963668823
+        },
+        {
+          "keep": 0.7,
+          "n": 79,
+          "avg_ret": -0.001799590923976233,
+          "hit": 0.24050632911392406,
+          "cut": 0.46650075912475586
+        },
+        {
+          "keep": 0.8,
+          "n": 90,
+          "avg_ret": -0.001618306886981058,
+          "hit": 0.26666666666666666,
+          "cut": 0.4330713748931885
+        },
+        {
+          "keep": 0.9,
+          "n": 102,
+          "avg_ret": -0.0017534670154765381,
+          "hit": 0.23529411764705882,
+          "cut": 0.3764001727104187
+        },
+        {
+          "keep": 1.0,
+          "n": 113,
+          "avg_ret": -0.0017809528664254985,
+          "hit": 0.24778761061946902,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "minute": 0.1228119283914566,
+        "spy_day_ret": 0.09545809775590897,
+        "adx": 0.0922480896115303,
+        "ret_30": 0.07623916864395142,
+        "atr_pct": 0.07089300453662872,
+        "breadth": 0.06706949323415756,
+        "ret_5": 0.06611113995313644,
+        "bb_pct": 0.06483924388885498
+      },
+      "test_calls_kept": 21,
+      "calls_without_filter": {
+        "n": 29,
+        "hit_rate": 0.5517241379310345,
+        "avg_ret": -0.002500170795207081,
+        "profit_factor": 0.3250963401079487
+      },
+      "calls_with_filter": {
+        "n": 21,
+        "hit_rate": 0.5714285714285714,
+        "avg_ret": -0.00248561669941331,
+        "profit_factor": 0.3375317617038284
+      },
+      "account_without_filter": {
+        "trades": 7,
+        "wins": 4,
+        "losses": 3,
+        "hit_rate": 0.5714285714285714,
+        "avg_win": 21.626040165143905,
+        "avg_loss": -51.973466683629084,
+        "break_even_hit": 0.7061659637260946,
+        "profit_per_trade": -9.916605627187378,
+        "profit_factor": 0.5547969389017956,
+        "total_pnl": -69.41623939031165,
+        "total_return": -0.0006941623939031164,
+        "max_drawdown": -0.0014879044432996036,
+        "exits": {
+          "EOD": 6,
+          "STOP_LOSS": 1
+        }
+      },
+      "account_with_filter": {
+        "trades": 7,
+        "wins": 4,
+        "losses": 3,
+        "hit_rate": 0.5714285714285714,
+        "avg_win": 21.624002369217223,
+        "avg_loss": -57.170696160264335,
+        "break_even_hit": 0.725565262983696,
+        "profit_per_trade": -12.145154143417736,
+        "profit_factor": 0.5043143619964446,
+        "total_pnl": -85.01607900392415,
+        "total_return": -0.0008501607900392415,
+        "max_drawdown": -0.0014966249516631391,
+        "exits": {
+          "EOD": 6,
+          "STOP_LOSS": 1
+        }
+      }
+    },
+    {
+      "fold": 14,
+      "primary_train": [
+        "2023-06-17",
+        "2025-12-01"
+      ],
+      "filter_window": [
+        "2025-12-02",
+        "2026-04-02"
+      ],
+      "test": [
+        "2026-04-02",
+        "2026-05-13"
+      ],
+      "primary": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.44749403341288785,
+        "val_signals": 1676,
+        "base_rate": 0.254071661237785,
+        "train_rows": 230246,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 120,
+      "test_calls": 103,
+      "filter_cut": 0.5082279443740845,
+      "filter_keep": 0.9,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 12,
+          "avg_ret": -0.0020201949591812187,
+          "hit": 0.16666666666666666,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.4,
+          "n": 16,
+          "avg_ret": -0.00144234232203546,
+          "hit": 0.25,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.5,
+          "n": 20,
+          "avg_ret": -0.0008970186449847762,
+          "hit": 0.3,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.6,
+          "n": 24,
+          "avg_ret": -0.0009352895423765106,
+          "hit": 0.3333333333333333,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.7,
+          "n": 28,
+          "avg_ret": -0.00029555328616429066,
+          "hit": 0.39285714285714285,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.8,
+          "n": 32,
+          "avg_ret": -0.00029706361867033737,
+          "hit": 0.40625,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 0.9,
+          "n": 36,
+          "avg_ret": -6.61395705674349e-06,
+          "hit": 0.4722222222222222,
+          "cut": 0.5082279443740845
+        },
+        {
+          "keep": 1.0,
+          "n": 40,
+          "avg_ret": -0.0004954677598015461,
+          "hit": 0.475,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p": 0.0,
+        "p_margin": 0.0,
+        "minute": 0.0,
+        "dow": 0.0,
+        "rsi": 0.0,
+        "vol_ratio": 0.0,
+        "bb_pct": 0.0,
+        "atr_pct": 0.0
+      },
+      "test_calls_kept": 103,
+      "calls_without_filter": {
+        "n": 103,
+        "hit_rate": 0.49514563106796117,
+        "avg_ret": -1.4720880850507848e-06,
+        "profit_factor": 0.9987216185821717
+      },
+      "calls_with_filter": {
+        "n": 103,
+        "hit_rate": 0.49514563106796117,
+        "avg_ret": -1.4720880850507848e-06,
+        "profit_factor": 0.9987216185821717
+      },
+      "account_without_filter": {
+        "trades": 25,
+        "wins": 12,
+        "losses": 13,
+        "hit_rate": 0.48,
+        "avg_win": 29.88748325557518,
+        "avg_loss": -36.68256646449221,
+        "break_even_hit": 0.5510370897835507,
+        "profit_per_trade": -4.728942598859866,
+        "profit_factor": 0.7520860381667763,
+        "total_pnl": -118.22356497149664,
+        "total_return": -0.0011822356497149665,
+        "max_drawdown": -0.002202950140639204,
+        "exits": {
+          "EOD": 25
+        }
+      },
+      "account_with_filter": {
+        "trades": 25,
+        "wins": 12,
+        "losses": 13,
+        "hit_rate": 0.48,
+        "avg_win": 29.88748325557518,
+        "avg_loss": -36.68256646449221,
+        "break_even_hit": 0.5510370897835507,
+        "profit_per_trade": -4.728942598859866,
+        "profit_factor": 0.7520860381667763,
+        "total_pnl": -118.22356497149664,
+        "total_return": -0.0011822356497149665,
+        "max_drawdown": -0.002202950140639204,
+        "exits": {
+          "EOD": 25
+        }
+      }
+    },
+    {
+      "fold": 15,
+      "primary_train": [
+        "2023-07-28",
+        "2026-01-11"
+      ],
+      "filter_window": [
+        "2026-01-12",
+        "2026-05-13"
+      ],
+      "test": [
+        "2026-05-13",
+        "2026-06-23"
+      ],
+      "primary": {
+        "threshold": 0.6600000000000001,
+        "val_precision": 0.4662104362703165,
+        "val_signals": 1169,
+        "base_rate": 0.24469788781163435,
+        "train_rows": 231039,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 120,
+      "test_calls": 50,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 12,
+          "avg_ret": -0.0015752537155016382,
+          "hit": 0.16666666666666666,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.4,
+          "n": 16,
+          "avg_ret": -0.0012840362697494057,
+          "hit": 0.25,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.5,
+          "n": 20,
+          "avg_ret": -0.0012101096846605986,
+          "hit": 0.25,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.6,
+          "n": 24,
+          "avg_ret": -0.0013024627711098792,
+          "hit": 0.20833333333333334,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.7,
+          "n": 28,
+          "avg_ret": -0.0012568936174777842,
+          "hit": 0.17857142857142858,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.8,
+          "n": 32,
+          "avg_ret": -0.000928126238397553,
+          "hit": 0.25,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 0.9,
+          "n": 36,
+          "avg_ret": -0.0007802861399483373,
+          "hit": 0.2777777777777778,
+          "cut": 0.5039471983909607
+        },
+        {
+          "keep": 1.0,
+          "n": 40,
+          "avg_ret": -0.0006922986911083561,
+          "hit": 0.325,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p": 0.0,
+        "p_margin": 0.0,
+        "minute": 0.0,
+        "dow": 0.0,
+        "rsi": 0.0,
+        "vol_ratio": 0.0,
+        "bb_pct": 0.0,
+        "atr_pct": 0.0
+      },
+      "test_calls_kept": 50,
+      "calls_without_filter": {
+        "n": 50,
+        "hit_rate": 0.3,
+        "avg_ret": -0.0019485874060864439,
+        "profit_factor": 0.3143291782426983
+      },
+      "calls_with_filter": {
+        "n": 50,
+        "hit_rate": 0.3,
+        "avg_ret": -0.0019485874060864439,
+        "profit_factor": 0.3143291782426983
+      },
+      "account_without_filter": {
+        "trades": 17,
+        "wins": 4,
+        "losses": 13,
+        "hit_rate": 0.23529411764705882,
+        "avg_win": 39.499950189945615,
+        "avg_loss": -55.44280181800624,
+        "break_even_hit": 0.5839603407889701,
+        "profit_per_trade": -33.10333075731168,
+        "profit_factor": 0.2192138641833277,
+        "total_pnl": -562.7566228742986,
+        "total_return": -0.005627566228742986,
+        "max_drawdown": -0.005627566228742942,
+        "exits": {
+          "EOD": 17
+        }
+      },
+      "account_with_filter": {
+        "trades": 17,
+        "wins": 4,
+        "losses": 13,
+        "hit_rate": 0.23529411764705882,
+        "avg_win": 39.499950189945615,
+        "avg_loss": -55.44280181800624,
+        "break_even_hit": 0.5839603407889701,
+        "profit_per_trade": -33.10333075731168,
+        "profit_factor": 0.2192138641833277,
+        "total_pnl": -562.7566228742986,
+        "total_return": -0.005627566228742986,
+        "max_drawdown": -0.005627566228742942,
+        "exits": {
+          "EOD": 17
+        }
+      }
+    },
+    {
+      "fold": 16,
+      "primary_train": [
+        "2023-09-07",
+        "2026-02-21"
+      ],
+      "filter_window": [
+        "2026-02-22",
+        "2026-06-23"
+      ],
+      "test": [
+        "2026-06-23",
+        "2026-08-03"
+      ],
+      "primary": {
+        "threshold": 0.6600000000000001,
+        "val_precision": 0.43412033511043413,
+        "val_signals": 1313,
+        "base_rate": 0.24623169681309215,
+        "train_rows": 232200,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 110,
+      "test_calls": 30,
+      "filter_cut": 0.5,
+      "filter_keep": 0.6,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 11,
+          "avg_ret": -0.004644474133321878,
+          "hit": 0.0,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.4,
+          "n": 15,
+          "avg_ret": -0.00348089659191743,
+          "hit": 0.13333333333333333,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.5,
+          "n": 18,
+          "avg_ret": -0.002185630290706996,
+          "hit": 0.2777777777777778,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.6,
+          "n": 22,
+          "avg_ret": -0.001971064586158099,
+          "hit": 0.36363636363636365,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.7,
+          "n": 26,
+          "avg_ret": -0.002702209442270923,
+          "hit": 0.3076923076923077,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.8,
+          "n": 30,
+          "avg_ret": -0.002817072528730857,
+          "hit": 0.26666666666666666,
+          "cut": 0.5
+        },
+        {
+          "keep": 0.9,
+          "n": 33,
+          "avg_ret": -0.002921846788909731,
+          "hit": 0.24242424242424243,
+          "cut": 0.5
+        },
+        {
+          "keep": 1.0,
+          "n": 37,
+          "avg_ret": -0.002826037259788679,
+          "hit": 0.24324324324324326,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "p": 0.0,
+        "p_margin": 0.0,
+        "minute": 0.0,
+        "dow": 0.0,
+        "rsi": 0.0,
+        "vol_ratio": 0.0,
+        "bb_pct": 0.0,
+        "atr_pct": 0.0
+      },
+      "test_calls_kept": 30,
+      "calls_without_filter": {
+        "n": 30,
+        "hit_rate": 0.4666666666666667,
+        "avg_ret": 0.0008298853478564442,
+        "profit_factor": 1.6699360112779527
+      },
+      "calls_with_filter": {
+        "n": 30,
+        "hit_rate": 0.4666666666666667,
+        "avg_ret": 0.0008298853478564442,
+        "profit_factor": 1.6699360112779527
+      },
+      "account_without_filter": {
+        "trades": 11,
+        "wins": 5,
+        "losses": 6,
+        "hit_rate": 0.45454545454545453,
+        "avg_win": 40.74750646165301,
+        "avg_loss": -25.650579264350274,
+        "break_even_hit": 0.38631504182514126,
+        "profit_per_trade": 4.530368792923944,
+        "profit_factor": 1.323800723358477,
+        "total_pnl": 49.834056722163375,
+        "total_return": 0.0004983405672216337,
+        "max_drawdown": -0.0008361862451575774,
+        "exits": {
+          "EOD": 11
+        }
+      },
+      "account_with_filter": {
+        "trades": 11,
+        "wins": 5,
+        "losses": 6,
+        "hit_rate": 0.45454545454545453,
+        "avg_win": 40.74750646165301,
+        "avg_loss": -25.650579264350274,
+        "break_even_hit": 0.38631504182514126,
+        "profit_per_trade": 4.530368792923944,
+        "profit_factor": 1.323800723358477,
+        "total_pnl": 49.834056722163375,
+        "total_return": 0.0004983405672216337,
+        "max_drawdown": -0.0008361862451575774,
+        "exits": {
+          "EOD": 11
+        }
+      }
+    },
+    {
+      "fold": 17,
+      "primary_train": [
+        "2023-10-18",
+        "2026-04-04"
+      ],
+      "filter_window": [
+        "2026-04-05",
+        "2026-08-03"
+      ],
+      "test": [
+        "2026-08-03",
+        "2026-09-13"
+      ],
+      "primary": {
+        "threshold": 0.6800000000000002,
+        "val_precision": 0.3815028901734104,
+        "val_signals": 865,
+        "base_rate": 0.24811547027582662,
+        "train_rows": 233477,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 51,
+      "test_calls": 22,
+      "filter_cut": 0.0,
+      "filter_keep": 1.0,
+      "note": "too few calls to train the filter; filter off",
+      "test_calls_kept": 22,
+      "calls_without_filter": {
+        "n": 22,
+        "hit_rate": 0.4090909090909091,
+        "avg_ret": -0.000478794220612659,
+        "profit_factor": 0.6768048620675753
+      },
+      "calls_with_filter": {
+        "n": 22,
+        "hit_rate": 0.4090909090909091,
+        "avg_ret": -0.000478794220612659,
+        "profit_factor": 0.6768048620675753
+      },
+      "account_without_filter": {
+        "trades": 8,
+        "wins": 2,
+        "losses": 6,
+        "hit_rate": 0.25,
+        "avg_win": 23.525501755548397,
+        "avg_loss": -29.98319007028654,
+        "break_even_hit": 0.5603424237669389,
+        "profit_per_trade": -16.606017113827804,
+        "profit_factor": 0.2615410134856671,
+        "total_pnl": -132.84813691062243,
+        "total_return": -0.0013284813691062244,
+        "max_drawdown": -0.0016090093857245025,
+        "exits": {
+          "EOD": 8
+        }
+      },
+      "account_with_filter": {
+        "trades": 8,
+        "wins": 2,
+        "losses": 6,
+        "hit_rate": 0.25,
+        "avg_win": 23.525501755548397,
+        "avg_loss": -29.98319007028654,
+        "break_even_hit": 0.5603424237669389,
+        "profit_per_trade": -16.606017113827804,
+        "profit_factor": 0.2615410134856671,
+        "total_pnl": -132.84813691062243,
+        "total_return": -0.0013284813691062244,
+        "max_drawdown": -0.0016090093857245025,
+        "exits": {
+          "EOD": 8
+        }
+      }
+    },
+    {
+      "fold": 18,
+      "primary_train": [
+        "2023-11-27",
+        "2026-05-15"
+      ],
+      "filter_window": [
+        "2026-05-16",
+        "2026-09-13"
+      ],
+      "test": [
+        "2026-09-13",
+        "2026-10-24"
+      ],
+      "primary": {
+        "threshold": 0.6000000000000001,
+        "val_precision": 0.36049891014773555,
+        "val_signals": 8258,
+        "base_rate": 0.26271132376395534,
+        "train_rows": 235122,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 649,
+      "test_calls": 205,
+      "filter_cut": 0.4385308623313904,
+      "filter_keep": 0.5,
+      "filter_pick_table": [
+        {
+          "keep": 0.3,
+          "n": 66,
+          "avg_ret": 0.0008224186947433788,
+          "hit": 0.4393939393939394,
+          "cut": 0.5391735434532166
+        },
+        {
+          "keep": 0.4,
+          "n": 88,
+          "avg_ret": 0.000729387084216387,
+          "hit": 0.45454545454545453,
+          "cut": 0.48328912258148193
+        },
+        {
+          "keep": 0.5,
+          "n": 110,
+          "avg_ret": 0.000843312752315946,
+          "hit": 0.4818181818181818,
+          "cut": 0.4385308623313904
+        },
+        {
+          "keep": 0.6,
+          "n": 132,
+          "avg_ret": 0.0005094221529296118,
+          "hit": 0.48484848484848486,
+          "cut": 0.3915133476257324
+        },
+        {
+          "keep": 0.7,
+          "n": 154,
+          "avg_ret": 0.0003838841941007913,
+          "hit": 0.487012987012987,
+          "cut": 0.3406917154788971
+        },
+        {
+          "keep": 0.8,
+          "n": 176,
+          "avg_ret": 0.0003710519162423961,
+          "hit": 0.4772727272727273,
+          "cut": 0.29676494002342224
+        },
+        {
+          "keep": 0.9,
+          "n": 198,
+          "avg_ret": 0.00019930435970145273,
+          "hit": 0.46464646464646464,
+          "cut": 0.24140946567058563
+        },
+        {
+          "keep": 1.0,
+          "n": 220,
+          "avg_ret": -0.00015520377735172514,
+          "hit": 0.43636363636363634,
+          "cut": 0.0
+        }
+      ],
+      "filter_importance": {
+        "spy_day_ret": 0.10700434446334839,
+        "dow": 0.08387994766235352,
+        "p": 0.08004529029130936,
+        "p_margin": 0.07697238773107529,
+        "bb_pct": 0.07518840581178665,
+        "ret_5": 0.06982074677944183,
+        "macd_rel": 0.06912655383348465,
+        "ret_30": 0.06666817516088486
+      },
+      "test_calls_kept": 112,
+      "calls_without_filter": {
+        "n": 205,
+        "hit_rate": 0.5365853658536586,
+        "avg_ret": -0.0005423600368658386,
+        "profit_factor": 0.7105570568048347
+      },
+      "calls_with_filter": {
+        "n": 112,
+        "hit_rate": 0.5178571428571429,
+        "avg_ret": -0.00018178826224150746,
+        "profit_factor": 0.8771687507746614
+      },
+      "account_without_filter": {
+        "trades": 53,
+        "wins": 30,
+        "losses": 23,
+        "hit_rate": 0.5660377358490566,
+        "avg_win": 37.05784205980157,
+        "avg_loss": -66.0603406506252,
+        "break_even_hit": 0.6406274714531556,
+        "profit_per_trade": -7.691557984345907,
+        "profit_factor": 0.7316994622509336,
+        "total_pnl": -407.6525731703331,
+        "total_return": -0.004076525731703331,
+        "max_drawdown": -0.006740600796414253,
+        "exits": {
+          "EOD": 52,
+          "STOP_LOSS": 1
+        }
+      },
+      "account_with_filter": {
+        "trades": 37,
+        "wins": 22,
+        "losses": 15,
+        "hit_rate": 0.5945945945945946,
+        "avg_win": 33.647185560332716,
+        "avg_loss": -58.18929960855169,
+        "break_even_hit": 0.6336185395329906,
+        "profit_per_trade": -3.5838219405663696,
+        "profit_factor": 0.8480804171981382,
+        "total_pnl": -132.60141180095567,
+        "total_return": -0.0013260141180095567,
+        "max_drawdown": -0.0035620436160184177,
+        "exits": {
+          "EOD": 37
+        }
+      }
+    }
+  ],
+  "runtime_sec": 78,
+  "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and paper money only. Backtest estimate with stated simplifications; not financial advice."
+}

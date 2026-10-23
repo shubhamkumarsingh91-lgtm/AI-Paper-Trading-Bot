@@ -76,6 +76,24 @@ def fake_bars(symbol, days, seed_base=7):
     return pd.DataFrame(dict(open=open_, high=high, low=low, close=close, volume=vol), index=idx)
 
 
+def fetch_bars_until(symbol, days, end_ts=None):
+    """Same request as bot.fetch_bars (15-min IEX bars, split-adjusted) but with a FIXED end date,
+    so every run and every seed sees exactly the same data."""
+    if end_ts is None:
+        return bot.fetch_bars(symbol, days=days)
+    from alpaca.data.requests import StockBarsRequest
+    req = StockBarsRequest(symbol_or_symbols=symbol, timeframe=bot.TF, start=end_ts - pd.Timedelta(days=days),
+                           end=end_ts, adjustment='all', feed='iex')
+    df = bot.data_client.get_stock_bars(req).df
+    if isinstance(df.index, pd.MultiIndex):
+        df = df.xs(symbol, level='symbol')
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    df.columns = [c.lower() for c in df.columns]
+    df.index = pd.to_datetime(df.index, utc=True).tz_convert('America/New_York')
+    return df.sort_index()
+
+
 def spy_context(spy):
     c = spy['close']
     ctx = pd.DataFrame(index=spy.index)
@@ -106,7 +124,7 @@ def prep(sym, raw, ctx, sym_id, label='classic', max_hold=None):
     return df
 
 
-def train_primary(train, cutoff='precision', trade_ids=None, per_day=3):
+def train_primary(train, cutoff='precision', trade_ids=None, per_day=3, seed=42):
     """Same models and settings as train_model(): XGB + LGB, 60/40 blend.
     cutoff='precision' = the live rule (best precision); 'expectancy' = most money per call."""
     import xgboost as xgb
@@ -117,11 +135,12 @@ def train_primary(train, cutoff='precision', trade_ids=None, per_day=3):
     spw = (y == 0).sum() / ((y == 1).sum() + 1)
     m = xgb.XGBClassifier(n_estimators=200, max_depth=5, learning_rate=0.05, subsample=0.8,
                           colsample_bytree=0.8, min_child_weight=5, scale_pos_weight=spw,
-                          eval_metric='aucpr', verbosity=0, n_jobs=-1, random_state=42)
+                          eval_metric='aucpr', verbosity=0, n_jobs=-1, random_state=seed)
     m.fit(X.iloc[:k], y.iloc[:k])
     lg = lgb.train(dict(objective='binary', learning_rate=0.05, num_leaves=63, max_depth=6,
                         min_child_samples=20, feature_fraction=0.8, bagging_fraction=0.8,
-                        bagging_freq=5, scale_pos_weight=spw, verbose=-1, n_jobs=-1),
+                        bagging_freq=5, scale_pos_weight=spw, verbose=-1, n_jobs=-1,
+                        seed=seed, deterministic=True, force_row_wise=True),   # same seed -> same model every run
                    lgb.Dataset(X.iloc[:k], label=y.iloc[:k]), num_boost_round=200)
     blend = lambda Z: 0.6 * m.predict_proba(Z)[:, 1] + 0.4 * lg.predict(Z)
     pv = blend(X.iloc[k:])
@@ -154,7 +173,7 @@ def stats(trades, start_equity=100_000.0):
         return dict(trades=0)
     pnl = np.array([t['pnl'] for t in trades])
     wins, losses = pnl[pnl > 0], pnl[pnl <= 0]
-    eq = start_equity + np.cumsum(pnl[np.argsort([t['exit_t'] for t in trades])])
+    eq = start_equity + np.cumsum(pnl[np.argsort([str(t['exit_t']) for t in trades], kind='stable')])   # stable: same-time exits keep their order
     peak = np.maximum.accumulate(np.r_[start_equity, eq])
     mdd = float(np.min(np.r_[start_equity, eq] / peak - 1))
     aw = float(wins.mean()) if len(wins) else 0.0
@@ -257,6 +276,9 @@ def main():
     ap.add_argument('--reentry-rules', action='store_true', help='one strike / re-buy only above the sell price / 1 re-entry / none after 14:30 / half size')
     ap.add_argument('--fake', action='store_true', help='offline self-test on random data')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--seed', type=int, default=42, help='model seed; run several to see how much is luck')
+    ap.add_argument('--end', default=None, help='YYYY-MM-DD: last day of data (fixed, so every run sees the same bars)')
+    ap.add_argument('--window', default=None, help='buy only between these ET times, e.g. 10:00-14:00')
     a = ap.parse_args()
     t_start = time.time()
 
@@ -269,7 +291,12 @@ def main():
         train_syms = list(bot.TRAINING_UNIVERSE)
         train_days = a.train_days or bot.TRAIN_DAYS
     span = train_days + a.meta_days + a.folds * a.fold_days + 45
-    get = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: bot.fetch_bars(s, days=span))
+    end_ts = pd.Timestamp(a.end + ' 20:00', tz='America/New_York').tz_convert('UTC') if a.end else None
+    get = (lambda s: fake_bars(s, span)) if a.fake else (lambda s: fetch_bars_until(s, span, end_ts))
+    win = None
+    if a.window:
+        w0, w1 = [int(x.split(':')[0]) * 60 + int(x.split(':')[1]) for x in a.window.split('-')]
+        win = (w0, w1)
     print(f'Backtest {a.bot}: {len(train_syms)} training symbols, {len(trade_syms)} traded, '
           f'{span} calendar days of 15-min bars{" (FAKE DATA)" if a.fake else ""}', flush=True)
 
@@ -296,7 +323,7 @@ def main():
         P0 = M0 - pd.Timedelta(days=train_days)
         P1 = M0 - pd.Timedelta(days=1)                         # 1-day gap: labels look 8 bars ahead
         train = pd.concat([df[(df.index >= P0) & (df.index < P1)] for df in data.values()])
-        blend, pinfo = train_primary(train, a.cutoff, [data[s]['sym_id'].iloc[0] for s in trade_syms], a.per_day)
+        blend, pinfo = train_primary(train, a.cutoff, [data[s]['sym_id'].iloc[0] for s in trade_syms], a.per_day, seed=a.seed)
         del train
 
         meta_c, test_c = [], []
@@ -306,8 +333,8 @@ def main():
             if w.empty:
                 continue
             w['p'] = blend(w[bot.FEATURES + ['sym_id']])
-            meta_c += mf.candidates_for_symbol(s, w[w.index < T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars)
-            test_c += mf.candidates_for_symbol(s, w[w.index >= T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars)
+            meta_c += mf.candidates_for_symbol(s, w[w.index < T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars, buy_window=win)
+            test_c += mf.candidates_for_symbol(s, w[w.index >= T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars, buy_window=win)
         meta_c = mf.add_market_context(pd.DataFrame(meta_c), spy_raw, len(trade_syms))
         test_c = mf.add_market_context(pd.DataFrame(test_c), spy_raw, len(trade_syms))
 
@@ -318,7 +345,7 @@ def main():
             meta_c = meta_c.sort_values('t')
             cut_at = meta_c['t'].iloc[int(len(meta_c) * 2 / 3)]
             fit, pick = meta_c[meta_c['t'] < cut_at], meta_c[meta_c['t'] >= cut_at]
-            meta = mf.train_meta(fit, fit['win'])
+            meta = mf.train_meta(fit, fit['win'], seed=a.seed)
             mp = meta.predict_proba(pick[mf.META_FEATURES].astype(float))[:, 1]
             cut, keep, table = mf.pick_cut(mp, pick['ret'].to_numpy())
             test_c['meta_p'] = meta.predict_proba(test_c[mf.META_FEATURES].astype(float))[:, 1]
@@ -364,7 +391,7 @@ def main():
 
     report = dict(
         bot=a.bot, fake_data=a.fake, generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
-        settings=dict(label=a.label, cutoff=a.cutoff, per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules, max_hold_bars=a.max_hold_bars, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
+        settings=dict(seed=a.seed, end=a.end, window=a.window, label=a.label, cutoff=a.cutoff, per_day=a.per_day if a.cutoff == 'rate' else None, reentry_rules=a.reentry_rules, max_hold_bars=a.max_hold_bars, train_days=train_days, meta_days=a.meta_days, fold_days=a.fold_days, folds=a.folds,
                       cost_per_side=mf.COST_PER_SIDE, traded_symbols=len(trade_syms), training_symbols=len(data)),
         test_period=[folds[0]['test'][0], folds[-1]['test'][1]] if folds else None,
         spy_buy_hold_return=spy_ret,

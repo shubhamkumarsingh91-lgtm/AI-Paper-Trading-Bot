@@ -3290,11 +3290,14 @@ def save_runtime_state() -> None:
             s: (d.isoformat() if d else None) for s, d in earnings_cache.items()
         },
         'earnings_cache_date': _earnings_cache_date,
+        # FIX (Oct 23, 2026): remember the market regime between runs. Every run used to start at
+        # 'BULL', so on a bear day each scan logged (and Telegram-alerted) "REGIME CHANGE: BULL -> BEAR".
+        'market_regime':  market_regime,
     }, indent=2))
 
 
 def load_runtime_state() -> None:
-    global WATCHLIST, position_highs, dip_watch, earnings_cache, _earnings_cache_date
+    global WATCHLIST, position_highs, dip_watch, earnings_cache, _earnings_cache_date, market_regime
     if not RUNTIME_FILE.exists():
         return
     try:
@@ -3310,6 +3313,8 @@ def load_runtime_state() -> None:
             for sym, d in s.get('earnings_cache', {}).items()
         }
         _earnings_cache_date = s.get('earnings_cache_date', '')
+        if s.get('market_regime') in ('BULL', 'BEAR'):
+            market_regime = s['market_regime']
         log.info(f'Runtime state restored — watchlist {WATCHLIST}')
     except Exception as e:
         log.warning(f'Runtime state load failed: {e}')

@@ -154,7 +154,7 @@ def stats(trades, start_equity=100_000.0):
         return dict(trades=0)
     pnl = np.array([t['pnl'] for t in trades])
     wins, losses = pnl[pnl > 0], pnl[pnl <= 0]
-    eq = start_equity + np.cumsum(pnl[np.argsort([t['exit_t'] for t in trades])])
+    eq = start_equity + np.cumsum(pnl[np.argsort([str(t['exit_t']) for t in trades], kind='stable')])   # stable: same-time exits keep their order
     peak = np.maximum.accumulate(np.r_[start_equity, eq])
     mdd = float(np.min(np.r_[start_equity, eq] / peak - 1))
     aw = float(wins.mean()) if len(wins) else 0.0

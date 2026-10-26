@@ -163,7 +163,7 @@ def test_pick_cut():
 def test_live_wiring_train_save_score(monkeypatch, tmp_path):
     """Nightly retrain path -> saved filter -> live score, on random data (no network)."""
     syms = ['AAA', 'BBB', 'CCC', 'SPY']
-    monkeypatch.setattr(bot, 'fetch_bars', lambda s, days=None, bars=550: bm.fake_bars(s, days or 60))
+    monkeypatch.setattr(bot, 'fetch_bars', lambda s, days=None, bars=550, complete_only=False: bm.fake_bars(s, days or 60))
     monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', syms)
     monkeypatch.setattr(bot, 'META_FILE', tmp_path / 'meta_filter.pkl')
     monkeypatch.setattr(bot, 'ML_DECISION_THRESHOLD', 0.6)

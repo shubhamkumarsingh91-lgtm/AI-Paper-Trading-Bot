@@ -676,8 +676,29 @@ REAL_TRADE_SAMPLE_WEIGHT = 8.0
 LEARNING_LOG = STATE_DIR / 'learning_history.json'   # one row per retrain, never overwritten
 
 
-def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
-    """Fetch OHLCV bars from Alpaca historical data API."""
+BAR_MINUTES = 15   # must match TF below
+
+
+def drop_unfinished_bar(df: pd.DataFrame, now: datetime | None = None, minutes: int = BAR_MINUTES) -> pd.DataFrame:
+    """Remove the bar that is still forming (it started less than `minutes` ago).
+
+    Why: a run at 1:01 PM used to read the 1:00 PM bar after only 1 minute, so its volume looked
+    ~90% lower than normal and its close/RSI/MACD were not final. The model is trained, and the
+    backtests decide, on finished bars only, so live decisions must use finished bars too.
+    """
+    if df is None or len(df) == 0:
+        return df
+    now = now or datetime.now(timezone.utc)
+    idx = pd.to_datetime(df.index, utc=True)
+    return df[idx + pd.Timedelta(minutes=minutes) <= pd.Timestamp(now).tz_convert('UTC')]
+
+
+def fetch_bars(symbol: str, days: int = None, bars: int = 550, complete_only: bool = False) -> pd.DataFrame:
+    """Fetch OHLCV bars from Alpaca historical data API.
+
+    complete_only=True drops the bar that is still forming. Use it for anything the model reads
+    (features, SPY context, training). Leave it False when you just want the latest price.
+    """
     end   = datetime.now(timezone.utc)
     start = end - timedelta(days=days) if days else end - timedelta(minutes=bars * 15 + 180)
     req   = StockBarsRequest(
@@ -697,7 +718,8 @@ def fetch_bars(symbol: str, days: int = None, bars: int = 550) -> pd.DataFrame:
         df.columns = df.columns.get_level_values(0)
     df.columns = [c.lower() for c in df.columns]
     df.index = pd.to_datetime(df.index, utc=True).tz_convert('America/New_York')
-    return df.sort_index()
+    df = df.sort_index()
+    return drop_unfinished_bar(df, end) if complete_only else df
 
 
 # ── SPY context cache ─────────────────────────────────────────────────────
@@ -721,7 +743,7 @@ def fetch_spy_context(days: int) -> pd.DataFrame:
     if days in _spy_ctx_cache:
         return _spy_ctx_cache[days]
     try:
-        df = fetch_bars('SPY', days=days)
+        df = fetch_bars('SPY', days=days, complete_only=True)
         c  = df['close']
         ctx = pd.DataFrame(index=df.index)
         ctx['spy_ret_1']        = c.pct_change(1)
@@ -883,7 +905,7 @@ def train_model(retrain: bool = False) -> None:
     frames = []
     for i, sym in enumerate(TRAINING_UNIVERSE):
         try:
-            df  = fetch_bars(sym, days=TRAIN_DAYS)
+            df  = fetch_bars(sym, days=TRAIN_DAYS, complete_only=True)
             df  = add_features(df)
             # Join SPY context: each bar gets SPY return from the same timestamp
             if spy_ok:
@@ -1148,7 +1170,7 @@ def train_meta_filter(va: pd.DataFrame, probs) -> None:
         return
     va = va.copy()
     va['p'] = np.asarray(probs, dtype=float)
-    spy = fetch_bars('SPY', days=TRAIN_DAYS)
+    spy = fetch_bars('SPY', days=TRAIN_DAYS, complete_only=True)
     bear = mf.bear_days(spy)
     cands, n_sym = [], 0
     for sid, g in va.groupby('sym_id'):
@@ -1253,7 +1275,7 @@ def ml_predict(symbol: str, sym_id: int = None) -> dict:
     if model is None:
         return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
     try:
-        df = fetch_bars(symbol, days=45)   # 45 days = 800+ 15-min bars
+        df = fetch_bars(symbol, days=45, complete_only=True)   # 45 days = 800+ 15-min bars, finished ones only
         if len(df) < 250:
             log.warning(f'  {symbol}: not enough bars ({len(df)})')
             return {'confidence': 0.0, 'price': 0, 'rsi': 50, 'vol_ratio': 1, 'above_ema50': 0}
@@ -2511,7 +2533,7 @@ def fetch_alpaca_news(hours: int = 20) -> list:
         end   = datetime.now(timezone.utc)
         start = end - timedelta(hours=hours)
         req   = NewsRequest(
-            symbols=SCAN_UNIVERSE[:30],   # Alpaca request limit
+            symbols=','.join(SCAN_UNIVERSE[:30]),   # alpaca-py wants one comma-separated string (a list fails validation)
             start=start,
             end=end,
             limit=100,

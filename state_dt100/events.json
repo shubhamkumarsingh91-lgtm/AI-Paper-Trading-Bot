@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-10-26T18:31:53Z",
+"generated": "2026-10-26T18:41:39Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -22,21 +22,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) +0.90%)."
-},
-{
-"t": "2026-10-23T14:40:50Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,648). None cleared its 62% confidence bar (closest: ACN 60%).",
-"count": 100
-},
-{
-"t": "2026-10-23T14:40:50Z",
-"bot": "b3",
-"place": "floor",
-"kind": "hold",
-"text": "No buy this time: nothing reached its 62% confidence bar."
 },
 {
 "t": "2026-10-23T14:50:52Z",
@@ -1149,6 +1134,22 @@
 },
 {
 "t": "2026-10-26T18:31:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked ADI (just under 68% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "ADI"
+},
+{
+"t": "2026-10-26T18:40:56Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,705). 33 passed all its checks: ADI 68%, LRCX 66%, CRWD 66%….",
+"count": 100
+},
+{
+"t": "2026-10-26T18:41:38Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

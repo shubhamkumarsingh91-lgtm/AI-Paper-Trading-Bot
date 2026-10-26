@@ -1,0 +1,101 @@
+# Buy-window backtest, 2 years, 3 seeds per setup (see backtest_meta.py).
+# Independent personal project, not tied to any employer or agency. Public market data, paper money only.
+name: Buy-Window Backtest
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: [.github/workflows/backtest-window.yml]
+    types: [opened, synchronize]
+permissions:
+  contents: write
+concurrency:
+  group: backtest-window-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  fetch:
+    # Download the bars ONCE (Alpaca allows ~200 requests/minute per key) and hand the identical files
+    # to all 24 runs: no rate limit, and every setup and seed sees exactly the same data.
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Download bars (fixed end date)
+        shell: bash
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          for b in dt100 b1; do
+            python backtest_meta.py --bot $b --folds 18 --fold-days 41 --end 2026-10-23 --cache data_cache --fetch-only
+          done
+          du -sh data_cache; ls data_cache | wc -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bars
+          path: data_cache/
+          retention-days: 3
+  backtest:
+    needs: fetch
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        bot: [dt100, b1]
+        setup: [today, fixed, fixed-10to2, fixed-11to2]
+        seed: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - uses: actions/download-artifact@v4
+        with:
+          name: bars
+          path: data_cache/
+      - name: Hand-checked unit tests
+        run: python -m pytest -q tests/test_meta_filter.py
+      - name: Run backtest
+        shell: bash          # = bash -eo pipefail: a crash piped through tee must FAIL the step
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          SETUP: ${{ matrix.setup }}
+        run: |
+          # 2 years of tests = 18 back-to-back periods of 41 days, data fixed to end on Oct 23 2026
+          ARGS="--folds 18 --fold-days 41 --end 2026-10-23 --cache data_cache --seed ${{ matrix.seed }} --tag win-${SETUP}-s${{ matrix.seed }}"
+          case "$SETUP" in
+            today) ;;                                              # live bot: classic label, precision cutoff, buys all day
+            fixed) ARGS="$ARGS --label trade" ;;                   # fixed learning: label = did the real trade make money
+            fixed-10to2) ARGS="$ARGS --label trade --window 10:00-14:00" ;;
+            fixed-11to2) ARGS="$ARGS --label trade --window 11:00-14:00" ;;
+          esac
+          mkdir -p state/window
+          python backtest_meta.py --bot ${{ matrix.bot }} $ARGS --out state/window/${{ matrix.bot }}_${SETUP}_s${{ matrix.seed }}.json \
+            | tee state/window/${{ matrix.bot }}_${SETUP}_s${{ matrix.seed }}.txt
+      - name: Save results
+        if: always()         # keep the output (including any error) even when the run fails
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/window/ || true
+          git diff --cached --quiet && exit 0
+          git commit -m "window backtest (${{ matrix.bot }}, ${{ matrix.setup }}, seed ${{ matrix.seed }}) [skip ci]"
+          B="${{ github.head_ref || 'main' }}"
+          for i in $(seq 1 15); do
+            if git pull --rebase origin "$B"; then git push origin HEAD:"$B" && exit 0
+            else git rebase --abort 2>/dev/null || true; fi
+            sleep $(( 5 + RANDOM % 20 ))
+          done
+          exit 1

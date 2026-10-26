@@ -96,11 +96,13 @@ def net_return(entry, exit_, cost=COST_PER_SIDE):
     return exit_ * (1 - cost) / (entry * (1 + cost)) - 1
 
 
-def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68, max_hold=None):
+def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68, max_hold=None, buy_window=None):
     """
     BUY calls the live precision-first rule would make on this symbol's bars, each replayed
     as an independent trade. df needs open/high/low/close, 'p' (main-model probability) and
     the bot's feature columns. Only regular-hours bars are used for decisions and exits.
+    buy_window = optional (first, last) BUY time in minutes after midnight ET, e.g. (600, 840) = 10:00-14:00.
+    The buy happens at the next bar's open, so a decision at bar t buys at t + 15 minutes.
     """
     mins_all = minutes_of(df.index)
     rth = (mins_all >= OPEN_MINUTE) & (mins_all < 16 * 60)
@@ -117,10 +119,14 @@ def candidates_for_symbol(sym, df, thr, bear_by_day, bear_min_conf=0.68, max_hol
     need = np.where(bear == 1, max(thr, bear_min_conf), thr)
     ok = ((p >= need) & (rsi <= 78) & (ema50 == 1) & (bb <= 0.95)
           & (mins <= LAST_DECISION_MINUTE) & ~np.isnan(p))
+    if buy_window:
+        ok &= (mins + 15 >= buy_window[0]) & (mins + 15 <= buy_window[1])
     out = []
     n = len(d)
     for i in np.flatnonzero(ok):
-        if i + 1 >= n or days[i + 1] != days[i]:
+        # FIX (Oct 23, 2026): the next bar must be exactly 15 minutes later. On thin IEX data a stock can
+        # have no bars for hours; the old code then 'bought' at the next bar that existed (e.g. 2:45 PM).
+        if i + 1 >= n or days[i + 1] != days[i] or mins[i + 1] - mins[i] != 15:
             continue
         ex, reason, j = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         r = net_return(o[i + 1], ex)
@@ -150,13 +156,13 @@ def add_market_context(cands: pd.DataFrame, spy: pd.DataFrame, n_symbols: int) -
     return cands
 
 
-def train_meta(X: pd.DataFrame, y: pd.Series):
+def train_meta(X: pd.DataFrame, y: pd.Series, seed: int = 42):
     import xgboost as xgb
     pos = max(1, int(y.sum()))
     m = xgb.XGBClassifier(
         n_estimators=200, max_depth=3, learning_rate=0.05, subsample=0.8, colsample_bytree=0.8,
         min_child_weight=20, scale_pos_weight=(len(y) - pos) / pos,
-        eval_metric='aucpr', verbosity=0, n_jobs=-1, random_state=42,
+        eval_metric='aucpr', verbosity=0, n_jobs=-1, random_state=seed,
     )
     m.fit(X[META_FEATURES].astype(float), y)
     return m
@@ -248,7 +254,7 @@ def trade_labels(df: pd.DataFrame, max_hold=None) -> pd.Series:
     n = len(d)
     ret = np.full(n, np.nan)
     for i in range(n - 1):
-        if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i]:
+        if mins[i] > LAST_DECISION_MINUTE or days[i + 1] != days[i] or mins[i + 1] - mins[i] != 15:
             continue
         ex, _, _ = simulate_exit(o, c, mins, days, i + 1, max_hold=max_hold)
         ret[i] = net_return(o[i + 1], ex)

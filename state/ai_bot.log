@@ -14711,3 +14711,24 @@ symbols
 2026-10-26 19:30:54,499 [INFO] VIX fear gauge: 18.4
 2026-10-26 19:30:54,499 [INFO]   PANW: 🐻 BEAR MARKET skip (ML 67% < 68% required)
 2026-10-26 19:30:54,500 [INFO] Run complete — state saved
+2026-10-26 19:40:49,909 [INFO] Run mode: SCAN
+2026-10-26 19:40:49,910 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-26 19:40:49,924 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.2%  precision=30.7%  walk-forward=31.6%  threshold=0.66  trained=2026-10-24
+2026-10-26 19:40:49,928 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.43, trained 2026-10-24
+2026-10-26 19:40:50,233 [INFO] 
+── Scan #1 | $99,346.63 equity | 0/5 positions | Model: 51.2% ──
+2026-10-26 19:40:51,048 [INFO]   [NVDA] ML BUY  xgb=0.61 lgb=0.59 ens=0.60 | Drivers: atr_pct=0.002, hour_cos=-0.707, hour=15.000
+2026-10-26 19:40:51,134 [INFO]   NVDA : HOLD score=-0.060 ml=60% tv=BUY             rsi=67 vol×0.5
+2026-10-26 19:40:51,294 [INFO]   [PANW] ML BUY  xgb=0.67 lgb=0.68 ens=0.67 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-26 19:40:51,395 [INFO]   PANW : BUY  score=+0.672 ml=67% tv=BUY             rsi=55 vol×1.6
+2026-10-26 19:40:51,691 [INFO]   [AVGO] ML BUY  xgb=0.57 lgb=0.55 ens=0.56 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-26 19:40:51,778 [INFO]   AVGO : HOLD score=-0.098 ml=56% tv=BUY             rsi=54 vol×1.5
+2026-10-26 19:40:52,043 [INFO]   [SOFI] ML BUY  xgb=0.58 lgb=0.54 ens=0.56 | Drivers: atr_pct=0.004, hour_cos=-0.707, hour=15.000
+2026-10-26 19:40:52,102 [INFO]   SOFI : HOLD score=-0.099 ml=56% tv=SELL            rsi=43 vol×1.4
+2026-10-26 19:40:52,721 [INFO]   [PLTR] ML BUY  xgb=0.57 lgb=0.56 ens=0.57 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-26 19:40:52,935 [INFO]   PLTR : HOLD score=-0.091 ml=57% tv=BUY             rsi=64 vol×1.6
+2026-10-26 19:40:53,417 [INFO]   🧪 FILTER (shadow): PANW KEEP (win chance 71% vs cut 43%)
+2026-10-26 19:40:53,417 [INFO]   🎯 Best: PANW (score=0.672) — placing order
+2026-10-26 19:40:53,611 [INFO] VIX fear gauge: 18.3
+2026-10-26 19:40:53,612 [INFO]   PANW: 🐻 BEAR MARKET skip (ML 67% < 68% required)
+2026-10-26 19:40:53,613 [INFO] Run complete — state saved

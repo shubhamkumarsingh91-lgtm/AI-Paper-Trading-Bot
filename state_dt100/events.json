@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-10-26T16:11:35Z",
+"generated": "2026-10-26T16:21:21Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -22,29 +22,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) +0.90%)."
-},
-{
-"t": "2026-10-22T19:01:07Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,648). 39 passed all its checks: LLY 66%, PG 66%, CRM 66%….",
-"count": 100
-},
-{
-"t": "2026-10-22T19:02:05Z",
-"bot": "b3",
-"place": "tower",
-"kind": "regime",
-"text": "Noticed the market turned BEAR: SPY ($761.26) is below its 50-day average ($767.20)."
-},
-{
-"t": "2026-10-22T19:02:05Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked PM (66% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "PM"
 },
 {
 "t": "2026-10-22T19:10:41Z",
@@ -1212,6 +1189,21 @@
 },
 {
 "t": "2026-10-26T16:11:00Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 62% confidence bar."
+},
+{
+"t": "2026-10-26T16:20:53Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,705). None cleared its 62% confidence bar (closest: PANW 54%).",
+"count": 100
+},
+{
+"t": "2026-10-26T16:20:53Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

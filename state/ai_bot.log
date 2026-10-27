@@ -14836,3 +14836,21 @@ symbols
 2026-10-27 13:20:53,160 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.4%  precision=30.8%  walk-forward=31.7%  threshold=0.68  trained=2026-10-27
 2026-10-27 13:20:53,166 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.50, trained 2026-10-27
 2026-10-27 13:20:53,440 [INFO] Run complete — state saved
+2026-10-27 13:30:59,052 [INFO] Run mode: SCAN
+2026-10-27 13:30:59,052 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-27 13:30:59,062 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.4%  precision=30.8%  walk-forward=31.7%  threshold=0.68  trained=2026-10-27
+2026-10-27 13:30:59,066 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.50, trained 2026-10-27
+2026-10-27 13:30:59,411 [INFO] 
+── Scan #1 | $99,346.63 equity | 0/5 positions | Model: 51.4% ──
+2026-10-27 13:31:06,436 [INFO]   [NVDA] ML BUY  xgb=0.62 lgb=0.56 ens=0.59 | Drivers: atr_pct=0.002, hour_cos=-0.500, hour=16.000
+2026-10-27 13:31:06,537 [INFO]   NVDA : HOLD score=-0.085 ml=60% tv=NEUTRAL         rsi=64 vol×0.0
+2026-10-27 13:31:06,791 [INFO]   [PANW] ML BUY  xgb=0.65 lgb=0.63 ens=0.64 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-27 13:31:06,898 [INFO]   PANW : HOLD score=-0.035 ml=64% tv=BUY             rsi=52 vol×5.8
+2026-10-27 13:31:07,533 [INFO]   [AVGO] ML BUY  xgb=0.50 lgb=0.53 ens=0.51 | Drivers: atr_pct=0.004, hour_cos=-0.707, hour=9.000
+2026-10-27 13:31:07,612 [INFO]   AVGO : HOLD score=-0.170 ml=51% tv=SELL            rsi=81 vol×0.0
+2026-10-27 13:31:08,295 [INFO]   [SOFI] ML HOLD  xgb=0.44 lgb=0.43 ens=0.43 | Drivers: atr_pct=0.015, hour_cos=-0.707, hour=9.000
+2026-10-27 13:31:08,369 [INFO]   SOFI : HOLD score=-0.246 ml=43% tv=SELL            rsi=77 vol×0.1
+2026-10-27 13:31:12,582 [INFO]   [PLTR] ML BUY  xgb=0.58 lgb=0.57 ens=0.58 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-27 13:31:12,666 [INFO]   PLTR : HOLD score=-0.103 ml=58% tv=NEUTRAL         rsi=55 vol×8.5
+2026-10-27 13:31:12,666 [INFO]   No actionable signal this scan
+2026-10-27 13:31:12,666 [INFO] Run complete — state saved

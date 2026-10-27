@@ -15445,3 +15445,25 @@ symbols
 2026-10-27 18:40:57,820 [INFO]   PLTR : HOLD score=-0.076 ml=60% tv=BUY             rsi=53 vol×0.3
 2026-10-27 18:40:57,820 [INFO]   No actionable signal this scan
 2026-10-27 18:40:57,821 [INFO] Run complete — state saved
+2026-10-27 18:50:42,204 [INFO] Run mode: SCAN
+2026-10-27 18:50:42,204 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-27 18:50:42,227 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.4%  precision=30.8%  walk-forward=31.7%  threshold=0.68  trained=2026-10-27
+2026-10-27 18:50:42,233 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.50, trained 2026-10-27
+2026-10-27 18:50:42,443 [INFO] 
+── Scan #1 | $99,346.63 equity | 0/5 positions | Model: 51.4% ──
+2026-10-27 18:50:45,899 [INFO]   [NVDA] ML BUY  xgb=0.61 lgb=0.61 ens=0.61 | Drivers: atr_pct=0.003, hour_cos=-0.866, hour=14.000
+2026-10-27 18:50:46,067 [INFO]   NVDA : HOLD score=-0.069 ml=61% tv=NEUTRAL         rsi=49 vol×0.4
+2026-10-27 18:50:46,328 [INFO]   [PANW] ML BUY  xgb=0.67 lgb=0.70 ens=0.68 | Drivers: atr_pct=0.003, hour_cos=-0.866, hour=14.000
+2026-10-27 18:50:46,458 [INFO]   PANW : BUY  score=+0.683 ml=68% tv=BUY             rsi=65 vol×0.7
+2026-10-27 18:50:46,656 [INFO]   [AVGO] ML BUY  xgb=0.61 lgb=0.61 ens=0.61 | Drivers: atr_pct=0.004, hour_cos=-0.866, hour=14.000
+2026-10-27 18:50:46,787 [INFO]   AVGO : HOLD score=-0.072 ml=61% tv=BUY             rsi=59 vol×0.4
+2026-10-27 18:50:48,104 [INFO]   [SOFI] ML BUY  xgb=0.52 lgb=0.49 ens=0.51 | Drivers: atr_pct=0.007, hour_cos=-0.866, hour=14.000
+2026-10-27 18:50:48,203 [INFO]   SOFI : HOLD score=-0.173 ml=51% tv=BUY             rsi=45 vol×0.6
+2026-10-27 18:50:50,485 [INFO]   [PLTR] ML BUY  xgb=0.60 lgb=0.59 ens=0.59 | Drivers: atr_pct=0.003, hour_cos=-0.866, hour=14.000
+2026-10-27 18:50:50,579 [INFO]   PLTR : HOLD score=-0.087 ml=59% tv=BUY             rsi=49 vol×0.5
+2026-10-27 18:50:50,914 [INFO] 📈 REGIME CHANGE: BEAR → BULL (SPY $769.32 vs SMA50 $766.73)
+2026-10-27 18:50:50,974 [INFO]   🧪 FILTER (shadow): PANW KEEP (win chance 50% vs cut 50%)
+2026-10-27 18:50:50,974 [INFO]   🎯 Best: PANW (score=0.683) — placing order
+2026-10-27 18:50:51,138 [INFO] VIX fear gauge: 17.8
+2026-10-27 18:50:51,217 [INFO] 🟢 BUY     29×PANW @ $  401.88 | Score:+0.683 | ML:68%(vs68%) | TV:BUY | ADX:TREND | RSI:65
+2026-10-27 18:50:51,218 [INFO] Run complete — state saved

@@ -1,0 +1,1640 @@
+{
+  "bot": "b1",
+  "fake_data": false,
+  "generated": "2026-10-27T23:22:08-04:00",
+  "settings": {
+    "label": "trade",
+    "buy_window": "10-14",
+    "paths": 2000,
+    "lookback_days": 40,
+    "min_pool_days": 15,
+    "vol_clip": [
+      0.5,
+      2.0
+    ],
+    "rule_edge": 0.05,
+    "folds": 9,
+    "fold_days": 41,
+    "meta_days": 120,
+    "train_days": 900,
+    "cost_per_side": 0.0003,
+    "traded_symbols": 4
+  },
+  "test_period": [
+    "2025-10-24",
+    "2026-10-28"
+  ],
+  "spy_buy_hold_return": 0.150756624200012,
+  "arms": {
+    "none": {
+      "calls": {
+        "n": 325,
+        "precision": 0.4646153846153846,
+        "avg_ret": -0.00042562067331257294,
+        "profit_factor": 0.8905203802556364
+      },
+      "account": {
+        "trades": 89,
+        "wins": 43,
+        "losses": 46,
+        "hit_rate": 0.48314606741573035,
+        "avg_win": 104.65195925129518,
+        "avg_loss": -109.09848918248439,
+        "break_even_hit": 0.5104012177840337,
+        "profit_per_trade": -5.825800613354951,
+        "profit_factor": 0.8966836498570208,
+        "total_pnl": -518.4962545885907,
+        "total_return": -0.005184962545885906,
+        "max_drawdown": -0.012822017982713318,
+        "exits": {
+          "EOD": 84,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 4
+        }
+      }
+    },
+    "base": {
+      "calls": {
+        "n": 224,
+        "precision": 0.4642857142857143,
+        "avg_ret": -0.00033067141769972864,
+        "profit_factor": 0.920487597206663
+      },
+      "account": {
+        "trades": 74,
+        "wins": 33,
+        "losses": 41,
+        "hit_rate": 0.44594594594594594,
+        "avg_win": 103.80861622724261,
+        "avg_loss": -105.3784140436684,
+        "break_even_hit": 0.503752139447634,
+        "profit_per_trade": -12.092305949883766,
+        "profit_factor": 0.792887966988774,
+        "total_pnl": -894.8306402913987,
+        "total_return": -0.008948306402913987,
+        "max_drawdown": -0.016154150552351254,
+        "exits": {
+          "EOD": 71,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 2
+        }
+      }
+    },
+    "slot": {
+      "calls": {
+        "n": 255,
+        "precision": 0.4549019607843137,
+        "avg_ret": -0.0006651403533727141,
+        "profit_factor": 0.8347892449512228
+      },
+      "account": {
+        "trades": 77,
+        "wins": 37,
+        "losses": 40,
+        "hit_rate": 0.4805194805194805,
+        "avg_win": 94.42997986726519,
+        "avg_loss": -111.14993531749892,
+        "break_even_hit": 0.5406653428064866,
+        "profit_per_trade": -12.364781267677214,
+        "profit_factor": 0.7858549906278594,
+        "total_pnl": -952.0881576111456,
+        "total_return": -0.009520881576111456,
+        "max_drawdown": -0.015394261044827773,
+        "exits": {
+          "EOD": 73,
+          "STOP_LOSS": 4
+        }
+      }
+    },
+    "day": {
+      "calls": {
+        "n": 258,
+        "precision": 0.46511627906976744,
+        "avg_ret": -0.00030618474250214894,
+        "profit_factor": 0.9200404689466392
+      },
+      "account": {
+        "trades": 80,
+        "wins": 39,
+        "losses": 41,
+        "hit_rate": 0.4875,
+        "avg_win": 100.98846447841738,
+        "avg_loss": -103.31641828727697,
+        "break_even_hit": 0.5056972544594771,
+        "profit_per_trade": -3.7177879390009894,
+        "profit_factor": 0.9297863738499758,
+        "total_pnl": -297.42303512007913,
+        "total_return": -0.0029742303512007916,
+        "max_drawdown": -0.012822017982713318,
+        "exits": {
+          "EOD": 77,
+          "STOP_LOSS": 3
+        }
+      }
+    },
+    "rule_slot": {
+      "calls": {
+        "n": 325,
+        "precision": 0.4646153846153846,
+        "avg_ret": -0.00042562067331257294,
+        "profit_factor": 0.8905203802556364
+      },
+      "account": {
+        "trades": 89,
+        "wins": 43,
+        "losses": 46,
+        "hit_rate": 0.48314606741573035,
+        "avg_win": 104.65195925129518,
+        "avg_loss": -109.09848918248439,
+        "break_even_hit": 0.5104012177840337,
+        "profit_per_trade": -5.825800613354951,
+        "profit_factor": 0.8966836498570208,
+        "total_pnl": -518.4962545885907,
+        "total_return": -0.005184962545885906,
+        "max_drawdown": -0.012822017982713318,
+        "exits": {
+          "EOD": 84,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 4
+        }
+      }
+    },
+    "rule_day": {
+      "calls": {
+        "n": 325,
+        "precision": 0.4646153846153846,
+        "avg_ret": -0.00042562067331257294,
+        "profit_factor": 0.8905203802556364
+      },
+      "account": {
+        "trades": 89,
+        "wins": 43,
+        "losses": 46,
+        "hit_rate": 0.48314606741573035,
+        "avg_win": 104.65195925129518,
+        "avg_loss": -109.09848918248439,
+        "break_even_hit": 0.5104012177840337,
+        "profit_per_trade": -5.825800613354951,
+        "profit_factor": 0.8966836498570208,
+        "total_pnl": -518.4962545885907,
+        "total_return": -0.005184962545885906,
+        "max_drawdown": -0.012822017982713318,
+        "exits": {
+          "EOD": 84,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 4
+        }
+      }
+    }
+  },
+  "folds_where_precision_beat_base": {
+    "slot": "1 of 9",
+    "day": "2 of 9"
+  },
+  "luck_check_vs_base": {
+    "slot": {
+      "precision_gain": -0.009383753501400582,
+      "range_90": [
+        -0.07533853162531572,
+        0.058841782121072016
+      ],
+      "share_of_resamples_ahead": 0.406,
+      "test_days": 59,
+      "verdict": "not proven (could be luck)"
+    },
+    "day": {
+      "precision_gain": 0.0008305647840531338,
+      "range_90": [
+        -0.05709019671194178,
+        0.06315812261905103
+      ],
+      "share_of_resamples_ahead": 0.5055,
+      "test_days": 59,
+      "verdict": "not proven (could be luck)"
+    }
+  },
+  "diagnostics": {
+    "slot": {
+      "auc_p_win": 0.5066605769962701,
+      "auc_exp_ret": 0.46985613153688055,
+      "spearman_with_atr_pct": 0.4477259978672862,
+      "mean_p_win": 0.45766615384615383,
+      "actual_win_rate": 0.4646153846153846
+    },
+    "day": {
+      "auc_p_win": 0.5329793712415316,
+      "auc_exp_ret": 0.46833371393773315,
+      "spearman_with_atr_pct": 0.2695175226507146,
+      "mean_p_win": 0.4358630769230769,
+      "actual_win_rate": 0.4646153846153846
+    },
+    "main_ai_p_auc": 0.5148435715916876,
+    "slot_vs_day_p_win_spearman": 0.7807050378200101,
+    "calls_without_tm_features": 0
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "test": [
+        "2025-10-24",
+        "2025-12-03"
+      ],
+      "main_ai": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.562862669245648,
+        "val_signals": 517,
+        "base_rate": 0.446951687335968,
+        "train_rows": 187231,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 7,
+      "test_calls": 17,
+      "tm_seconds": 0.2,
+      "base_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "calls_none": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      },
+      "calls_base": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      },
+      "calls_slot": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      },
+      "calls_day": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      },
+      "calls_rule_slot": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      },
+      "calls_rule_day": {
+        "n": 17,
+        "precision": 0.6470588235294118,
+        "avg_ret": 0.008367495786160414,
+        "profit_factor": 9.79527954799415
+      }
+    },
+    {
+      "fold": 2,
+      "test": [
+        "2025-12-03",
+        "2026-01-13"
+      ],
+      "main_ai": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.5254730713245997,
+        "val_signals": 687,
+        "base_rate": 0.44704341888427734,
+        "train_rows": 187036,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 29,
+      "test_calls": 1,
+      "tm_seconds": 0.1,
+      "base_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "calls_none": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      },
+      "calls_base": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      },
+      "calls_slot": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      },
+      "calls_day": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      },
+      "calls_rule_slot": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      },
+      "calls_rule_day": {
+        "n": 1,
+        "precision": 0.0,
+        "avg_ret": -0.002942223272240474,
+        "profit_factor": 0.0
+      }
+    },
+    {
+      "fold": 3,
+      "test": [
+        "2026-01-13",
+        "2026-02-23"
+      ],
+      "main_ai": {
+        "threshold": 0.6200000000000001,
+        "val_precision": 0.4830623306233062,
+        "val_signals": 1476,
+        "base_rate": 0.4499145746231079,
+        "train_rows": 187279,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 121,
+      "test_calls": 20,
+      "tm_seconds": 0.4,
+      "base_filter": {
+        "cut": 0.5,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 12,
+            "avg_ret": 0.0015120366191117933,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 16,
+            "avg_ret": 0.0010186889724073458,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 20,
+            "avg_ret": 0.00043781370257123253,
+            "hit": 0.35,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 25,
+            "avg_ret": 0.00038772526503643155,
+            "hit": 0.4,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 29,
+            "avg_ret": 0.0002076593534914295,
+            "hit": 0.3793103448275862,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 33,
+            "avg_ret": 0.0003799849245912906,
+            "hit": 0.42424242424242425,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 37,
+            "avg_ret": -0.00015626307159799212,
+            "hit": 0.40540540540540543,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 41,
+            "avg_ret": 0.00040696024177435894,
+            "hit": 0.4634146341463415,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "slot_filter": {
+        "cut": 0.5,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 12,
+            "avg_ret": 0.0015120366191117933,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 16,
+            "avg_ret": 0.0010186889724073458,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 20,
+            "avg_ret": 0.00043781370257123253,
+            "hit": 0.35,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 25,
+            "avg_ret": 0.00038772526503643155,
+            "hit": 0.4,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 29,
+            "avg_ret": 0.0002076593534914295,
+            "hit": 0.3793103448275862,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 33,
+            "avg_ret": 0.0003799849245912906,
+            "hit": 0.42424242424242425,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 37,
+            "avg_ret": -0.00015626307159799212,
+            "hit": 0.40540540540540543,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 41,
+            "avg_ret": 0.00040696024177435894,
+            "hit": 0.4634146341463415,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "day_filter": {
+        "cut": 0.5,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 12,
+            "avg_ret": 0.0015120366191117933,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 16,
+            "avg_ret": 0.0010186889724073458,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 20,
+            "avg_ret": 0.00043781370257123253,
+            "hit": 0.35,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 25,
+            "avg_ret": 0.00038772526503643155,
+            "hit": 0.4,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 29,
+            "avg_ret": 0.0002076593534914295,
+            "hit": 0.3793103448275862,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 33,
+            "avg_ret": 0.0003799849245912906,
+            "hit": 0.42424242424242425,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 37,
+            "avg_ret": -0.00015626307159799212,
+            "hit": 0.40540540540540543,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 41,
+            "avg_ret": 0.00040696024177435894,
+            "hit": 0.4634146341463415,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "calls_none": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      },
+      "calls_base": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      },
+      "calls_slot": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      },
+      "calls_day": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      },
+      "calls_rule_slot": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      },
+      "calls_rule_day": {
+        "n": 20,
+        "precision": 0.35,
+        "avg_ret": -0.002924281583340932,
+        "profit_factor": 0.3500465064483826
+      }
+    },
+    {
+      "fold": 4,
+      "test": [
+        "2026-02-23",
+        "2026-04-06"
+      ],
+      "main_ai": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.5221238938053098,
+        "val_signals": 565,
+        "base_rate": 0.44485771656036377,
+        "train_rows": 188193,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 25,
+      "test_calls": 2,
+      "tm_seconds": 0.0,
+      "base_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "calls_none": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      },
+      "calls_base": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      },
+      "calls_slot": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      },
+      "calls_day": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      },
+      "calls_rule_slot": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      },
+      "calls_rule_day": {
+        "n": 2,
+        "precision": 1.0,
+        "avg_ret": 0.002937392508051917,
+        "profit_factor": null
+      }
+    },
+    {
+      "fold": 5,
+      "test": [
+        "2026-04-06",
+        "2026-05-17"
+      ],
+      "main_ai": {
+        "threshold": 0.6400000000000001,
+        "val_precision": 0.5146627565982405,
+        "val_signals": 682,
+        "base_rate": 0.4474269449710846,
+        "train_rows": 188877,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 19,
+      "test_calls": 9,
+      "tm_seconds": 0.0,
+      "base_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "calls_none": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      },
+      "calls_base": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      },
+      "calls_slot": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      },
+      "calls_day": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      },
+      "calls_rule_slot": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      },
+      "calls_rule_day": {
+        "n": 9,
+        "precision": 0.3333333333333333,
+        "avg_ret": -0.004881178462369277,
+        "profit_factor": 0.2263362160551141
+      }
+    },
+    {
+      "fold": 6,
+      "test": [
+        "2026-05-17",
+        "2026-06-27"
+      ],
+      "main_ai": {
+        "threshold": 0.6200000000000001,
+        "val_precision": 0.4796828543111992,
+        "val_signals": 1009,
+        "base_rate": 0.44428548216819763,
+        "train_rows": 188729,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 33,
+      "test_calls": 9,
+      "tm_seconds": 0.1,
+      "base_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "note": "too few calls to train; filter off"
+      },
+      "calls_none": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      },
+      "calls_base": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      },
+      "calls_slot": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      },
+      "calls_day": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      },
+      "calls_rule_slot": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      },
+      "calls_rule_day": {
+        "n": 9,
+        "precision": 0.5555555555555556,
+        "avg_ret": -8.391978357151034e-06,
+        "profit_factor": 0.9977571867890694
+      }
+    },
+    {
+      "fold": 7,
+      "test": [
+        "2026-06-27",
+        "2026-08-07"
+      ],
+      "main_ai": {
+        "threshold": 0.6000000000000001,
+        "val_precision": 0.4690599905526689,
+        "val_signals": 2117,
+        "base_rate": 0.43695542216300964,
+        "train_rows": 188795,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 90,
+      "test_calls": 23,
+      "tm_seconds": 0.2,
+      "base_filter": {
+        "cut": 0.5,
+        "keep": 0.6,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 9,
+            "avg_ret": -0.004813059044816387,
+            "hit": 0.2222222222222222,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 12,
+            "avg_ret": -0.00466845657191417,
+            "hit": 0.25,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 16,
+            "avg_ret": -0.0009409069024304134,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 19,
+            "avg_ret": -0.00025495117374409545,
+            "hit": 0.5263157894736842,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 22,
+            "avg_ret": -0.0008690941684126117,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 25,
+            "avg_ret": -0.002224226617848881,
+            "hit": 0.44,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 28,
+            "avg_ret": -0.003507484580960852,
+            "hit": 0.39285714285714285,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 31,
+            "avg_ret": -0.003096478430052212,
+            "hit": 0.41935483870967744,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "slot_filter": {
+        "cut": 0.5,
+        "keep": 0.6,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 9,
+            "avg_ret": -0.004813059044816387,
+            "hit": 0.2222222222222222,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 12,
+            "avg_ret": -0.00466845657191417,
+            "hit": 0.25,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 16,
+            "avg_ret": -0.0009409069024304134,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 19,
+            "avg_ret": -0.00025495117374409545,
+            "hit": 0.5263157894736842,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 22,
+            "avg_ret": -0.0008690941684126117,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 25,
+            "avg_ret": -0.002224226617848881,
+            "hit": 0.44,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 28,
+            "avg_ret": -0.003507484580960852,
+            "hit": 0.39285714285714285,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 31,
+            "avg_ret": -0.003096478430052212,
+            "hit": 0.41935483870967744,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "day_filter": {
+        "cut": 0.5,
+        "keep": 0.6,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 9,
+            "avg_ret": -0.004813059044816387,
+            "hit": 0.2222222222222222,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.4,
+            "n": 12,
+            "avg_ret": -0.00466845657191417,
+            "hit": 0.25,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.5,
+            "n": 16,
+            "avg_ret": -0.0009409069024304134,
+            "hit": 0.4375,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.6,
+            "n": 19,
+            "avg_ret": -0.00025495117374409545,
+            "hit": 0.5263157894736842,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.7,
+            "n": 22,
+            "avg_ret": -0.0008690941684126117,
+            "hit": 0.5,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.8,
+            "n": 25,
+            "avg_ret": -0.002224226617848881,
+            "hit": 0.44,
+            "cut": 0.5
+          },
+          {
+            "keep": 0.9,
+            "n": 28,
+            "avg_ret": -0.003507484580960852,
+            "hit": 0.39285714285714285,
+            "cut": 0.5
+          },
+          {
+            "keep": 1.0,
+            "n": 31,
+            "avg_ret": -0.003096478430052212,
+            "hit": 0.41935483870967744,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "p": 0.0,
+          "p_margin": 0.0,
+          "minute": 0.0,
+          "dow": 0.0,
+          "rsi": 0.0,
+          "vol_ratio": 0.0
+        }
+      },
+      "calls_none": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      },
+      "calls_base": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      },
+      "calls_slot": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      },
+      "calls_day": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      },
+      "calls_rule_slot": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      },
+      "calls_rule_day": {
+        "n": 23,
+        "precision": 0.5217391304347826,
+        "avg_ret": 0.005175476190459578,
+        "profit_factor": 2.0747717387448827
+      }
+    },
+    {
+      "fold": 8,
+      "test": [
+        "2026-08-07",
+        "2026-09-17"
+      ],
+      "main_ai": {
+        "threshold": 0.56,
+        "val_precision": 0.4547933253353692,
+        "val_signals": 9169,
+        "base_rate": 0.4255290925502777,
+        "train_rows": 188528,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 514,
+      "test_calls": 126,
+      "tm_seconds": 1.4,
+      "base_filter": {
+        "cut": 0.5903450846672058,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 52,
+            "avg_ret": 0.002231182634621706,
+            "hit": 0.5,
+            "cut": 0.5903450846672058
+          },
+          {
+            "keep": 0.4,
+            "n": 69,
+            "avg_ret": 0.0017165300955488357,
+            "hit": 0.4782608695652174,
+            "cut": 0.5340412855148315
+          },
+          {
+            "keep": 0.5,
+            "n": 86,
+            "avg_ret": 0.001450665891514074,
+            "hit": 0.47674418604651164,
+            "cut": 0.4964667558670044
+          },
+          {
+            "keep": 0.6,
+            "n": 103,
+            "avg_ret": 0.0017493838874020626,
+            "hit": 0.5145631067961165,
+            "cut": 0.4373859763145447
+          },
+          {
+            "keep": 0.7,
+            "n": 120,
+            "avg_ret": 0.001744334186454143,
+            "hit": 0.5166666666666667,
+            "cut": 0.3746441900730133
+          },
+          {
+            "keep": 0.8,
+            "n": 138,
+            "avg_ret": 0.001209063282516814,
+            "hit": 0.5144927536231884,
+            "cut": 0.33435413241386414
+          },
+          {
+            "keep": 0.9,
+            "n": 155,
+            "avg_ret": 0.0007964524263213061,
+            "hit": 0.4967741935483871,
+            "cut": 0.2740240693092346
+          },
+          {
+            "keep": 1.0,
+            "n": 172,
+            "avg_ret": 0.0017999579789320511,
+            "hit": 0.5058139534883721,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "adx": 0.12140288949012756,
+          "p": 0.09000919759273529,
+          "ret_30": 0.08478465676307678,
+          "vol_ratio": 0.07932570576667786,
+          "bb_pct": 0.07643354684114456,
+          "spy_day_ret": 0.07258182018995285
+        }
+      },
+      "slot_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 52,
+            "avg_ret": 0.001186149667992112,
+            "hit": 0.4423076923076923,
+            "cut": 0.5821532011032104
+          },
+          {
+            "keep": 0.4,
+            "n": 69,
+            "avg_ret": 0.0009303978176783186,
+            "hit": 0.4492753623188406,
+            "cut": 0.5302023887634277
+          },
+          {
+            "keep": 0.5,
+            "n": 86,
+            "avg_ret": 0.0012491982973790894,
+            "hit": 0.4883720930232558,
+            "cut": 0.4860513210296631
+          },
+          {
+            "keep": 0.6,
+            "n": 103,
+            "avg_ret": 0.0017670027243041327,
+            "hit": 0.5145631067961165,
+            "cut": 0.44385868310928345
+          },
+          {
+            "keep": 0.7,
+            "n": 120,
+            "avg_ret": 0.0014182658916695853,
+            "hit": 0.5166666666666667,
+            "cut": 0.37880605459213257
+          },
+          {
+            "keep": 0.8,
+            "n": 138,
+            "avg_ret": 0.0014691900376942529,
+            "hit": 0.5144927536231884,
+            "cut": 0.33444076776504517
+          },
+          {
+            "keep": 0.9,
+            "n": 155,
+            "avg_ret": 0.0007715061280380092,
+            "hit": 0.4967741935483871,
+            "cut": 0.2916238009929657
+          },
+          {
+            "keep": 1.0,
+            "n": 172,
+            "avg_ret": 0.0017999579789320511,
+            "hit": 0.5058139534883721,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "adx": 0.09116309136152267,
+          "tms_p_eod": 0.0686095580458641,
+          "p_margin": 0.06691272556781769,
+          "ret_30": 0.06319595873355865,
+          "bb_pct": 0.0627623125910759,
+          "p": 0.06274498254060745
+        }
+      },
+      "day_filter": {
+        "cut": 0.0,
+        "keep": 1.0,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 52,
+            "avg_ret": 0.0015991609521918222,
+            "hit": 0.4807692307692308,
+            "cut": 0.5841724872589111
+          },
+          {
+            "keep": 0.4,
+            "n": 69,
+            "avg_ret": 0.0005596916895444078,
+            "hit": 0.463768115942029,
+            "cut": 0.5257086753845215
+          },
+          {
+            "keep": 0.5,
+            "n": 86,
+            "avg_ret": 0.0011335725160545622,
+            "hit": 0.47674418604651164,
+            "cut": 0.4783901572227478
+          },
+          {
+            "keep": 0.6,
+            "n": 103,
+            "avg_ret": 0.0015494028998105293,
+            "hit": 0.5145631067961165,
+            "cut": 0.4306558668613434
+          },
+          {
+            "keep": 0.7,
+            "n": 120,
+            "avg_ret": 0.0009404995419980707,
+            "hit": 0.49166666666666664,
+            "cut": 0.36571189761161804
+          },
+          {
+            "keep": 0.8,
+            "n": 138,
+            "avg_ret": 0.0010730896321680776,
+            "hit": 0.5072463768115942,
+            "cut": 0.3269692361354828
+          },
+          {
+            "keep": 0.9,
+            "n": 155,
+            "avg_ret": 0.0008041459531194961,
+            "hit": 0.4967741935483871,
+            "cut": 0.2843306362628937
+          },
+          {
+            "keep": 1.0,
+            "n": 172,
+            "avg_ret": 0.0017999579789320511,
+            "hit": 0.5058139534883721,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "adx": 0.09058889746665955,
+          "p_margin": 0.08261462301015854,
+          "bb_pct": 0.06818936765193939,
+          "ret_30": 0.06618721783161163,
+          "vol_ratio": 0.064613476395607,
+          "macd_rel": 0.06058671697974205
+        }
+      },
+      "calls_none": {
+        "n": 126,
+        "precision": 0.4126984126984127,
+        "avg_ret": -0.0012435301466830826,
+        "profit_factor": 0.6611703226327915
+      },
+      "calls_base": {
+        "n": 48,
+        "precision": 0.3125,
+        "avg_ret": -0.0034961830945678305,
+        "profit_factor": 0.316544550592441
+      },
+      "calls_slot": {
+        "n": 126,
+        "precision": 0.4126984126984127,
+        "avg_ret": -0.0012435301466830826,
+        "profit_factor": 0.6611703226327915
+      },
+      "calls_day": {
+        "n": 126,
+        "precision": 0.4126984126984127,
+        "avg_ret": -0.0012435301466830826,
+        "profit_factor": 0.6611703226327915
+      },
+      "calls_rule_slot": {
+        "n": 126,
+        "precision": 0.4126984126984127,
+        "avg_ret": -0.0012435301466830826,
+        "profit_factor": 0.6611703226327915
+      },
+      "calls_rule_day": {
+        "n": 126,
+        "precision": 0.4126984126984127,
+        "avg_ret": -0.0012435301466830826,
+        "profit_factor": 0.6611703226327915
+      }
+    },
+    {
+      "fold": 9,
+      "test": [
+        "2026-09-17",
+        "2026-10-28"
+      ],
+      "main_ai": {
+        "threshold": 0.56,
+        "val_precision": 0.4851499634235552,
+        "val_signals": 6835,
+        "base_rate": 0.4556114375591278,
+        "train_rows": 188899,
+        "cutoff_rule": "precision"
+      },
+      "filter_calls": 326,
+      "test_calls": 118,
+      "tm_seconds": 0.4,
+      "base_filter": {
+        "cut": 0.5064435005187988,
+        "keep": 0.6,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 33,
+            "avg_ret": -0.001385089154008943,
+            "hit": 0.45454545454545453,
+            "cut": 0.6960622072219849
+          },
+          {
+            "keep": 0.4,
+            "n": 44,
+            "avg_ret": -0.001502751245041721,
+            "hit": 0.4772727272727273,
+            "cut": 0.6557472944259644
+          },
+          {
+            "keep": 0.5,
+            "n": 54,
+            "avg_ret": -0.0010680131045043531,
+            "hit": 0.48148148148148145,
+            "cut": 0.5854671001434326
+          },
+          {
+            "keep": 0.6,
+            "n": 65,
+            "avg_ret": -0.0008407618509208365,
+            "hit": 0.47692307692307695,
+            "cut": 0.5064435005187988
+          },
+          {
+            "keep": 0.7,
+            "n": 76,
+            "avg_ret": -0.0009127021631671851,
+            "hit": 0.47368421052631576,
+            "cut": 0.4340701401233673
+          },
+          {
+            "keep": 0.8,
+            "n": 87,
+            "avg_ret": -0.0009372561057043296,
+            "hit": 0.4827586206896552,
+            "cut": 0.3915230929851532
+          },
+          {
+            "keep": 0.9,
+            "n": 98,
+            "avg_ret": -0.0014612728397265116,
+            "hit": 0.4387755102040816,
+            "cut": 0.34675896167755127
+          },
+          {
+            "keep": 1.0,
+            "n": 109,
+            "avg_ret": -0.0016027899678989592,
+            "hit": 0.42201834862385323,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "atr_pct": 0.217012420296669,
+          "spy_day_ret": 0.12984463572502136,
+          "adx": 0.12282785773277283,
+          "stock_day_ret": 0.09431455284357071,
+          "ret_30": 0.07214603573083878,
+          "minute": 0.06418151408433914
+        }
+      },
+      "slot_filter": {
+        "cut": 0.7399076223373413,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 33,
+            "avg_ret": 6.89940679392744e-05,
+            "hit": 0.5454545454545454,
+            "cut": 0.7399076223373413
+          },
+          {
+            "keep": 0.4,
+            "n": 44,
+            "avg_ret": -0.0009745108842966199,
+            "hit": 0.5,
+            "cut": 0.7062150835990906
+          },
+          {
+            "keep": 0.5,
+            "n": 54,
+            "avg_ret": -0.0016194340306509138,
+            "hit": 0.4444444444444444,
+            "cut": 0.6591549515724182
+          },
+          {
+            "keep": 0.6,
+            "n": 65,
+            "avg_ret": -0.0016221860244531666,
+            "hit": 0.4307692307692308,
+            "cut": 0.5759237408638
+          },
+          {
+            "keep": 0.7,
+            "n": 76,
+            "avg_ret": -0.000945128314102954,
+            "hit": 0.47368421052631576,
+            "cut": 0.5051367282867432
+          },
+          {
+            "keep": 0.8,
+            "n": 87,
+            "avg_ret": -0.0007146561927290772,
+            "hit": 0.47126436781609193,
+            "cut": 0.43911248445510864
+          },
+          {
+            "keep": 0.9,
+            "n": 98,
+            "avg_ret": -0.0012960893279850407,
+            "hit": 0.4387755102040816,
+            "cut": 0.389260470867157
+          },
+          {
+            "keep": 1.0,
+            "n": 109,
+            "avg_ret": -0.0016027899678989592,
+            "hit": 0.42201834862385323,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "atr_pct": 0.1528768092393875,
+          "adx": 0.0741267055273056,
+          "spy_day_ret": 0.07015056163072586,
+          "p_margin": 0.06983593851327896,
+          "tms_p_win": 0.06806496530771255,
+          "stock_day_ret": 0.06312934309244156
+        }
+      },
+      "day_filter": {
+        "cut": 0.6984996199607849,
+        "keep": 0.3,
+        "pick_table": [
+          {
+            "keep": 0.3,
+            "n": 33,
+            "avg_ret": 0.00029368742294555775,
+            "hit": 0.6060606060606061,
+            "cut": 0.6984996199607849
+          },
+          {
+            "keep": 0.4,
+            "n": 44,
+            "avg_ret": -0.0005504867630663264,
+            "hit": 0.5454545454545454,
+            "cut": 0.6361103057861328
+          },
+          {
+            "keep": 0.5,
+            "n": 54,
+            "avg_ret": -0.001006373286056229,
+            "hit": 0.48148148148148145,
+            "cut": 0.5810277462005615
+          },
+          {
+            "keep": 0.6,
+            "n": 65,
+            "avg_ret": -0.0007093872706786477,
+            "hit": 0.49230769230769234,
+            "cut": 0.5456767082214355
+          },
+          {
+            "keep": 0.7,
+            "n": 76,
+            "avg_ret": -0.0005313768838315095,
+            "hit": 0.4868421052631579,
+            "cut": 0.5122037529945374
+          },
+          {
+            "keep": 0.8,
+            "n": 87,
+            "avg_ret": -0.0008207581120247706,
+            "hit": 0.4827586206896552,
+            "cut": 0.4235861301422119
+          },
+          {
+            "keep": 0.9,
+            "n": 98,
+            "avg_ret": -0.0010967890622811886,
+            "hit": 0.45918367346938777,
+            "cut": 0.3414399325847626
+          },
+          {
+            "keep": 1.0,
+            "n": 109,
+            "avg_ret": -0.0016027899678989592,
+            "hit": 0.42201834862385323,
+            "cut": 0.0
+          }
+        ],
+        "top_features": {
+          "atr_pct": 0.19522863626480103,
+          "spy_day_ret": 0.0872822254896164,
+          "adx": 0.08455687016248703,
+          "ret_30": 0.06645789742469788,
+          "p_margin": 0.06639005243778229,
+          "stock_day_ret": 0.06474895775318146
+        }
+      },
+      "calls_none": {
+        "n": 118,
+        "precision": 0.5,
+        "avg_ret": -0.0012149669254264577,
+        "profit_factor": 0.7078639347322746
+      },
+      "calls_base": {
+        "n": 95,
+        "precision": 0.5157894736842106,
+        "avg_ret": -0.0007155556408556585,
+        "profit_factor": 0.8190654520365982
+      },
+      "calls_slot": {
+        "n": 48,
+        "precision": 0.5,
+        "avg_ret": -0.003638545176745373,
+        "profit_factor": 0.31210597920329514
+      },
+      "calls_day": {
+        "n": 51,
+        "precision": 0.5490196078431373,
+        "avg_ret": -0.00164774592037824,
+        "profit_factor": 0.6095094811421047
+      },
+      "calls_rule_slot": {
+        "n": 118,
+        "precision": 0.5,
+        "avg_ret": -0.0012149669254264577,
+        "profit_factor": 0.7078639347322746
+      },
+      "calls_rule_day": {
+        "n": 118,
+        "precision": 0.5,
+        "avg_ret": -0.0012149669254264577,
+        "profit_factor": 0.7078639347322746
+      }
+    }
+  ],
+  "runtime_sec": 684,
+  "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and paper money only; no internal or personal data. Backtest estimate with stated simplifications; not financial advice."
+}

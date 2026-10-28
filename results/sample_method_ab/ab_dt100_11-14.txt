@@ -1,0 +1,24 @@
+Sample-method A/B dt100: 101 training symbols, 100 traded, 899 days of 15-min bars, 2000 paths, 40-day pool, window 11-14
+  loaded 101 symbols in 1787s
+  fold 1: test ['2025-10-24', '2025-12-03'] | calls 5887 | precision none 50.6% (n=5887) | base 50.6% (n=5887) | slot 50.6% (n=5887) | day 50.6% (n=5887) | TM 130.3s
+  fold 2: test ['2025-12-03', '2026-01-13'] | calls 43 | precision none 58.1% (n=43) | base 58.1% (n=43) | slot 58.1% (n=43) | day 58.1% (n=43) | TM 0.2s
+  fold 3: test ['2026-01-13', '2026-02-23'] | calls 4400 | precision none 43.2% (n=4400) | base 44.0% (n=3860) | slot 44.3% (n=3917) | day 47.8% (n=1607) | TM 56.8s
+  fold 4: test ['2026-02-23', '2026-04-06'] | calls 1 | precision none 100.0% (n=1) | base 100.0% (n=1) | slot 100.0% (n=1) | day 100.0% (n=1) | TM 0.0s
+  fold 6: test ['2026-05-17', '2026-06-27'] | calls 11 | precision none 27.3% (n=11) | base 27.3% (n=11) | slot 27.3% (n=11) | day 27.3% (n=11) | TM 0.1s
+  fold 7: test ['2026-06-27', '2026-08-07'] | calls 269 | precision none 48.7% (n=269) | base 48.7% (n=269) | slot 48.7% (n=269) | day 48.7% (n=269) | TM 4.0s
+  fold 8: test ['2026-08-07', '2026-09-17'] | calls 187 | precision none 58.3% (n=187) | base 42.7% (n=82) | slot 41.2% (n=68) | day 39.2% (n=51) | TM 1.6s
+  fold 9: test ['2026-09-17', '2026-10-28'] | calls 76 | precision none 67.1% (n=76) | base 65.4% (n=26) | slot 64.7% (n=34) | day 72.7% (n=22) | TM 2.7s
+
+=== RESULT ['2025-10-24', '2026-10-28'] (SPY buy & hold +15.08%)
+arm         calls precision  avg/call trades   $/trade    total   maxDD
+none        10874     47.8%   -0.035%    326     -9.61   -3.13%  -6.32%
+base        10179     48.0%   -0.028%    307     -9.94   -3.05%  -6.37%
+slot        10230     48.1%   -0.030%    312    -10.75   -3.35%  -6.87%
+day          7891     50.0%   +0.009%    303     -9.12   -2.76%  -6.13%
+rule_slot   10858     47.8%   -0.036%    325     -9.67   -3.14%  -6.32%
+rule_day    10858     47.8%   -0.035%    325     -9.61   -3.12%  -6.34%
+Precision beat the base filter in: {'slot': '1 of 8', 'day': '2 of 8'}
+Luck check slot vs base: gain +0.1%, 90% range [-0.1%, +0.3%] over 85 days -> not proven (could be luck)
+Luck check day vs base: gain +1.9%, 90% range [+0.3%, +3.8%] over 85 days -> proven
+Diagnostics: {"slot": {"auc_p_win": 0.5395023308319483, "auc_exp_ret": 0.5233370594097589, "spearman_with_atr_pct": 0.7283701244692606, "mean_p_win": 0.4589053680132817, "actual_win_rate": 0.47829685488320767}, "day": {"auc_p_win": 0.5338285135259712, "auc_exp_ret": 0.5246933930487424, "spearman_with_atr_pct": 0.5550341334641098, "mean_p_win": 0.45381571665744325, "actual_win_rate": 0.47829685488320767}, "main_ai_p_auc": 0.5330984736185969, "slot_vs_day_p_win_spearman": 0.712251470883829, "calls_without_tm_features": 32}
+Saved results/sample_method_ab/ab_dt100_trade_w11-14.json (2186s)

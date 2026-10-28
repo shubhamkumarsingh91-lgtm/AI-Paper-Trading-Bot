@@ -1,0 +1,25 @@
+Sample-method A/B b1: 14 training symbols, 5 traded, 1434 days of 15-min bars, 2000 paths, 40-day pool, window 11-14
+  skip AMD: {"message": "too many requests."}
+
+  loaded 13 symbols in 773s
+  fold 1: test ['2025-10-24', '2025-12-03'] | calls 19 | precision none 52.6% (n=19) | base 52.6% (n=19) | slot 52.6% (n=19) | day 52.6% (n=19) | TM 0.5s
+  fold 3: test ['2026-01-13', '2026-02-23'] | calls 253 | precision none 8.7% (n=253) | base 11.8% (n=102) | slot 8.0% (n=125) | day 9.1% (n=187) | TM 8.1s
+  fold 5: test ['2026-04-06', '2026-05-17'] | calls 9 | precision none 88.9% (n=9) | base 88.9% (n=9) | slot 88.9% (n=9) | day 88.9% (n=9) | TM 0.1s
+  fold 6: test ['2026-05-17', '2026-06-27'] | calls 441 | precision none 43.5% (n=441) | base 34.0% (n=141) | slot 32.9% (n=149) | day 30.3% (n=119) | TM 4.8s
+  fold 7: test ['2026-06-27', '2026-08-07'] | calls 58 | precision none 34.5% (n=58) | base 34.5% (n=58) | slot 34.5% (n=58) | day 34.5% (n=58) | TM 0.3s
+  fold 8: test ['2026-08-07', '2026-09-17'] | calls 94 | precision none 31.9% (n=94) | base 30.7% (n=75) | slot 31.7% (n=63) | day 32.4% (n=68) | TM 0.7s
+  fold 9: test ['2026-09-17', '2026-10-28'] | calls 19 | precision none 31.6% (n=19) | base 31.6% (n=19) | slot 31.6% (n=19) | day 31.6% (n=19) | TM 0.1s
+
+=== RESULT ['2025-10-24', '2026-10-28'] (SPY buy & hold +15.08%)
+arm         calls precision  avg/call trades   $/trade    total   maxDD
+none          893     32.3%   -0.379%    166    -34.09   -5.66%  -5.95%
+base          423     30.0%   -0.437%    109    -34.86   -3.80%  -4.09%
+slot          442     27.8%   -0.446%    113    -39.99   -4.52%  -4.96%
+day           479     24.8%   -0.453%    112    -42.68   -4.78%  -5.25%
+rule_slot     891     32.2%   -0.380%    165    -33.02   -5.45%  -5.74%
+rule_day      892     32.3%   -0.377%    165    -32.75   -5.40%  -5.69%
+Precision beat the base filter in: {'slot': '1 of 7', 'day': '1 of 7'}
+Luck check slot vs base: gain -2.2%, 90% range [-5.2%, +0.8%] over 81 days -> not proven (could be luck)
+Luck check day vs base: gain -5.2%, 90% range [-8.8%, -2.1%] over 81 days -> worse
+Diagnostics: {"slot": {"auc_p_win": 0.6573490587695133, "auc_exp_ret": 0.6305498163452709, "spearman_with_atr_pct": 0.7208613690053532, "mean_p_win": 0.4972066069428891, "actual_win_rate": 0.322508398656215}, "day": {"auc_p_win": 0.6283086547291092, "auc_exp_ret": 0.6306014692378328, "spearman_with_atr_pct": 0.6203297394025037, "mean_p_win": 0.4838129899216125, "actual_win_rate": 0.322508398656215}, "main_ai_p_auc": 0.5230773645546374, "slot_vs_day_p_win_spearman": 0.8553187404385479, "calls_without_tm_features": 0}
+Saved results/sample_method_ab/ab_b1_trade_w11-14.json (841s)

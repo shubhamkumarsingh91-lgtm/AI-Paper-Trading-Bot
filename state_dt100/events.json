@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-10-28T18:11:48Z",
+"generated": "2026-10-28T18:22:01Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -29,37 +29,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,709 (+0.71% since its first recorded day; the market (SPY) -0.84%)."
-},
-{
-"t": "2026-10-26T19:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 1 of 5 positions, balance $100,698).",
-"count": 0
-},
-{
-"t": "2026-10-26T19:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "Too close to the 3:50 close-out, so no new buys; it only checked what it holds."
-},
-{
-"t": "2026-10-26T19:51:54Z",
-"bot": "b3",
-"place": "broker",
-"kind": "eod",
-"text": "Closing time: sold its 1 open position so it holds no stock overnight."
-},
-{
-"t": "2026-10-26T19:51:54Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "ADI",
-"pnl": -10.78,
-"text": "Sold ADI (end-of-day close): lost $10.78, -0.2%."
 },
 {
 "t": "2026-10-26T19:55:00Z",
@@ -1201,6 +1170,21 @@
 },
 {
 "t": "2026-10-28T18:10:58Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 68% confidence bar."
+},
+{
+"t": "2026-10-28T18:21:01Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 98 stocks (holding 2 of 5 positions, balance $101,391). None cleared its 68% confidence bar (closest: MRVL 64%).",
+"count": 98
+},
+{
+"t": "2026-10-28T18:21:01Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

@@ -15998,3 +15998,21 @@ symbols
 2026-10-28 16:10:48,413 [INFO]   PLTR : HOLD score=-0.187 ml=47% tv=SELL            rsi=11 vol×0.6
 2026-10-28 16:10:48,413 [INFO]   No actionable signal this scan
 2026-10-28 16:10:48,414 [INFO] Run complete — state saved
+2026-10-28 16:20:55,650 [INFO] Run mode: SCAN
+2026-10-28 16:20:55,650 [INFO] 📚 Loaded 5 trades from history
+2026-10-28 16:20:55,650 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-28 16:20:55,663 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.1%  precision=30.8%  walk-forward=31.9%  threshold=0.66  trained=2026-10-28
+2026-10-28 16:20:55,666 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.55, trained 2026-10-28
+2026-10-28 16:20:55,909 [INFO] 
+── Scan #1 | $98,835.26 equity | 1/5 positions | Model: 51.1% ──
+2026-10-28 16:20:57,650 [INFO]   [NVDA] ML HOLD  xgb=0.31 lgb=0.32 ens=0.32 | Drivers: hour_cos=-1.000, atr_pct=0.003, hour=12.000
+2026-10-28 16:20:57,776 [INFO]   NVDA : HOLD score=-0.342 ml=32% tv=NEUTRAL         rsi=26 vol×0.8
+2026-10-28 16:20:57,777 [INFO]   PANW : HOLDING
+2026-10-28 16:20:58,065 [INFO]   [AVGO] ML HOLD  xgb=0.43 lgb=0.42 ens=0.43 | Drivers: hour_cos=-1.000, atr_pct=0.006, hour=12.000
+2026-10-28 16:20:58,170 [INFO]   AVGO : HOLD score=-0.230 ml=43% tv=BUY             rsi=65 vol×0.3
+2026-10-28 16:20:59,729 [INFO]   [SOFI] ML BUY  xgb=0.57 lgb=0.52 ens=0.55 | Drivers: hour_cos=-1.000, atr_pct=0.010, hour=12.000
+2026-10-28 16:20:59,782 [INFO]   SOFI : HOLD score=-0.109 ml=55% tv=BUY             rsi=62 vol×0.6
+2026-10-28 16:21:00,017 [INFO]   [PLTR] ML HOLD  xgb=0.40 lgb=0.37 ens=0.39 | Drivers: hour_cos=-1.000, atr_pct=0.006, hour=12.000
+2026-10-28 16:21:00,081 [INFO]   PLTR : HOLD score=-0.275 ml=39% tv=SELL            rsi=11 vol×0.5
+2026-10-28 16:21:00,081 [INFO]   No actionable signal this scan
+2026-10-28 16:21:00,082 [INFO] Run complete — state saved

@@ -1,0 +1,77 @@
+# Sample Method A/B Testing: does the Time Machine raise the meta filter's precision,
+# and which sampling works better, 'slot' or whole-'day'? (see sample_method_ab_testing.py)
+# Independent personal project, not tied to any employer or agency. Public market data, paper money only.
+# SAFETY: read-only backtest. Places no orders, writes only to results/sample_method_ab/,
+# and runs only when started by hand or by a pull request that changes these files.
+name: Sample Method A/B Testing
+on:
+  workflow_dispatch:
+    inputs:
+      bot:
+        description: "dt100, b1 or both"
+        default: both
+      window:
+        description: "allday, 10-14, 11-14 or all"
+        default: all
+  pull_request:
+    paths: [time_machine.py, sample_method_ab_testing.py, tests/test_time_machine.py, .github/workflows/sample-method-ab.yml]
+    types: [opened, synchronize]
+permissions:
+  contents: write
+concurrency:
+  group: sample-method-ab-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        bot: [dt100, b1]
+        window: [allday, 10-14, 11-14]
+    steps:
+      - name: Skip runs not asked for
+        id: want
+        run: |
+          B="${{ github.event.inputs.bot || 'both' }}"; W="${{ github.event.inputs.window || 'all' }}"
+          if { [ "$B" = "both" ] || [ "$B" = "${{ matrix.bot }}" ]; } && { [ "$W" = "all" ] || [ "$W" = "${{ matrix.window }}" ]; }; then echo "go=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.want.outputs.go == '1'
+        with:
+          ref: ${{ github.head_ref || 'main' }}
+      - uses: actions/setup-python@v5
+        if: steps.want.outputs.go == '1'
+        with:
+          python-version: "3.11"
+          cache: pip
+      - if: steps.want.outputs.go == '1'
+        run: pip install -r requirements.txt pytest
+      - name: Hand-checked unit tests
+        if: steps.want.outputs.go == '1'
+        run: python -m pytest -q tests/test_time_machine.py tests/test_meta_filter.py
+      - name: Run A/B backtest (12 months of tests = 9 periods of 41 days)
+        if: steps.want.outputs.go == '1'
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          mkdir -p results/sample_method_ab
+          ARGS="--bot ${{ matrix.bot }} --folds 9 --fold-days 41 --label trade"
+          [ "${{ matrix.window }}" != "allday" ] && ARGS="$ARGS --buy-window ${{ matrix.window }}"
+          python sample_method_ab_testing.py $ARGS | tee results/sample_method_ab/ab_${{ matrix.bot }}_${{ matrix.window }}.txt
+      - name: Save results
+        if: steps.want.outputs.go == '1'
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add results/sample_method_ab/ || true
+          git diff --cached --quiet && exit 0
+          git commit -m "sample-method A/B results (${{ matrix.bot }}, ${{ matrix.window }}) [skip ci]"
+          B="${{ github.head_ref || 'main' }}"
+          for i in 1 2 3 4 5 6; do
+            if git pull --rebase origin "$B"; then git push origin HEAD:"$B" && exit 0
+            else git rebase --abort 2>/dev/null || true; fi
+            sleep $(( i * 5 ))
+          done
+          exit 1

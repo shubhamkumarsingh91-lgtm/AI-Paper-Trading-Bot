@@ -15693,3 +15693,24 @@ symbols
 2026-10-28 13:31:13,028 [INFO] VIX fear gauge: 17.3
 2026-10-28 13:31:13,079 [INFO] 🟢 BUY     29×PANW @ $  401.54 | Score:+0.699 | ML:70%(vs66%) | TV:NEUTRAL(ML+) | RSI:39 | VOL:SURGE
 2026-10-28 13:31:13,079 [INFO] Run complete — state saved
+2026-10-28 13:40:51,449 [INFO] Run mode: SCAN
+2026-10-28 13:40:51,449 [INFO] 📚 Loaded 3 trades from history
+2026-10-28 13:40:51,449 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-28 13:40:51,457 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.1%  precision=30.8%  walk-forward=31.9%  threshold=0.66  trained=2026-10-28
+2026-10-28 13:40:51,462 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.55, trained 2026-10-28
+2026-10-28 13:40:51,534 [INFO] 
+── Scan #1 | $99,165.71 equity | 1/5 positions | Model: 51.1% ──
+2026-10-28 13:40:51,977 [INFO]   [NVDA] ML HOLD  xgb=0.43 lgb=0.38 ens=0.41 | Drivers: hour_cos=-0.707, atr_pct=0.003, hour=9.000
+2026-10-28 13:40:52,046 [INFO]   NVDA : HOLD score=-0.249 ml=41% tv=BUY             rsi=64 vol×0.0
+2026-10-28 13:40:52,046 [INFO]   PANW : HOLDING
+2026-10-28 13:40:52,268 [INFO]   [AVGO] ML HOLD  xgb=0.45 lgb=0.50 ens=0.47 | Drivers: hour_cos=-0.707, atr_pct=0.004, hour=9.000
+2026-10-28 13:40:52,352 [INFO]   AVGO : HOLD score=-0.192 ml=47% tv=BUY             rsi=67 vol×0.0
+2026-10-28 13:40:52,542 [INFO]   [SOFI] ML BUY  xgb=0.66 lgb=0.68 ens=0.67 | Drivers: hour_cos=-0.707, atr_pct=0.007, hour=15.000
+2026-10-28 13:40:52,615 [INFO]   SOFI : BUY  score=+0.666 ml=67% tv=NEUTRAL         rsi=34 vol×3.6
+2026-10-28 13:40:53,696 [INFO]   [PLTR] ML HOLD  xgb=0.45 lgb=0.38 ens=0.42 | Drivers: hour_cos=-0.500, atr_pct=0.003, hour=8.000
+2026-10-28 13:40:53,766 [INFO]   PLTR : HOLD score=-0.241 ml=42% tv=SELL            rsi=32 vol×0.0
+2026-10-28 13:40:54,110 [INFO]   🧪 FILTER (shadow): SOFI SKIP (win chance 43% vs cut 55%)
+2026-10-28 13:40:54,111 [INFO]   🎯 Best: SOFI (score=0.666) — placing order
+2026-10-28 13:40:54,273 [INFO] VIX fear gauge: 17.3
+2026-10-28 13:40:54,288 [INFO] 🟢 BUY    725×SOFI @ $   16.41 | Score:+0.666 | ML:67%(vs66%) | TV:NEUTRAL(ML+) | RSI:34 | VOL:SURGE
+2026-10-28 13:40:54,289 [INFO] Run complete — state saved

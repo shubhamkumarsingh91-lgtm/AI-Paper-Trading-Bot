@@ -1,0 +1,27 @@
+Sample-method A/B dt100: 101 training symbols, 100 traded, 899 days of 15-min bars, 2000 paths, 40-day pool, window all day
+  skip META: {"message": "too many requests."}
+
+  loaded 100 symbols in 2081s
+  fold 1: test ['2025-10-24', '2025-12-03'] | calls 9862 | precision none 51.9% (n=9862) | base 51.9% (n=9862) | slot 51.9% (n=9862) | day 51.9% (n=9862) | TM 157.4s
+  fold 2: test ['2025-12-03', '2026-01-13'] | calls 117 | precision none 50.4% (n=117) | base 50.4% (n=117) | slot 50.4% (n=117) | day 50.4% (n=117) | TM 0.3s
+  fold 3: test ['2026-01-13', '2026-02-23'] | calls 7841 | precision none 43.0% (n=7841) | base 43.0% (n=7841) | slot 43.0% (n=7841) | day 43.0% (n=7841) | TM 75.2s
+  fold 4: test ['2026-02-23', '2026-04-06'] | calls 5 | precision none 40.0% (n=5) | base 40.0% (n=5) | slot 40.0% (n=5) | day 40.0% (n=5) | TM 0.0s
+  fold 5: test ['2026-04-06', '2026-05-17'] | calls 6 | precision none 50.0% (n=6) | base 50.0% (n=6) | slot 50.0% (n=6) | day 50.0% (n=6) | TM 0.0s
+  fold 6: test ['2026-05-17', '2026-06-27'] | calls 19 | precision none 10.5% (n=19) | base 10.5% (n=19) | slot 10.5% (n=19) | day 10.5% (n=19) | TM 0.1s
+  fold 7: test ['2026-06-27', '2026-08-07'] | calls 276 | precision none 52.5% (n=276) | base 54.8% (n=210) | slot 53.7% (n=134) | day 52.1% (n=140) | TM 2.5s
+  fold 8: test ['2026-08-07', '2026-09-17'] | calls 306 | precision none 51.0% (n=306) | base 51.0% (n=306) | slot 51.0% (n=306) | day 51.0% (n=306) | TM 2.0s
+  fold 9: test ['2026-09-17', '2026-10-28'] | calls 131 | precision none 61.8% (n=131) | base 62.5% (n=48) | slot 48.3% (n=58) | day 51.2% (n=41) | TM 3.3s
+
+=== RESULT ['2025-10-24', '2026-10-28'] (SPY buy & hold +15.08%)
+arm         calls precision  avg/call trades   $/trade    total   maxDD
+none        18563     48.1%   -0.039%    357     -8.65   -3.09%  -5.02%
+base        18414     48.1%   -0.040%    329     -9.20   -3.03%  -4.55%
+slot        18348     48.0%   -0.041%    326     -7.50   -2.45%  -4.32%
+day         18337     48.0%   -0.041%    323    -10.36   -3.35%  -5.06%
+rule_slot   18445     48.1%   -0.039%    356     -9.11   -3.24%  -5.03%
+rule_day    18487     48.1%   -0.038%    357     -8.11   -2.90%  -5.02%
+Precision beat the base filter in: {'slot': '0 of 9', 'day': '0 of 9'}
+Luck check slot vs base: gain -0.1%, 90% range [-0.2%, -0.0%] over 98 days -> worse
+Luck check day vs base: gain -0.1%, 90% range [-0.2%, -0.0%] over 98 days -> worse
+Diagnostics: {"slot": {"auc_p_win": 0.5369255176239033, "auc_exp_ret": 0.5185888239575557, "spearman_with_atr_pct": 0.5640961390476297, "mean_p_win": 0.4546352826721436, "actual_win_rate": 0.48111835371437806}, "day": {"auc_p_win": 0.5364774485184499, "auc_exp_ret": 0.5200353156762754, "spearman_with_atr_pct": 0.42497821251301954, "mean_p_win": 0.45262017619716793, "actual_win_rate": 0.48111835371437806}, "main_ai_p_auc": 0.5342884409859123, "slot_vs_day_p_win_spearman": 0.7228986114135514, "calls_without_tm_features": 61}
+Saved results/sample_method_ab/ab_dt100_trade_allday.json (2477s)

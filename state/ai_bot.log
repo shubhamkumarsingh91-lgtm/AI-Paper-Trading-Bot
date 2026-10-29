@@ -16511,3 +16511,22 @@ symbols
 2026-10-29 13:20:52,764 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.0%  precision=30.7%  walk-forward=32.0%  threshold=0.62  trained=2026-10-29
 2026-10-29 13:20:52,769 [INFO] 🧪 Meta filter loaded (shadow): keep top 70%, cut 0.41, trained 2026-10-29
 2026-10-29 13:20:52,969 [INFO] Run complete — state saved
+2026-10-29 13:30:53,533 [INFO] Run mode: SCAN
+2026-10-29 13:30:53,534 [INFO] 📚 Loaded 8 trades from history
+2026-10-29 13:30:53,534 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-10-29 13:30:53,544 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=51.0%  precision=30.7%  walk-forward=32.0%  threshold=0.62  trained=2026-10-29
+2026-10-29 13:30:53,549 [INFO] 🧪 Meta filter loaded (shadow): keep top 70%, cut 0.41, trained 2026-10-29
+2026-10-29 13:30:53,843 [INFO] 
+── Scan #1 | $98,803.49 equity | 0/5 positions | Model: 51.0% ──
+2026-10-29 13:30:59,315 [INFO]   [NVDA] ML HOLD  xgb=0.46 lgb=0.45 ens=0.46 | Drivers: atr_pct=0.004, hour_cos=-0.500, hour=8.000
+2026-10-29 13:30:59,406 [INFO]   NVDA : HOLD score=-0.163 ml=46% tv=SELL            rsi=31 vol×0.0
+2026-10-29 13:31:01,091 [INFO]   [PANW] ML BUY  xgb=0.64 lgb=0.67 ens=0.65 | Drivers: atr_pct=0.003, hour_cos=-0.707, hour=15.000
+2026-10-29 13:31:01,170 [INFO]   PANW : HOLD score=+0.029 ml=65% tv=SELL            rsi=44 vol×4.9
+2026-10-29 13:31:07,650 [INFO]   [AVGO] ML HOLD  xgb=0.50 lgb=0.48 ens=0.49 | Drivers: atr_pct=0.005, hour_cos=-0.500, hour=8.000
+2026-10-29 13:31:07,752 [INFO]   AVGO : HOLD score=-0.127 ml=49% tv=STRONG_BUY      rsi=31 vol×0.0
+2026-10-29 13:31:08,140 [INFO]   [SOFI] ML BUY  xgb=0.60 lgb=0.54 ens=0.58 | Drivers: atr_pct=0.007, hour_cos=-0.707, hour=15.000
+2026-10-29 13:31:08,271 [INFO]   SOFI : HOLD score=-0.040 ml=58% tv=BUY             rsi=66 vol×4.9
+2026-10-29 13:31:08,467 [INFO]   [PLTR] ML BUY  xgb=0.56 lgb=0.53 ens=0.55 | Drivers: atr_pct=0.005, hour_cos=-0.500, hour=16.000
+2026-10-29 13:31:08,562 [INFO]   PLTR : HOLD score=-0.072 ml=55% tv=BUY             rsi=57 vol×0.0
+2026-10-29 13:31:08,562 [INFO]   No actionable signal this scan
+2026-10-29 13:31:08,563 [INFO] Run complete — state saved

@@ -1,29 +1,7 @@
 {
 "bot": "b3",
-"generated": "2026-10-29T17:31:07Z",
+"generated": "2026-10-29T17:41:07Z",
 "events": [
-{
-"t": "2026-10-27T18:40:59Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "All 5 position slots are full, so it is only watching what it already holds."
-},
-{
-"t": "2026-10-27T18:50:47Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 5 of 5 positions, balance $101,638).",
-"count": 0
-},
-{
-"t": "2026-10-27T18:50:47Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "All 5 position slots are full, so it is only watching what it already holds."
-},
 {
 "t": "2026-10-27T19:00:58Z",
 "bot": "b3",
@@ -1218,6 +1196,31 @@
 "place": "floor",
 "kind": "wait",
 "text": "All 5 position slots are full, so it is only watching what it already holds."
+},
+{
+"t": "2026-10-29T17:41:06Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned its stocks (holding 5 of 5 positions, balance $100,816).",
+"count": 0
+},
+{
+"t": "2026-10-29T17:41:06Z",
+"bot": "b3",
+"place": "broker",
+"kind": "sell",
+"symbol": "ORCL",
+"pnl": -273.05,
+"text": "Sold ORCL (stop-loss): lost $273.05, -2.3%."
+},
+{
+"t": "2026-10-29T17:41:06Z",
+"bot": "b3",
+"place": "floor",
+"kind": "watch",
+"text": "Put ORCL on a dip watch: it will buy back only if the price turns up again.",
+"symbol": "ORCL"
 }
 ]
 }

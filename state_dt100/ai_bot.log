@@ -61925,3 +61925,211 @@
 2026-10-30 17:32:49,235 [INFO]   WBD  : HOLD score=-0.472 ml=15% tv=N/A(ML+)        rsi=59 vol×0.0
 2026-10-30 17:32:49,235 [INFO]   No actionable signal this scan
 2026-10-30 17:32:49,237 [INFO] Run complete — state saved
+2026-10-30 17:40:51,952 [INFO] Run mode: SCAN
+2026-10-30 17:40:51,953 [INFO] 📚 Loaded 68 trades from history
+2026-10-30 17:40:51,953 [INFO] Runtime state restored — watchlist ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'GOOG', 'META', 'TSLA', 'AVGO', 'BRK.B', 'JPM', 'LLY', 'V', 'UNH', 'XOM', 'MA', 'COST', 'HD', 'PG', 'JNJ', 'NFLX', 'ABBV', 'BAC', 'CRM', 'ORCL', 'AMD', 'CVX', 'KO', 'WMT', 'MRK', 'PEP', 'ADBE', 'TMO', 'CSCO', 'ACN', 'LIN', 'MCD', 'ABT', 'WFC', 'INTC', 'QCOM', 'DIS', 'TXN', 'INTU', 'IBM', 'AMAT', 'CAT', 'GE', 'VZ', 'PFE', 'NOW', 'UBER', 'CMCSA', 'T', 'AMGN', 'ISRG', 'GS', 'MS', 'SPGI', 'BKNG', 'HON', 'LOW', 'UNP', 'RTX', 'NEE', 'BA', 'PLTR', 'MU', 'LRCX', 'PANW', 'ADI', 'KLAC', 'SBUX', 'C', 'SCHW', 'BLK', 'DE', 'AXP', 'MDT', 'GILD', 'CRWD', 'ANET', 'MRVL', 'DELL', 'SMCI', 'COIN', 'PYPL', 'F', 'GM', 'NKE', 'CVS', 'MO', 'PM', 'COP', 'SLB', 'OXY', 'FCX', 'DAL', 'CCL', 'WBD']
+2026-10-30 17:40:51,961 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=57.8%  precision=29.6%  walk-forward=30.2%  threshold=0.62  trained=2026-10-30
+2026-10-30 17:40:51,966 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.55, trained 2026-10-30
+2026-10-30 17:40:52,322 [INFO] 
+── Scan #1 | $100,612.41 equity | 1/5 positions | Model: 57.8% ──
+2026-10-30 17:40:53,725 [INFO]   [AAPL] ML HOLD  xgb=0.35 lgb=0.33 ens=0.34 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:40:53,731 [INFO]   AAPL : HOLD score=-0.278 ml=34% tv=N/A(ML+)        rsi=58 vol×0.9
+2026-10-30 17:40:54,261 [INFO]   [MSFT] ML HOLD  xgb=0.35 lgb=0.36 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:40:54,267 [INFO]   MSFT : HOLD score=-0.265 ml=35% tv=N/A(ML+)        rsi=40 vol×0.4
+2026-10-30 17:40:54,515 [INFO]   [NVDA] ML BUY  xgb=0.51 lgb=0.57 ens=0.54 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:40:54,518 [INFO]   NVDA : HOLD score=-0.083 ml=54% tv=N/A(ML+)        rsi=18 vol×0.5
+2026-10-30 17:40:54,982 [INFO]   [AMZN] ML BUY  xgb=0.60 lgb=0.59 ens=0.60 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:40:54,988 [INFO]   AMZN : HOLD score=-0.023 ml=60% tv=N/A(ML+)        rsi=47 vol×0.8
+2026-10-30 17:40:55,346 [INFO]   [GOOGL] ML HOLD  xgb=0.41 lgb=0.47 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:40:55,352 [INFO]   GOOGL: HOLD score=-0.187 ml=43% tv=N/A(ML+)        rsi=37 vol×0.5
+2026-10-30 17:40:55,596 [INFO]   [GOOG] ML HOLD  xgb=0.39 lgb=0.46 ens=0.42 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:40:55,602 [INFO]   GOOG : HOLD score=-0.204 ml=42% tv=N/A(ML+)        rsi=35 vol×0.9
+2026-10-30 17:40:56,104 [INFO]   [META] ML BUY  xgb=0.52 lgb=0.51 ens=0.52 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:40:56,107 [INFO]   META : HOLD score=-0.102 ml=52% tv=N/A(ML+)        rsi=49 vol×0.8
+2026-10-30 17:41:03,812 [INFO]   [TSLA] ML BUY  xgb=0.53 lgb=0.54 ens=0.54 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:41:03,815 [INFO]   TSLA : HOLD score=-0.083 ml=54% tv=N/A(ML+)        rsi=58 vol×0.9
+2026-10-30 17:41:04,301 [INFO]   [AVGO] ML BUY  xgb=0.53 lgb=0.51 ens=0.52 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:04,304 [INFO]   AVGO : HOLD score=-0.098 ml=52% tv=N/A(ML+)        rsi=19 vol×1.0
+2026-10-30 17:41:05,776 [INFO]   [BRK.B] ML HOLD  xgb=0.17 lgb=0.16 ens=0.17 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:05,781 [INFO]   BRK.B: HOLD score=-0.453 ml=17% tv=N/A(ML+)        rsi=57 vol×0.3
+2026-10-30 17:41:06,179 [INFO]   [JPM] ML HOLD  xgb=0.32 lgb=0.33 ens=0.33 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:06,185 [INFO]   JPM  : HOLD score=-0.293 ml=33% tv=N/A(ML+)        rsi=52 vol×0.5
+2026-10-30 17:41:07,239 [INFO]   [LLY] ML BUY  xgb=0.54 lgb=0.54 ens=0.54 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:07,242 [INFO]   LLY  : HOLD score=-0.082 ml=54% tv=N/A(ML+)        rsi=41 vol×0.5
+2026-10-30 17:41:07,516 [INFO]   [V] ML HOLD  xgb=0.29 lgb=0.28 ens=0.29 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:07,519 [INFO]   V    : HOLD score=-0.332 ml=29% tv=N/A(ML+)        rsi=69 vol×0.4
+2026-10-30 17:41:12,868 [INFO]   [UNH] ML HOLD  xgb=0.36 lgb=0.36 ens=0.36 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:12,871 [INFO]   UNH  : HOLD score=-0.261 ml=36% tv=N/A(ML+)        rsi=35 vol×1.2
+2026-10-30 17:41:13,282 [INFO]   [XOM] ML HOLD  xgb=0.44 lgb=0.39 ens=0.42 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:13,285 [INFO]   XOM  : HOLD score=-0.204 ml=42% tv=N/A(ML+)        rsi=44 vol×0.7
+2026-10-30 17:41:13,682 [INFO]   [MA] ML HOLD  xgb=0.30 lgb=0.31 ens=0.30 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:13,685 [INFO]   MA   : HOLD score=-0.318 ml=30% tv=N/A(ML+)        rsi=55 vol×0.5
+2026-10-30 17:41:13,930 [INFO]   [COST] ML HOLD  xgb=0.30 lgb=0.25 ens=0.28 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:13,933 [INFO]   COST : HOLD score=-0.339 ml=28% tv=N/A(ML+)        rsi=72 vol×0.9
+2026-10-30 17:41:14,104 [INFO]   [HD] ML HOLD  xgb=0.26 lgb=0.23 ens=0.24 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:14,107 [INFO]   HD   : HOLD score=-0.376 ml=24% tv=N/A(ML+)        rsi=53 vol×0.3
+2026-10-30 17:41:16,412 [INFO]   [PG] ML HOLD  xgb=0.32 lgb=0.30 ens=0.31 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:16,415 [INFO]   PG   : HOLD score=-0.311 ml=31% tv=N/A(ML+)        rsi=50 vol×0.2
+2026-10-30 17:41:16,734 [INFO]   [JNJ] ML HOLD  xgb=0.33 lgb=0.30 ens=0.32 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:16,737 [INFO]   JNJ  : HOLD score=-0.304 ml=32% tv=N/A(ML+)        rsi=19 vol×0.4
+2026-10-30 17:41:16,985 [INFO]   [NFLX] ML HOLD  xgb=0.40 lgb=0.41 ens=0.41 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:16,988 [INFO]   NFLX : HOLD score=-0.213 ml=41% tv=N/A(ML+)        rsi=41 vol×0.7
+2026-10-30 17:41:17,783 [INFO]   [ABBV] ML HOLD  xgb=0.42 lgb=0.40 ens=0.41 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:17,786 [INFO]   ABBV : HOLD score=-0.207 ml=41% tv=N/A(ML+)        rsi=45 vol×0.3
+2026-10-30 17:41:18,465 [INFO]   [BAC] ML HOLD  xgb=0.37 lgb=0.36 ens=0.37 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:18,468 [INFO]   BAC  : HOLD score=-0.252 ml=37% tv=N/A(ML+)        rsi=45 vol×1.2
+2026-10-30 17:41:18,690 [INFO]   [CRM] ML BUY  xgb=0.51 lgb=0.53 ens=0.52 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:18,693 [INFO]   CRM  : HOLD score=-0.104 ml=52% tv=N/A(ML+)        rsi=34 vol×0.5
+2026-10-30 17:41:18,865 [INFO]   [ORCL] ML BUY  xgb=0.65 lgb=0.65 ens=0.65 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:41:18,870 [INFO]   ORCL : HOLD score=+0.027 ml=65% tv=N/A(ML+)        rsi=25 vol×0.6
+2026-10-30 17:41:19,178 [INFO]   [AMD] ML BUY  xgb=0.66 lgb=0.66 ens=0.66 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.008
+2026-10-30 17:41:19,184 [INFO]   AMD  : HOLD score=+0.038 ml=66% tv=N/A(ML+)        rsi=26 vol×0.5
+2026-10-30 17:41:19,290 [INFO]   [CVX] ML HOLD  xgb=0.33 lgb=0.31 ens=0.32 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:19,293 [INFO]   CVX  : HOLD score=-0.297 ml=32% tv=N/A(ML+)        rsi=49 vol×0.5
+2026-10-30 17:41:20,240 [INFO]   [KO] ML HOLD  xgb=0.30 lgb=0.28 ens=0.29 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:20,243 [INFO]   KO   : HOLD score=-0.331 ml=29% tv=N/A(ML+)        rsi=60 vol×0.4
+2026-10-30 17:41:20,483 [INFO]   [WMT] ML HOLD  xgb=0.33 lgb=0.29 ens=0.31 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:20,486 [INFO]   WMT  : HOLD score=-0.307 ml=31% tv=N/A(ML+)        rsi=53 vol×0.7
+2026-10-30 17:41:21,352 [INFO]   [MRK] ML HOLD  xgb=0.49 lgb=0.45 ens=0.47 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:21,355 [INFO]   MRK  : HOLD score=-0.146 ml=47% tv=N/A(ML+)        rsi=46 vol×0.5
+2026-10-30 17:41:21,817 [INFO]   [PEP] ML HOLD  xgb=0.36 lgb=0.31 ens=0.34 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:21,820 [INFO]   PEP  : HOLD score=-0.279 ml=34% tv=N/A(ML+)        rsi=82 vol×0.6
+2026-10-30 17:41:22,005 [INFO]   [ADBE] ML HOLD  xgb=0.48 lgb=0.45 ens=0.47 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:22,008 [INFO]   ADBE : HOLD score=-0.151 ml=47% tv=N/A(ML+)        rsi=17 vol×1.2
+2026-10-30 17:41:22,231 [INFO]   [TMO] ML HOLD  xgb=0.41 lgb=0.42 ens=0.41 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:22,233 [INFO]   TMO  : HOLD score=-0.206 ml=41% tv=N/A(ML+)        rsi=34 vol×0.5
+2026-10-30 17:41:22,470 [INFO]   [CSCO] ML HOLD  xgb=0.49 lgb=0.47 ens=0.49 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:22,473 [INFO]   CSCO : HOLD score=-0.134 ml=49% tv=N/A(ML+)        rsi=43 vol×0.4
+2026-10-30 17:41:22,664 [INFO]   [ACN] ML HOLD  xgb=0.49 lgb=0.50 ens=0.50 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:22,667 [INFO]   ACN  : HOLD score=-0.123 ml=50% tv=N/A(ML+)        rsi=75 vol×1.0
+2026-10-30 17:41:23,741 [INFO]   [LIN] ML HOLD  xgb=0.34 lgb=0.31 ens=0.33 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:23,744 [INFO]   LIN  : HOLD score=-0.289 ml=33% tv=N/A(ML+)        rsi=76 vol×0.8
+2026-10-30 17:41:24,403 [INFO]   [MCD] ML HOLD  xgb=0.32 lgb=0.29 ens=0.30 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:24,406 [INFO]   MCD  : HOLD score=-0.317 ml=30% tv=N/A(ML+)        rsi=37 vol×0.4
+2026-10-30 17:41:25,162 [INFO]   [ABT] ML HOLD  xgb=0.35 lgb=0.32 ens=0.34 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:25,165 [INFO]   ABT  : HOLD score=-0.279 ml=34% tv=N/A(ML+)        rsi=57 vol×0.8
+2026-10-30 17:41:25,411 [INFO]   [WFC] ML HOLD  xgb=0.35 lgb=0.34 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:25,414 [INFO]   WFC  : HOLD score=-0.274 ml=35% tv=N/A(ML+)        rsi=52 vol×0.3
+2026-10-30 17:41:26,916 [INFO]   [INTC] ML BUY  xgb=0.67 lgb=0.65 ens=0.66 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.012
+2026-10-30 17:41:26,922 [INFO]   INTC : HOLD score=+0.042 ml=66% tv=N/A(ML+)        rsi=39 vol×0.6
+2026-10-30 17:41:27,888 [INFO]   [QCOM] ML BUY  xgb=0.67 lgb=0.64 ens=0.65 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.008
+2026-10-30 17:41:27,893 [INFO]   QCOM : HOLD score=+0.034 ml=65% tv=N/A(ML+)        rsi=16 vol×0.6
+2026-10-30 17:41:28,751 [INFO]   [DIS] ML HOLD  xgb=0.24 lgb=0.21 ens=0.23 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:28,754 [INFO]   DIS  : HOLD score=-0.392 ml=23% tv=N/A(ML+)        rsi=46 vol×0.4
+2026-10-30 17:41:31,917 [INFO]   [TXN] ML BUY  xgb=0.61 lgb=0.64 ens=0.62 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:41:31,920 [INFO]   TXN  : HOLD score=+0.003 ml=62% tv=N/A(ML+)        rsi=26 vol×0.7
+2026-10-30 17:41:32,880 [INFO]   [INTU] ML BUY  xgb=0.51 lgb=0.50 ens=0.50 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:32,883 [INFO]   INTU : HOLD score=-0.115 ml=50% tv=N/A(ML+)        rsi=45 vol×0.4
+2026-10-30 17:41:33,387 [INFO]   [IBM] ML HOLD  xgb=0.36 lgb=0.35 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:33,390 [INFO]   IBM  : HOLD score=-0.267 ml=35% tv=N/A(ML+)        rsi=44 vol×0.5
+2026-10-30 17:41:33,566 [INFO]   [AMAT] ML BUY  xgb=0.64 lgb=0.63 ens=0.64 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:41:33,569 [INFO]   AMAT : HOLD score=+0.016 ml=64% tv=N/A(ML+)        rsi=14 vol×0.3
+2026-10-30 17:41:34,720 [INFO]   [CAT] ML BUY  xgb=0.54 lgb=0.60 ens=0.57 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:34,723 [INFO]   CAT  : HOLD score=-0.055 ml=57% tv=N/A(ML+)        rsi=27 vol×0.1
+2026-10-30 17:41:35,345 [INFO]   [GE] ML HOLD  xgb=0.41 lgb=0.43 ens=0.42 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:35,348 [INFO]   GE   : HOLD score=-0.204 ml=42% tv=N/A(ML+)        rsi=19 vol×0.4
+2026-10-30 17:41:35,669 [INFO]   [VZ] ML HOLD  xgb=0.38 lgb=0.34 ens=0.36 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:35,672 [INFO]   VZ   : HOLD score=-0.259 ml=36% tv=N/A(ML+)        rsi=55 vol×0.5
+2026-10-30 17:41:38,076 [INFO]   [PFE] ML HOLD  xgb=0.36 lgb=0.33 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:38,079 [INFO]   PFE  : HOLD score=-0.270 ml=35% tv=N/A(ML+)        rsi=56 vol×0.4
+2026-10-30 17:41:38,285 [INFO]   [NOW] ML BUY  xgb=0.67 lgb=0.67 ens=0.67 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:41:38,288 [INFO]   NOW  : HOLD score=+0.050 ml=67% tv=N/A(ML+)        rsi=14 vol×0.4
+2026-10-30 17:41:43,547 [INFO]   [UBER] ML HOLD  xgb=0.38 lgb=0.38 ens=0.38 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:43,550 [INFO]   UBER : HOLD score=-0.235 ml=38% tv=N/A(ML+)        rsi=38 vol×0.5
+2026-10-30 17:41:44,193 [INFO]   [CMCSA] ML HOLD  xgb=0.42 lgb=0.45 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:44,196 [INFO]   CMCSA: HOLD score=-0.186 ml=43% tv=N/A(ML+)        rsi=62 vol×0.4
+2026-10-30 17:41:48,376 [INFO]   [T] ML HOLD  xgb=0.43 lgb=0.42 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:48,379 [INFO]   T    : HOLD score=-0.194 ml=43% tv=N/A(ML+)        rsi=47 vol×0.6
+2026-10-30 17:41:48,555 [INFO]   [AMGN] ML HOLD  xgb=0.41 lgb=0.42 ens=0.41 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:48,558 [INFO]   AMGN : HOLD score=-0.205 ml=41% tv=N/A(ML+)        rsi=34 vol×0.4
+2026-10-30 17:41:48,746 [INFO]   [ISRG] ML HOLD  xgb=0.41 lgb=0.43 ens=0.42 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:48,749 [INFO]   ISRG : HOLD score=-0.202 ml=42% tv=N/A(ML+)        rsi=17 vol×0.6
+2026-10-30 17:41:48,979 [INFO]   [GS] ML HOLD  xgb=0.44 lgb=0.42 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:48,982 [INFO]   GS   : HOLD score=-0.191 ml=43% tv=N/A(ML+)        rsi=21 vol×0.5
+2026-10-30 17:41:49,482 [INFO]   [MS] ML HOLD  xgb=0.42 lgb=0.44 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:49,485 [INFO]   MS   : HOLD score=-0.190 ml=43% tv=N/A(ML+)        rsi=38 vol×1.1
+2026-10-30 17:41:52,069 [INFO]   [SPGI] ML HOLD  xgb=0.34 lgb=0.32 ens=0.33 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:52,072 [INFO]   SPGI : HOLD score=-0.288 ml=33% tv=N/A(ML+)        rsi=48 vol×0.3
+2026-10-30 17:41:52,467 [INFO]   [BKNG] ML BUY  xgb=0.54 lgb=0.55 ens=0.54 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.005
+2026-10-30 17:41:52,470 [INFO]   BKNG : HOLD score=-0.077 ml=54% tv=N/A(ML+)        rsi=39 vol×1.5
+2026-10-30 17:41:52,596 [INFO]   [HON] ML HOLD  xgb=0.38 lgb=0.37 ens=0.38 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:52,599 [INFO]   HON  : HOLD score=-0.244 ml=38% tv=N/A(ML+)        rsi=44 vol×0.3
+2026-10-30 17:41:53,199 [INFO]   [LOW] ML HOLD  xgb=0.38 lgb=0.35 ens=0.37 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:53,208 [INFO]   LOW  : HOLD score=-0.253 ml=37% tv=N/A(ML+)        rsi=57 vol×0.4
+2026-10-30 17:41:55,321 [INFO]   [UNP] ML HOLD  xgb=0.28 lgb=0.23 ens=0.26 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:55,327 [INFO]   UNP  : HOLD score=-0.361 ml=26% tv=N/A(ML+)        rsi=61 vol×2.5
+2026-10-30 17:41:56,188 [INFO]   [RTX] ML HOLD  xgb=0.35 lgb=0.33 ens=0.34 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:41:56,191 [INFO]   RTX  : HOLD score=-0.279 ml=34% tv=N/A(ML+)        rsi=59 vol×0.2
+2026-10-30 17:41:56,673 [INFO]   [NEE] ML HOLD  xgb=0.32 lgb=0.26 ens=0.30 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:41:56,676 [INFO]   NEE  : HOLD score=-0.324 ml=30% tv=N/A(ML+)        rsi=83 vol×1.2
+2026-10-30 17:41:56,918 [INFO]   [BA] ML HOLD  xgb=0.41 lgb=0.47 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:41:56,921 [INFO]   BA   : HOLD score=-0.187 ml=43% tv=N/A(ML+)        rsi=44 vol×0.3
+2026-10-30 17:41:58,175 [INFO]   [PLTR] ML BUY  xgb=0.66 lgb=0.67 ens=0.67 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:41:58,178 [INFO]   PLTR : HOLD score=+0.046 ml=67% tv=N/A(ML+)        rsi=32 vol×0.4
+2026-10-30 17:41:58,642 [INFO]   [MU] ML BUY  xgb=0.66 lgb=0.72 ens=0.68 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:41:58,646 [INFO]   MU   : HOLD score=+0.063 ml=68% tv=N/A(ML+)        rsi=21 vol×1.0
+2026-10-30 17:41:59,810 [INFO]   [LRCX] ML BUY  xgb=0.64 lgb=0.62 ens=0.63 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:41:59,813 [INFO]   LRCX : HOLD score=+0.013 ml=63% tv=N/A(ML+)        rsi=23 vol×0.4
+2026-10-30 17:42:00,044 [INFO]   [PANW] ML BUY  xgb=0.68 lgb=0.66 ens=0.67 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:42:00,047 [INFO]   PANW : HOLD score=+0.052 ml=67% tv=N/A(ML+)        rsi=16 vol×0.6
+2026-10-30 17:42:00,357 [INFO]   [ADI] ML BUY  xgb=0.67 lgb=0.70 ens=0.68 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:42:00,360 [INFO]   ADI  : HOLD score=+0.062 ml=68% tv=N/A(ML+)        rsi=22 vol×0.9
+2026-10-30 17:42:00,841 [INFO]   [KLAC] ML BUY  xgb=0.67 lgb=0.70 ens=0.68 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:42:00,844 [INFO]   KLAC : HOLD score=+0.064 ml=68% tv=N/A(ML+)        rsi=23 vol×0.3
+2026-10-30 17:42:01,848 [INFO]   [SBUX] ML BUY  xgb=0.56 lgb=0.55 ens=0.56 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.007
+2026-10-30 17:42:01,852 [INFO]   SBUX : HOLD score=-0.062 ml=56% tv=N/A(ML+)        rsi=49 vol×0.5
+2026-10-30 17:42:02,223 [INFO]   [C] ML HOLD  xgb=0.43 lgb=0.45 ens=0.44 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:02,226 [INFO]   C    : HOLD score=-0.184 ml=44% tv=N/A(ML+)        rsi=51 vol×0.7
+2026-10-30 17:42:03,561 [INFO]   [SCHW] ML HOLD  xgb=0.34 lgb=0.35 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:42:03,566 [INFO]   SCHW : HOLD score=-0.274 ml=35% tv=N/A(ML+)        rsi=30 vol×0.8
+2026-10-30 17:42:03,722 [INFO]   [BLK] ML HOLD  xgb=0.40 lgb=0.42 ens=0.41 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:03,725 [INFO]   BLK  : HOLD score=-0.212 ml=41% tv=N/A(ML+)        rsi=27 vol×0.3
+2026-10-30 17:42:04,022 [INFO]   [DE] ML HOLD  xgb=0.47 lgb=0.47 ens=0.47 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:04,025 [INFO]   DE   : HOLD score=-0.151 ml=47% tv=N/A(ML+)        rsi=66 vol×0.4
+2026-10-30 17:42:04,244 [INFO]   [AXP] ML HOLD  xgb=0.37 lgb=0.37 ens=0.37 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:42:04,247 [INFO]   AXP  : HOLD score=-0.252 ml=37% tv=N/A(ML+)        rsi=31 vol×1.3
+2026-10-30 17:42:05,236 [INFO]   [MDT] ML HOLD  xgb=0.33 lgb=0.33 ens=0.33 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:05,239 [INFO]   MDT  : HOLD score=-0.291 ml=33% tv=N/A(ML+)        rsi=50 vol×1.1
+2026-10-30 17:42:05,242 [INFO]   GILD : HOLDING
+2026-10-30 17:42:05,539 [INFO]   [CRWD] ML BUY  xgb=0.67 lgb=0.66 ens=0.67 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.009
+2026-10-30 17:42:05,542 [INFO]   CRWD : HOLD score=+0.049 ml=67% tv=N/A(ML+)        rsi=29 vol×1.4
+2026-10-30 17:42:05,836 [INFO]   [ANET] ML BUY  xgb=0.65 lgb=0.65 ens=0.65 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:42:05,839 [INFO]   ANET : HOLD score=+0.029 ml=65% tv=N/A(ML+)        rsi=25 vol×0.5
+2026-10-30 17:42:06,164 [INFO]   [MRVL] ML BUY  xgb=0.68 lgb=0.73 ens=0.70 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.010
+2026-10-30 17:42:06,167 [INFO]   MRVL : HOLD score=+0.079 ml=70% tv=N/A(ML+)        rsi=19 vol×0.4
+2026-10-30 17:42:06,464 [INFO]   [DELL] ML BUY  xgb=0.68 lgb=0.72 ens=0.70 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.009
+2026-10-30 17:42:06,467 [INFO]   DELL : HOLD score=+0.078 ml=70% tv=N/A(ML+)        rsi=5 vol×0.7
+2026-10-30 17:42:11,938 [INFO]   [SMCI] ML BUY  xgb=0.67 lgb=0.71 ens=0.69 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.008
+2026-10-30 17:42:11,941 [INFO]   SMCI : HOLD score=+0.066 ml=69% tv=N/A(ML+)        rsi=14 vol×0.5
+2026-10-30 17:42:12,568 [INFO]   [COIN] ML BUY  xgb=0.68 lgb=0.68 ens=0.68 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.010
+2026-10-30 17:42:12,571 [INFO]   COIN : HOLD score=+0.062 ml=68% tv=N/A(ML+)        rsi=30 vol×1.0
+2026-10-30 17:42:13,767 [INFO]   [PYPL] ML HOLD  xgb=0.39 lgb=0.40 ens=0.40 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:13,770 [INFO]   PYPL : HOLD score=-0.224 ml=40% tv=N/A(ML+)        rsi=65 vol×0.4
+2026-10-30 17:42:14,040 [INFO]   [F] ML HOLD  xgb=0.43 lgb=0.47 ens=0.45 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:14,043 [INFO]   F    : HOLD score=-0.175 ml=45% tv=N/A(ML+)        rsi=46 vol×2.2
+2026-10-30 17:42:14,395 [INFO]   [GM] ML HOLD  xgb=0.44 lgb=0.40 ens=0.42 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:14,398 [INFO]   GM   : HOLD score=-0.195 ml=42% tv=N/A(ML+)        rsi=87 vol×0.8
+2026-10-30 17:42:14,728 [INFO]   [NKE] ML HOLD  xgb=0.37 lgb=0.35 ens=0.36 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:14,731 [INFO]   NKE  : HOLD score=-0.257 ml=36% tv=N/A(ML+)        rsi=53 vol×0.4
+2026-10-30 17:42:14,999 [INFO]   [CVS] ML HOLD  xgb=0.35 lgb=0.33 ens=0.35 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:15,002 [INFO]   CVS  : HOLD score=-0.275 ml=35% tv=N/A(ML+)        rsi=45 vol×0.3
+2026-10-30 17:42:15,809 [INFO]   [MO] ML HOLD  xgb=0.39 lgb=0.33 ens=0.36 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:15,812 [INFO]   MO   : HOLD score=-0.257 ml=36% tv=N/A(ML+)        rsi=51 vol×0.4
+2026-10-30 17:42:16,075 [INFO]   [PM] ML HOLD  xgb=0.37 lgb=0.36 ens=0.37 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:42:16,078 [INFO]   PM   : HOLD score=-0.255 ml=37% tv=N/A(ML+)        rsi=22 vol×0.4
+2026-10-30 17:42:16,589 [INFO]   [COP] ML HOLD  xgb=0.39 lgb=0.40 ens=0.40 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.002
+2026-10-30 17:42:16,592 [INFO]   COP  : HOLD score=-0.224 ml=40% tv=N/A(ML+)        rsi=70 vol×0.7
+2026-10-30 17:42:17,789 [INFO]   [SLB] ML HOLD  xgb=0.48 lgb=0.48 ens=0.48 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:17,792 [INFO]   SLB  : HOLD score=-0.138 ml=48% tv=N/A(ML+)        rsi=20 vol×0.9
+2026-10-30 17:42:18,100 [INFO]   [OXY] ML HOLD  xgb=0.42 lgb=0.43 ens=0.43 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:18,104 [INFO]   OXY  : HOLD score=-0.195 ml=43% tv=N/A(ML+)        rsi=52 vol×0.7
+2026-10-30 17:42:18,315 [INFO]   [FCX] ML BUY  xgb=0.64 lgb=0.68 ens=0.66 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.006
+2026-10-30 17:42:18,318 [INFO]   FCX  : HOLD score=+0.036 ml=66% tv=N/A(ML+)        rsi=29 vol×0.7
+2026-10-30 17:42:18,964 [INFO]   [DAL] ML HOLD  xgb=0.45 lgb=0.47 ens=0.46 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.003
+2026-10-30 17:42:18,967 [INFO]   DAL  : HOLD score=-0.163 ml=46% tv=N/A(ML+)        rsi=29 vol×0.8
+2026-10-30 17:42:19,200 [INFO]   [CCL] ML HOLD  xgb=0.43 lgb=0.45 ens=0.44 | Drivers: hour_cos=-0.966, hour=13.000, atr_pct=0.004
+2026-10-30 17:42:19,203 [INFO]   CCL  : HOLD score=-0.184 ml=44% tv=N/A(ML+)        rsi=61 vol×0.6
+2026-10-30 17:42:19,312 [INFO]   [WBD] ML HOLD  xgb=0.14 lgb=0.15 ens=0.15 | Drivers: hour_cos=-0.500, hour=16.000, atr_pct=0.000
+2026-10-30 17:42:19,315 [INFO]   WBD  : HOLD score=-0.472 ml=15% tv=N/A(ML+)        rsi=59 vol×0.0
+2026-10-30 17:42:19,315 [INFO]   No actionable signal this scan
+2026-10-30 17:42:19,318 [INFO] Run complete — state saved

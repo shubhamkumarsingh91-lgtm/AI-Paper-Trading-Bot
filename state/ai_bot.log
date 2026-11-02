@@ -18304,3 +18304,33 @@ symbols
 2026-11-02 14:50:56,396 [INFO]   PLTR : HOLD score=-0.051 ml=61% tv=STRONG_SELL     rsi=51 vol×4.0
 2026-11-02 14:50:56,396 [INFO]   No actionable signal this scan
 2026-11-02 14:50:56,396 [INFO] Run complete — state saved
+2026-11-02 15:00:57,944 [INFO] Run mode: SCAN
+2026-11-02 15:00:57,945 [INFO] 📚 Loaded 8 trades from history
+2026-11-02 15:00:57,945 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-02 15:00:57,953 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.2%  precision=30.2%  walk-forward=31.6%  threshold=0.66  trained=2026-10-31
+2026-11-02 15:00:57,958 [INFO] 🧪 Meta filter loaded (shadow): keep top 40%, cut 0.51, trained 2026-10-31
+2026-11-02 15:00:58,440 [INFO] 
+──────────────────────────────────────────────────────────────────
+2026-11-02 15:00:58,440 [INFO]   📡 INTRADAY NEWS UPDATE — 10:00 AM ET
+2026-11-02 15:00:58,440 [INFO]   Watchlist (5): ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-02 15:00:58,440 [INFO] ──────────────────────────────────────────────────────────────────
+2026-11-02 15:00:58,602 [WARNING]   Alpaca news error: 'NewsSet' object has no attribute 'news'
+2026-11-02 15:00:59,340 [INFO]   Yahoo Finance:  20 articles
+2026-11-02 15:00:59,341 [INFO]   Articles (last 3 h): 20
+2026-11-02 15:00:59,342 [INFO]   Gemini not available — skipping intraday analysis
+2026-11-02 15:00:59,342 [INFO] ──────────────────────────────────────────────────────────────────
+
+2026-11-02 15:00:59,485 [INFO] 
+── Scan #1 | $98,803.49 equity | 0/5 positions | Model: 50.2% ──
+2026-11-02 15:01:00,352 [INFO]   [NVDA] ML BUY  xgb=0.56 lgb=0.60 ens=0.58 | Drivers: atr_pct=0.004, hour_cos=-0.707, hour=9.000
+2026-11-02 15:01:00,445 [INFO]   NVDA : HOLD score=-0.083 ml=58% tv=BUY             rsi=78 vol×2.0
+2026-11-02 15:01:00,668 [INFO]   [PANW] ML BUY  xgb=0.66 lgb=0.68 ens=0.67 | Drivers: atr_pct=0.010, hour_cos=-0.707, hour=9.000
+2026-11-02 15:01:00,733 [INFO]   PANW : HOLD score=+0.008 ml=67% tv=STRONG_SELL     rsi=47 vol×1.5
+2026-11-02 15:01:05,402 [INFO]   [AVGO] ML BUY  xgb=0.59 lgb=0.61 ens=0.60 | Drivers: atr_pct=0.004, hour_cos=-0.707, hour=9.000
+2026-11-02 15:01:05,470 [INFO]   AVGO : HOLD score=-0.060 ml=60% tv=BUY             rsi=73 vol×0.9
+2026-11-02 15:01:05,834 [INFO]   [SOFI] ML BUY  xgb=0.53 lgb=0.56 ens=0.54 | Drivers: atr_pct=0.008, hour_cos=-0.707, hour=9.000
+2026-11-02 15:01:05,884 [INFO]   SOFI : HOLD score=-0.119 ml=54% tv=STRONG_BUY      rsi=76 vol×1.1
+2026-11-02 15:01:06,392 [INFO]   [PLTR] ML BUY  xgb=0.60 lgb=0.62 ens=0.61 | Drivers: atr_pct=0.009, hour_cos=-0.707, hour=9.000
+2026-11-02 15:01:06,493 [INFO]   PLTR : HOLD score=-0.050 ml=61% tv=SELL            rsi=47 vol×1.7
+2026-11-02 15:01:06,493 [INFO]   No actionable signal this scan
+2026-11-02 15:01:06,493 [INFO] Run complete — state saved

@@ -19819,3 +19819,25 @@ symbols
 2026-11-03 20:01:12,939 [INFO] VIX fear gauge: 20.8
 2026-11-03 20:01:12,940 [INFO]   AVGO: 🐻 BEAR MARKET skip (ML 63% < 68% required)
 2026-11-03 20:01:12,941 [INFO] Run complete — state saved
+2026-11-03 20:11:13,542 [INFO] Run mode: SCAN
+2026-11-03 20:11:13,542 [INFO] 📚 Loaded 8 trades from history
+2026-11-03 20:11:13,542 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-03 20:11:13,551 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.1%  precision=30.1%  walk-forward=31.5%  threshold=0.60  trained=2026-11-03
+2026-11-03 20:11:13,556 [INFO] 🧪 Meta filter loaded (shadow): keep top 100%, cut 0.00, trained 2026-11-03
+2026-11-03 20:11:13,683 [INFO] 
+── Scan #1 | $98,803.49 equity | 0/5 positions | Model: 50.1% ──
+2026-11-03 20:11:15,507 [INFO]   [NVDA] ML BUY  xgb=0.62 lgb=0.62 ens=0.62 | Drivers: atr_pct=0.004, hour_cos=-0.866, hour=14.000
+2026-11-03 20:11:15,607 [INFO]   NVDA : HOLD score=+0.019 ml=62% tv=STRONG_SELL     rsi=28 vol×0.7
+2026-11-03 20:11:15,876 [INFO]   [PANW] ML BUY  xgb=0.67 lgb=0.67 ens=0.67 | Drivers: atr_pct=0.004, hour_cos=-0.866, hour=14.000
+2026-11-03 20:11:15,981 [INFO]   PANW : HOLD score=+0.073 ml=67% tv=SELL            rsi=20 vol×1.4
+2026-11-03 20:11:16,179 [INFO]   [AVGO] ML BUY  xgb=0.62 lgb=0.64 ens=0.63 | Drivers: atr_pct=0.003, hour_cos=-0.866, hour=14.000
+2026-11-03 20:11:16,257 [INFO]   AVGO : BUY  score=+0.628 ml=63% tv=SELL            rsi=36 vol×0.8
+2026-11-03 20:11:16,526 [INFO]   [SOFI] ML BUY  xgb=0.62 lgb=0.63 ens=0.63 | Drivers: atr_pct=0.003, hour_cos=-0.866, hour=14.000
+2026-11-03 20:11:16,606 [INFO]   SOFI : HOLD score=+0.027 ml=63% tv=SELL            rsi=45 vol×1.5
+2026-11-03 20:11:16,825 [INFO]   [PLTR] ML BUY  xgb=0.63 lgb=0.60 ens=0.62 | Drivers: atr_pct=0.007, hour_cos=-0.866, hour=14.000
+2026-11-03 20:11:16,902 [INFO]   PLTR : HOLD score=+0.018 ml=62% tv=SELL            rsi=68 vol×0.5
+2026-11-03 20:11:17,299 [INFO]   🧪 FILTER (shadow): AVGO KEEP (win chance 72% vs cut 0%)
+2026-11-03 20:11:17,300 [INFO]   🎯 Best: AVGO (score=0.628) — placing order
+2026-11-03 20:11:17,393 [INFO] VIX fear gauge: 21.1
+2026-11-03 20:11:17,394 [INFO]   AVGO: 🐻 BEAR MARKET skip (ML 63% < 68% required)
+2026-11-03 20:11:17,395 [INFO] Run complete — state saved

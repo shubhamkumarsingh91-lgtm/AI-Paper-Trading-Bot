@@ -19250,3 +19250,22 @@ symbols
 2026-11-03 15:20:55,085 [INFO] VIX fear gauge: 21.0
 2026-11-03 15:20:55,086 [INFO]   AVGO: 🐻 BEAR MARKET skip (ML 61% < 68% required)
 2026-11-03 15:20:55,086 [INFO] Run complete — state saved
+2026-11-03 15:30:57,027 [INFO] Run mode: SCAN
+2026-11-03 15:30:57,027 [INFO] 📚 Loaded 8 trades from history
+2026-11-03 15:30:57,027 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-03 15:30:57,036 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.1%  precision=30.1%  walk-forward=31.5%  threshold=0.60  trained=2026-11-03
+2026-11-03 15:30:57,040 [INFO] 🧪 Meta filter loaded (shadow): keep top 100%, cut 0.00, trained 2026-11-03
+2026-11-03 15:30:57,106 [INFO] 
+── Scan #1 | $98,803.49 equity | 0/5 positions | Model: 50.1% ──
+2026-11-03 15:30:58,148 [INFO]   [NVDA] ML BUY  xgb=0.54 lgb=0.53 ens=0.54 | Drivers: atr_pct=0.007, hour_cos=-0.866, hour=10.000
+2026-11-03 15:30:58,278 [INFO]   NVDA : HOLD score=-0.064 ml=54% tv=BUY             rsi=70 vol×0.6
+2026-11-03 15:30:58,458 [INFO]   [PANW] ML BUY  xgb=0.59 lgb=0.59 ens=0.59 | Drivers: atr_pct=0.009, hour_cos=-0.866, hour=10.000
+2026-11-03 15:30:58,599 [INFO]   PANW : HOLD score=-0.010 ml=59% tv=SELL            rsi=42 vol×1.0
+2026-11-03 15:30:59,003 [INFO]   [AVGO] ML BUY  xgb=0.59 lgb=0.60 ens=0.60 | Drivers: atr_pct=0.009, hour_cos=-0.866, hour=10.000
+2026-11-03 15:30:59,108 [INFO]   AVGO : HOLD score=-0.004 ml=60% tv=BUY             rsi=66 vol×0.8
+2026-11-03 15:31:02,498 [INFO]   [SOFI] ML BUY  xgb=0.53 lgb=0.55 ens=0.54 | Drivers: atr_pct=0.009, hour_cos=-0.866, hour=10.000
+2026-11-03 15:31:02,560 [INFO]   SOFI : HOLD score=-0.062 ml=54% tv=SELL            rsi=19 vol×0.8
+2026-11-03 15:31:04,199 [INFO]   [PLTR] ML BUY  xgb=0.59 lgb=0.55 ens=0.57 | Drivers: atr_pct=0.020, hour_cos=-0.866, hour=10.000
+2026-11-03 15:31:04,285 [INFO]   PLTR : HOLD score=-0.025 ml=57% tv=SELL            rsi=31 vol×1.5
+2026-11-03 15:31:04,285 [INFO]   No actionable signal this scan
+2026-11-03 15:31:04,286 [INFO] Run complete — state saved

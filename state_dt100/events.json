@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-03T19:03:17Z",
+"generated": "2026-11-03T19:12:37Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -64,22 +64,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,613 (+0.61% since its first recorded day; the market (SPY) -1.62%)."
-},
-{
-"t": "2026-11-02T15:20:56Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 98 stocks (holding 2 of 5 positions, balance $100,607). 1 passed all its checks: SMCI 64%.",
-"count": 98
-},
-{
-"t": "2026-11-02T15:21:43Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked SMCI (64% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "SMCI"
 },
 {
 "t": "2026-11-02T15:31:03Z",
@@ -1084,6 +1068,21 @@
 },
 {
 "t": "2026-11-03T19:01:29Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 60% confidence bar."
+},
+{
+"t": "2026-11-03T19:11:03Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 99 stocks (holding 1 of 5 positions, balance $100,723). None cleared its 60% confidence bar (closest: MRVL 57%).",
+"count": 99
+},
+{
+"t": "2026-11-03T19:11:03Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

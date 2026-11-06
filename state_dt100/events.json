@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-06T18:52:27Z",
+"generated": "2026-11-06T19:03:24Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -85,39 +85,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,715 (+0.71% since its first recorded day; the market (SPY) +0.09%)."
-},
-{
-"t": "2026-11-05T15:20:51Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 99 stocks (holding 1 of 5 positions, balance $100,577). 1 passed all its checks: BKNG 61%.",
-"count": 99
-},
-{
-"t": "2026-11-05T15:20:51Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "MSFT",
-"pnl": -121.52,
-"text": "Sold MSFT (stop-loss): lost $121.52, -2.2%."
-},
-{
-"t": "2026-11-05T15:20:51Z",
-"bot": "b3",
-"place": "floor",
-"kind": "watch",
-"text": "Put MSFT on a dip watch: it will buy back only if the price turns up again.",
-"symbol": "MSFT"
-},
-{
-"t": "2026-11-05T15:22:25Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked BKNG (61% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "BKNG"
 },
 {
 "t": "2026-11-05T15:30:56Z",
@@ -1055,6 +1022,21 @@
 },
 {
 "t": "2026-11-06T18:50:48Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 62% confidence bar."
+},
+{
+"t": "2026-11-06T19:00:53Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,579). None cleared its 62% confidence bar (closest: ORCL 56%).",
+"count": 100
+},
+{
+"t": "2026-11-06T19:00:53Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

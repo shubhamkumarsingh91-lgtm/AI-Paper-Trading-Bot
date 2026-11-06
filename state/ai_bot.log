@@ -21862,3 +21862,25 @@ symbols
 2026-11-06 15:11:00,019 [INFO]   PLTR : HOLD score=+0.040 ml=66% tv=BUY             rsi=72 vol×1.8
 2026-11-06 15:11:00,020 [INFO]   No actionable signal this scan
 2026-11-06 15:11:00,020 [INFO] Run complete — state saved
+2026-11-06 15:21:01,324 [INFO] Run mode: SCAN
+2026-11-06 15:21:01,324 [INFO] 📚 Loaded 8 trades from history
+2026-11-06 15:21:01,324 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-06 15:21:01,338 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.2%  precision=30.0%  walk-forward=31.1%  threshold=0.62  trained=2026-11-06
+2026-11-06 15:21:01,343 [INFO] 🧪 Meta filter loaded (shadow): keep top 80%, cut 0.31, trained 2026-11-06
+2026-11-06 15:21:02,025 [INFO] 
+── Scan #1 | $98,803.49 equity | 0/5 positions | Model: 50.2% ──
+2026-11-06 15:21:03,686 [INFO]   [NVDA] ML BUY  xgb=0.61 lgb=0.66 ens=0.63 | Drivers: atr_pct=0.011, hour_cos=-0.866, hour=10.000
+2026-11-06 15:21:04,210 [INFO]   NVDA : BUY  score=+0.629 ml=63% tv=NEUTRAL         rsi=71 vol×1.3
+2026-11-06 15:21:04,947 [INFO]   [PANW] ML BUY  xgb=0.62 lgb=0.62 ens=0.62 | Drivers: atr_pct=0.013, hour_cos=-0.866, hour=10.000
+2026-11-06 15:21:05,422 [INFO]   PANW : HOLD score=+0.000 ml=62% tv=NEUTRAL         rsi=56 vol×0.8
+2026-11-06 15:21:05,944 [INFO]   [AVGO] ML BUY  xgb=0.59 lgb=0.58 ens=0.59 | Drivers: atr_pct=0.012, hour_cos=-0.866, hour=10.000
+2026-11-06 15:21:06,120 [INFO]   AVGO : HOLD score=-0.034 ml=59% tv=SELL            rsi=54 vol×1.4
+2026-11-06 15:21:06,729 [INFO]   [SOFI] ML BUY  xgb=0.59 lgb=0.60 ens=0.59 | Drivers: atr_pct=0.013, hour_cos=-0.866, hour=10.000
+2026-11-06 15:21:07,109 [INFO]   SOFI : HOLD score=-0.026 ml=59% tv=SELL            rsi=68 vol×0.6
+2026-11-06 15:21:07,624 [INFO]   [PLTR] ML BUY  xgb=0.62 lgb=0.62 ens=0.62 | Drivers: atr_pct=0.012, hour_cos=-0.866, hour=10.000
+2026-11-06 15:21:08,458 [INFO]   PLTR : HOLD score=+0.002 ml=62% tv=NEUTRAL         rsi=69 vol×1.1
+2026-11-06 15:21:09,432 [INFO]   🧪 FILTER (shadow): NVDA KEEP (win chance 66% vs cut 31%)
+2026-11-06 15:21:09,432 [INFO]   🎯 Best: NVDA (score=0.629) — placing order
+2026-11-06 15:21:10,288 [INFO] VIX fear gauge: 24.8
+2026-11-06 15:21:10,289 [INFO]   NVDA: 🐻 BEAR MARKET skip (ML 63% < 68% required)
+2026-11-06 15:21:10,290 [INFO] Run complete — state saved

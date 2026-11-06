@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-06T18:32:33Z",
+"generated": "2026-11-06T18:42:29Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -85,22 +85,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,715 (+0.71% since its first recorded day; the market (SPY) +0.09%)."
-},
-{
-"t": "2026-11-05T15:00:57Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 99 stocks (holding 1 of 5 positions, balance $100,616). 4 passed all its checks: BKNG 63%, DAL 63%, AAPL 62%….",
-"count": 99
-},
-{
-"t": "2026-11-05T15:03:35Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked BKNG (63% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "BKNG"
 },
 {
 "t": "2026-11-05T15:10:56Z",
@@ -1057,6 +1041,21 @@
 },
 {
 "t": "2026-11-06T18:30:57Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 62% confidence bar."
+},
+{
+"t": "2026-11-06T18:40:55Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,579). None cleared its 62% confidence bar (closest: SMCI 56%).",
+"count": 100
+},
+{
+"t": "2026-11-06T18:40:55Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

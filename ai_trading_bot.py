@@ -2541,7 +2541,12 @@ def fetch_alpaca_news(hours: int = 20) -> list:
         )
         result   = news_client.get_news(req)
         articles = []
-        for item in result.news:
+        # Newer alpaca-py returns a NewsSet with articles under .data['news'];
+        # older versions exposed them as .news. Support both.
+        items = getattr(result, 'news', None)
+        if items is None:
+            items = (getattr(result, 'data', None) or {}).get('news', [])
+        for item in items:
             articles.append({
                 'title':   item.headline,
                 'summary': (item.summary or '')[:300],

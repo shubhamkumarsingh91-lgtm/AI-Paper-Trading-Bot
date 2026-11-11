@@ -294,6 +294,7 @@ TF = TimeFrame(15, TimeFrameUnit.Minute)   # 15-minute bars
 ET = pytz.timezone('America/New_York')     # all time checks use ET, not UTC
 
 NO_NEW_BUYS_AFTER = (15, 45)              # (hour, minute) ET; EOD closes at 15:50
+NO_NEW_BUYS_BEFORE = (9, 45)              # (hour, minute) ET; skip the first 15 min after the open
 
 def now_et() -> datetime:
     """Return current time in Eastern Time (handles EST/EDT automatically)."""
@@ -3155,6 +3156,12 @@ def scan() -> None:
     t = now_et()
     if (t.hour, t.minute) >= NO_NEW_BUYS_AFTER:
         log.info(f'  ⏰ After {NO_NEW_BUYS_AFTER[0]}:{NO_NEW_BUYS_AFTER[1]:02d} ET — no new buys today')
+        return
+    # FIX (Nov 11, 2026): the first 15 minutes after the open are noisy and the free IEX
+    # price is often stale then (5 of the 6 buys that were >1% off their Alpaca fill
+    # happened 9:30-9:42 ET). No new buys before 9:45 ET; open positions are still managed.
+    if (t.hour, t.minute) < NO_NEW_BUYS_BEFORE:
+        log.info(f'  ⏰ Before {NO_NEW_BUYS_BEFORE[0]}:{NO_NEW_BUYS_BEFORE[1]:02d} ET — opening noise, no new buys yet')
         return
 
     # ── Step 2: score every symbol ────────────────────────

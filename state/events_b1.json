@@ -1,23 +1,7 @@
 {
 "bot": "b1",
-"generated": "2026-11-11T16:21:12Z",
+"generated": "2026-11-11T16:31:18Z",
 "events": [
-{
-"t": "2026-11-09T16:30:54Z",
-"bot": "b1",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,777). 1 passed all its checks: PANW 66%.",
-"count": 5
-},
-{
-"t": "2026-11-09T16:30:59Z",
-"bot": "b1",
-"place": "floor",
-"kind": "skip",
-"text": "Picked PANW (66% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "PANW"
-},
 {
 "t": "2026-11-09T16:40:59Z",
 "bot": "b1",
@@ -1200,6 +1184,21 @@
 },
 {
 "t": "2026-11-11T16:21:01Z",
+"bot": "b1",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 62% confidence bar."
+},
+{
+"t": "2026-11-11T16:31:07Z",
+"bot": "b1",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,777). None cleared its 62% confidence bar (closest: NVDA 59%).",
+"count": 5
+},
+{
+"t": "2026-11-11T16:31:07Z",
 "bot": "b1",
 "place": "floor",
 "kind": "hold",

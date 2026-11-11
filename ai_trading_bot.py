@@ -2126,7 +2126,11 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
             side=OrderSide.BUY,
             time_in_force=TimeInForce.DAY,
         ))
-        position_highs[symbol] = price   # seed trailing stop tracker at entry price
+        # Don't seed the peak with the signal price: at the open the IEX bar price can be
+        # stale (e.g. FCX 2026-11-10: signal $62.34 vs fill $60.44), which made the bot think
+        # it was already +3% and armed the breakeven lock instantly. Clearing it lets the
+        # monitor seed the peak from Alpaca's real avg_entry_price on the next check.
+        position_highs.pop(symbol, None)
         log.info(
             f'🟢 BUY  {qty:5d}×{symbol} @ ${price:8.2f} '
             f'| Score:{signal["score"]:+.3f} | {" | ".join(signal["reasons"])}'

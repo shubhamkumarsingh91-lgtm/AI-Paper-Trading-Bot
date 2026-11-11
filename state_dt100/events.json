@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-11T17:41:51Z",
+"generated": "2026-11-11T17:52:20Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -99,22 +99,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,469 (+0.47% since its first recorded day; the market (SPY) -3.97%)."
-},
-{
-"t": "2026-11-09T20:20:46Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 98 stocks (holding 2 of 5 positions, balance $100,548). 38 passed all its checks: SBUX 68%, CVS 67%, WFC 66%….",
-"count": 98
-},
-{
-"t": "2026-11-09T20:21:33Z",
-"bot": "b3",
-"place": "broker",
-"kind": "buy",
-"text": "Bought 54 SBUX at $110.00 (about $5,940). The AI was 68% confident.",
-"symbol": "SBUX"
 },
 {
 "t": "2026-11-09T20:30:56Z",
@@ -1191,6 +1175,22 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time. The AI liked MU (61%) but a safety check said no; LRCX (60%) but a safety check said no."
+},
+{
+"t": "2026-11-11T17:50:50Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: MRVL 61%.",
+"count": 100
+},
+{
+"t": "2026-11-11T17:52:20Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked MRVL (61% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "MRVL"
 }
 ]
 }

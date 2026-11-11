@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-11T18:11:55Z",
+"generated": "2026-11-11T18:22:00Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -101,76 +101,11 @@
 "text": "Day’s closing balance: $100,469 (+0.47% since its first recorded day; the market (SPY) -3.97%)."
 },
 {
-"t": "2026-11-09T20:50:46Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 4 of 5 positions, balance $100,409).",
-"count": 0
-},
-{
-"t": "2026-11-09T20:50:46Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "Too close to the 3:50 close-out, so no new buys; it only checked what it holds."
-},
-{
-"t": "2026-11-09T20:51:40Z",
-"bot": "b3",
-"place": "broker",
-"kind": "eod",
-"text": "Closing time: sold its 4 open positions so it holds no stock overnight."
-},
-{
-"t": "2026-11-09T20:51:40Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "CCL",
-"pnl": -11.83,
-"text": "Sold CCL (end-of-day close): lost $11.83, -0.2%."
-},
-{
-"t": "2026-11-09T20:51:40Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "DAL",
-"pnl": 36.29,
-"text": "Sold DAL (end-of-day close): made $36.29, +0.6%."
-},
-{
-"t": "2026-11-09T20:51:40Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "FCX",
-"pnl": -53.2,
-"text": "Sold FCX (end-of-day close): lost $53.20, -0.9%."
-},
-{
-"t": "2026-11-09T20:51:40Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "SBUX",
-"pnl": -13.63,
-"text": "Sold SBUX (end-of-day close): lost $13.63, -0.2%."
-},
-{
 "t": "2026-11-09T20:55:00Z",
 "bot": "b3",
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,424 (+0.42% since its first recorded day; the market (SPY) -1.67%)."
-},
-{
-"t": "2026-11-10T05:20:53Z",
-"bot": "b3",
-"place": "lab",
-"kind": "retrain",
-"text": "Retrained its AI overnight on 650,018 price bars. When it says “buy”, it was right 30% of the time in testing (down 0.4 points from last time)."
 },
 {
 "t": "2026-11-10T13:30:57Z",
@@ -1189,6 +1124,22 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time. The AI liked MU (60%) but a safety check said no; MRVL (60%) but a safety check said no."
+},
+{
+"t": "2026-11-11T18:20:49Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: MRVL 61%.",
+"count": 100
+},
+{
+"t": "2026-11-11T18:22:00Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked MRVL (61% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "MRVL"
 }
 ]
 }

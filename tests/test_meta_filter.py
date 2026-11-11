@@ -304,3 +304,66 @@ def test_classic_day_label_never_crosses_the_close():
     live = bm.prep('AAA', raw, ctx, 0, label='classic')      # today's live label DOES label 14:00-15:45 bars
     m2 = live.index.hour * 60 + live.index.minute
     assert (live['target'].notna() & (m2 >= 14 * 60)).any()
+
+
+# ── ranking comparison (Nov 11, 2026): confidence vs expected profit, max 2 per sector ──
+
+def test_rank_by_expected_profit_picks_a_different_stock():
+    # same bar: NVDA has higher confidence (0.70) but lower expected profit than JPM
+    C = pd.DataFrame([
+        dict(_c('NVDA', '2026-10-21 10:00', '2026-10-21 15:45', 0.01, 0.70), exp=0.001),
+        dict(_c('JPM', '2026-10-21 10:00', '2026-10-21 15:45', 0.02, 0.64), exp=0.004),
+    ])
+    assert [t['sym'] for t in bm.portfolio(C)] == ['NVDA']              # live rule: highest p
+    T = bm.portfolio(C, rank='exp')
+    assert [t['sym'] for t in T] == ['JPM']                              # highest exp
+    assert T[0]['pnl'] == pytest.approx(240)                             # 12% of 100k * 2%
+    assert T[0]['sector'] == 'Financials' and T[0]['exp'] == pytest.approx(0.004)
+
+
+def test_sector_cap_two():
+    # three chip stocks then a bank, one per bar, all still open -> 3rd chip blocked, bank allowed
+    rows = [_c(s, f'2026-10-21 10:{m:02d}', '2026-10-21 15:45', 0.01, 0.7)
+            for s, m in [('NVDA', 0), ('AMD', 15), ('MU', 30), ('JPM', 45)]]
+    assert [t['sym'] for t in bm.portfolio(pd.DataFrame(rows))] == ['NVDA', 'AMD', 'MU', 'JPM']
+    assert [t['sym'] for t in bm.portfolio(pd.DataFrame(rows), sector_cap=2)] == ['NVDA', 'AMD', 'JPM']
+    # same bar: best chip is blocked (2 chips open) -> falls through to the best non-chip call
+    rows2 = rows[:2] + [_c('MU', '2026-10-21 10:30', '2026-10-21 15:45', 0.01, 0.9),
+                        _c('XOM', '2026-10-21 10:30', '2026-10-21 15:45', 0.01, 0.6)]
+    assert [t['sym'] for t in bm.portfolio(pd.DataFrame(rows2), sector_cap=2)] == ['NVDA', 'AMD', 'XOM']
+
+
+def test_sector_cap_frees_up_after_exit():
+    rows = [_c('NVDA', '2026-10-21 10:00', '2026-10-21 10:30', 0.01, 0.7),   # exits 10:30
+            _c('AMD', '2026-10-21 10:15', '2026-10-21 15:45', 0.01, 0.7),
+            _c('MU', '2026-10-21 10:30', '2026-10-21 15:45', 0.01, 0.7)]     # entry 10:45 > NVDA exit
+    assert [t['sym'] for t in bm.portfolio(pd.DataFrame(rows), sector_cap=2)] == ['NVDA', 'AMD', 'MU']
+
+
+def test_add_expectancy_hand_checked():
+    # history: 10 calls. Low-confidence half (p 0.60) wins 1 of 5, high half (p 0.70) wins 4 of 5.
+    # Volatility: calm (atr 0.002) wins +0.4% / loses -0.2%; jumpy (atr 0.010) wins +2% / loses -1%.
+    hist = pd.DataFrame(dict(
+        p=[0.60] * 5 + [0.70] * 5,
+        atr_pct=[0.002, 0.002, 0.010, 0.010, 0.010, 0.002, 0.002, 0.002, 0.010, 0.010],
+        ret=[0.004, -0.002, -0.01, -0.01, -0.01, 0.004, 0.004, -0.002, 0.02, 0.02]))
+    test = pd.DataFrame(dict(p=[0.70, 0.70, 0.60], atr_pct=[0.002, 0.010, 0.010]))
+    e = bm.add_expectancy(test, hist, n_bins=2, min_hist=1)
+    # P(win|p=0.70) = 4/5 = 0.8 ; P(win|p=0.60) = 1/5 = 0.2
+    # calm: avg win 0.004, avg loss 0.002 ; jumpy: avg win 0.02, avg loss 0.01
+    assert e.iloc[0] == pytest.approx(0.8 * 0.004 - 0.2 * 0.002)    # +0.00280
+    assert e.iloc[1] == pytest.approx(0.8 * 0.02 - 0.2 * 0.01)      # +0.01400 -> same confidence, bigger edge
+    assert e.iloc[2] == pytest.approx(0.2 * 0.02 - 0.8 * 0.01)      # -0.00400 -> jumpy AND unsure = worst
+    # too little history -> plain confidence
+    assert list(bm.add_expectancy(test, hist, min_hist=60)) == [0.70, 0.70, 0.60]
+
+
+def test_sector_map_covers_dt100_universe():
+    import re, sectors
+    src = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'daytrade100.py')).read()
+    block = src[src.index('UNIVERSE_100 = ['):]
+    block = block[:block.index(']')]
+    u = re.findall(r"'([A-Z.]+)'", block)
+    assert len(u) == 100 and all(s in sectors.SECTOR for s in u)
+    assert sectors.sector_of('GOOG') == sectors.sector_of('GOOGL')     # same company, same bucket
+    assert sectors.sector_of('ZZZZ') == 'other:ZZZZ'                   # unknown never blocked

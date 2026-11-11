@@ -38,6 +38,7 @@ Usage:
   python backtest_meta.py --bot b1 --fake      # offline self-test on random data
 """
 import argparse, ast, json, os, sys, time, tempfile, zlib
+from collections import Counter
 from datetime import timedelta
 from pathlib import Path
 
@@ -47,6 +48,7 @@ import pandas as pd
 os.environ.setdefault('STATE_DIR', tempfile.mkdtemp(prefix='bt_'))   # never touch the bots' real logs
 import ai_trading_bot as bot                                          # noqa: E402
 import meta_filter as mf                                              # noqa: E402
+from sectors import sector_of                                         # noqa: E402
 from sklearn.metrics import precision_score                           # noqa: E402
 
 SPY_COLS = ['spy_ret_1', 'spy_ret_5', 'spy_above_ema20']
@@ -173,8 +175,11 @@ def stats(trades, start_equity=100_000.0):
 
 
 def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06, per_day=None,
-              reentry_rules=False):
+              reentry_rules=False, rank='p', sector_cap=None):
     """$100k account: one buy per bar (highest main-AI confidence), max 5 open, 12% per trade (6% bear).
+    rank = column that picks the one buy per bar: 'p' = main-AI confidence (the live rule),
+           'exp' = expected profit per trade (see add_expectancy).
+    sector_cap = optional max open positions per sector (sectors.py); None = no limit (live rule).
     per_day = optional cap on new buys per day (first come, first served: no peeking at later calls).
     reentry_rules = guard against re-buying a stock that already topped out today:
       1. after a STOP_LOSS on a stock, no more buys of it that day ("one strike")
@@ -213,9 +218,12 @@ def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06,
                 return (not L['struck'] and L['entries'] < 2 and not late
                         and 'last_exit' in L and r['entry'] > L['last_exit'])
             g = g[g.apply(allowed, axis=1)]
+        if sector_cap and not g.empty:
+            n_open = Counter(sector_of(q['sym']) for q in open_pos)
+            g = g[g['sym'].map(lambda s_: n_open[sector_of(s_)] < sector_cap)]
         if g.empty:
             continue
-        best = g.loc[g['p'].idxmax()]
+        best = g.loc[g[rank].idxmax()]
         size = equity * (bear_cap if best['bear'] == 1 else cap)
         if reentry_rules:
             L = today_log.setdefault((best['sym'], day), dict(entries=0, struck=False))
@@ -226,10 +234,55 @@ def portfolio(cands, start_equity=100_000.0, max_pos=5, cap=0.12, bear_cap=0.06,
         open_pos.append(dict(sym=best['sym'], t=best['t'], entry_t=best['entry_t'], exit_t=best['exit_t'],
                              ret=float(best['ret']), pnl=float(size * best['ret']), size=float(size),
                              entry=float(best.get('entry', np.nan)), exit=float(best.get('exit', np.nan)),
-                             reason=best['reason'], p=float(best['p']),
+                             reason=best['reason'], p=float(best['p']), sector=sector_of(best['sym']),
+                             exp=float(best['exp']) if 'exp' in best else None,
                              meta_p=float(best['meta_p']) if 'meta_p' in best else None))
     done += open_pos
     return done
+
+
+def add_expectancy(test_c, hist_c, n_bins=5, min_hist=60):
+    """Expected profit per trade for every test call, learned ONLY from earlier calls (hist_c =
+    the filter window, which ends before the test period starts, so nothing peeks ahead):
+
+        exp = P(win) x avg win  -  (1 - P(win)) x avg loss       (net returns, costs included)
+
+      P(win)            = share of earlier calls that made money, in the same CONFIDENCE bucket
+      avg win / loss    = average winning / losing return of earlier calls in the same
+                          VOLATILITY (atr_pct) bucket, measured at the moment of buying
+    Buckets are quintiles of the earlier calls. It never uses a stock's own recent profit,
+    so "it made money yesterday" does not push a stock up the list.
+    Returns a Series aligned with test_c. Too little history -> falls back to confidence (p)."""
+    if test_c.empty:
+        return pd.Series(dtype=float)
+    if hist_c is None or len(hist_c) < min_hist:
+        return test_c['p'].astype(float)
+    r = hist_c['ret'].to_numpy(float)
+    def edges(col):
+        e = np.unique(np.quantile(hist_c[col].to_numpy(float), np.linspace(0, 1, n_bins + 1)[1:-1]))
+        return e
+    pe, ve = edges('p'), edges('atr_pct')
+    hp, hv = np.digitize(hist_c['p'].to_numpy(float), pe), np.digitize(hist_c['atr_pct'].to_numpy(float), ve)
+    tp, tv = np.digitize(test_c['p'].to_numpy(float), pe), np.digitize(test_c['atr_pct'].to_numpy(float), ve)
+    all_win = (r > 0).mean()
+    all_w = r[r > 0].mean() if (r > 0).any() else 0.0
+    all_l = -r[r <= 0].mean() if (r <= 0).any() else 0.0
+    pwin = {b: (r[hp == b] > 0).mean() if (hp == b).any() else all_win for b in range(len(pe) + 1)}
+    avg_w = {b: r[(hv == b) & (r > 0)].mean() if ((hv == b) & (r > 0)).any() else all_w for b in range(len(ve) + 1)}
+    avg_l = {b: -r[(hv == b) & (r <= 0)].mean() if ((hv == b) & (r <= 0)).any() else all_l for b in range(len(ve) + 1)}
+    pw = np.array([pwin[b] for b in tp])
+    w, l = np.array([avg_w[b] for b in tv]), np.array([avg_l[b] for b in tv])
+    return pd.Series(pw * w - (1 - pw) * l, index=test_c.index)
+
+
+def max_open_same_sector(trades):
+    """Most positions ever held at the same time in one sector (checks the sector rule really held)."""
+    best = 0
+    for t in trades:
+        n = sum(1 for q in trades if q['sector'] == t['sector']
+                and pd.Timestamp(q['entry_t']) <= pd.Timestamp(t['entry_t']) and pd.Timestamp(q['exit_t']) >= pd.Timestamp(t['entry_t']))
+        best = max(best, n)
+    return best
 
 
 def cand_stats(c):
@@ -255,6 +308,9 @@ def main():
     ap.add_argument('--max-hold-bars', type=int, default=None, help='time exit, e.g. 8 = sell after 2 hours')
     ap.add_argument('--tag', default=None, help='name used in the output file')
     ap.add_argument('--reentry-rules', action='store_true', help='one strike / re-buy only above the sell price / 1 re-entry / none after 14:30 / half size')
+    ap.add_argument('--compare-ranking', action='store_true',
+                    help='also compare how the one buy per bar is picked: confidence vs expected profit, '
+                         'each with and without a max-2-per-sector rule (no filter, same calls)')
     ap.add_argument('--fake', action='store_true', help='offline self-test on random data')
     ap.add_argument('--out', default=None)
     a = ap.parse_args()
@@ -310,6 +366,8 @@ def main():
             test_c += mf.candidates_for_symbol(s, w[w.index >= T0], pinfo['threshold'], bear, max_hold=a.max_hold_bars)
         meta_c = mf.add_market_context(pd.DataFrame(meta_c), spy_raw, len(trade_syms))
         test_c = mf.add_market_context(pd.DataFrame(test_c), spy_raw, len(trade_syms))
+        if not test_c.empty:
+            test_c['exp'] = add_expectancy(test_c, meta_c)    # learned from the filter window only
 
         fold = dict(fold=k + 1, primary_train=[str(P0.date()), str(P1.date())],
                     filter_window=[str(M0.date()), str(T0.date())], test=[str(T0.date()), str(T1.date())],
@@ -353,6 +411,28 @@ def main():
     helped = sum(1 for f in folds if f['account_with_filter'].get('trades', 0) and
                  f['account_with_filter'].get('profit_per_trade', -1e9) > f['account_without_filter'].get('profit_per_trade', -1e9))
 
+    ranking = None
+    if a.compare_ranking and not T.empty:
+        pdc = a.per_day if a.cutoff == 'rate' else None
+        variants = {
+            'A confidence':     dict(rank='p'),
+            'B expected':       dict(rank='exp'),
+            'C conf+sector2':   dict(rank='p', sector_cap=2),
+            'D expect+sector2': dict(rank='exp', sector_cap=2),
+        }
+        ranking, rank_trades = {}, []
+        for name, kw in variants.items():
+            tr = portfolio(T, per_day=pdc, reentry_rules=a.reentry_rules, **kw)
+            per_fold = [stats(portfolio(T[T['fold'] == f['fold']], per_day=pdc, reentry_rules=a.reentry_rules, **kw))
+                        for f in folds]
+            ranking[name] = dict(settings=kw, account=stats(tr),
+                                 per_fold_total_pnl=[round(x.get('total_pnl', 0.0), 2) for x in per_fold],
+                                 max_open_in_one_sector=max_open_same_sector(tr))
+            rank_trades.append(pd.DataFrame(tr).assign(variant=name))
+        base = ranking['A confidence']['per_fold_total_pnl']
+        for name in ranking:
+            ranking[name]['folds_beating_A'] = f"{sum(x > y for x, y in zip(ranking[name]['per_fold_total_pnl'], base))} of {len(base)}"
+
     # transparency only (NOT used to choose anything): every keep share on the pooled test calls
     grid = []
     if not T.empty and 'meta_p' in T:
@@ -372,6 +452,7 @@ def main():
         account_without_filter=stats(base_trades), account_with_filter=stats(filt_trades),
         folds_where_filter_helped=f'{helped} of {len(folds)}',
         test_keep_grid_for_reference_only=grid,
+        ranking_comparison=ranking,
         folds=folds,
         runtime_sec=round(time.time() - t_start),
         disclaimer='Independent personal project, not tied to any employer or agency. Public market data and paper money only. '
@@ -398,6 +479,12 @@ def main():
     print(line('Without filter', report['account_without_filter']))
     print(line('With filter', report['account_with_filter']))
     print('Filter helped profit per trade in', report['folds_where_filter_helped'], 'test periods')
+    if ranking:
+        pd.concat(rank_trades).to_csv(out.with_name(out.stem + '_ranking_trades.csv'), index=False)
+        print('\n=== HOW THE ONE BUY PER BAR IS PICKED (no filter, same calls, same exits)')
+        for name, v in ranking.items():
+            print(line(name, v['account']), '| beats A in', v['folds_beating_A'], 'periods',
+                  '| most open in 1 sector:', v['max_open_in_one_sector'])
     print(f'Saved {out} and {trades_out} ({report["runtime_sec"]}s)')
 
 

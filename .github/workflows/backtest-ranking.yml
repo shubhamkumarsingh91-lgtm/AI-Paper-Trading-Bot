@@ -1,0 +1,46 @@
+# Ranking backtest: how should Day-Trade-100 pick its ONE buy per scan?
+#   A = highest confidence (live rule)   B = highest expected profit
+#   C = A + max 2 open per sector         D = B + max 2 open per sector
+# Same 12 months, same model, same buy calls, same exits. Backtest only: live bots untouched.
+# DISCLAIMER: Independent personal project. Not tied to any employer or agency.
+# Public market data and paper money only. No internal or personal data (no SSNs/PHI).
+name: Ranking Backtest
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: backtest-ranking
+  cancel-in-progress: true
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - name: Hand-checked unit tests
+        run: python -m pytest -q tests/test_meta_filter.py
+      - name: Run backtest (12 months = 9 periods of 41 days, live label and cutoff)
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          python backtest_meta.py --bot dt100 --folds 9 --fold-days 41 --tag 12m-ranking --compare-ranking \
+            | tee state/backtest_meta_dt100_12m-ranking.txt
+      - name: Save results
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/backtest_meta_dt100_12m-ranking* || true
+          git diff --cached --quiet && exit 0
+          git commit -m "backtest results (dt100, 12m-ranking) [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            sleep $((i * 10))
+          done
+          exit 1

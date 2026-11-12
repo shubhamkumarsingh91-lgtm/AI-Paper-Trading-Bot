@@ -1,30 +1,7 @@
 {
 "bot": "b1",
-"generated": "2026-11-12T20:50:56Z",
+"generated": "2026-11-12T20:51:40Z",
 "events": [
-{
-"t": "2026-11-10T20:31:01Z",
-"bot": "b1",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,777). None cleared its 64% confidence bar (closest: NVDA 63%).",
-"count": 5
-},
-{
-"t": "2026-11-10T20:31:01Z",
-"bot": "b1",
-"place": "floor",
-"kind": "hold",
-"text": "No buy this time: nothing reached its 64% confidence bar."
-},
-{
-"t": "2026-11-10T20:40:46Z",
-"bot": "b1",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,777). None cleared its 64% confidence bar (closest: NVDA 63%).",
-"count": 5
-},
 {
 "t": "2026-11-10T20:40:46Z",
 "bot": "b1",
@@ -1210,6 +1187,29 @@
 "place": "floor",
 "kind": "wait",
 "text": "Too close to the 3:50 close-out, so no new buys; it only checked what it holds."
+},
+{
+"t": "2026-11-12T20:51:39Z",
+"bot": "b1",
+"place": "broker",
+"kind": "eod",
+"text": "Closing time: sold its 1 open position so it holds no stock overnight."
+},
+{
+"t": "2026-11-12T20:51:39Z",
+"bot": "b1",
+"place": "broker",
+"kind": "sell",
+"symbol": "AVGO",
+"pnl": 17.65,
+"text": "Sold AVGO (end-of-day close): made $17.65, +0.3%."
+},
+{
+"t": "2026-11-12T20:55:00Z",
+"bot": "b1",
+"place": "vault",
+"kind": "balance",
+"text": "Day’s closing balance: $98,796 (-0.55% since its first recorded day; the market (SPY) -0.72%)."
 }
 ]
 }

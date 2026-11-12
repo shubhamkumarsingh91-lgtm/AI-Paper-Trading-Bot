@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-12T17:02:46Z",
+"generated": "2026-11-12T17:12:04Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -106,21 +106,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,424 (+0.42% since its first recorded day; the market (SPY) -1.67%)."
-},
-{
-"t": "2026-11-10T18:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 99 stocks (holding 1 of 5 positions, balance $100,425). The AI liked 2 above its 60% bar, but other checks said no.",
-"count": 99
-},
-{
-"t": "2026-11-10T18:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "hold",
-"text": "No buy this time. The AI liked DELL (62%) but a safety check said no; SMCI (60%) but a safety check said no."
 },
 {
 "t": "2026-11-10T19:00:57Z",
@@ -1155,6 +1140,22 @@
 },
 {
 "t": "2026-11-12T17:02:45Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked AMD (62% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "AMD"
+},
+{
+"t": "2026-11-12T17:10:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: AMD 62%.",
+"count": 100
+},
+{
+"t": "2026-11-12T17:12:03Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

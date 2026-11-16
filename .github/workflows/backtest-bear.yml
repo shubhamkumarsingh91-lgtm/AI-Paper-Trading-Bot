@@ -1,0 +1,46 @@
+# Bear-market bar sweep (see backtest_bear.py). BACKTEST ONLY — no live bot or live setting changes.
+# Independent personal project, not tied to any employer or agency. Public market data, paper money only.
+name: Bear-Bar Backtest
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: [backtest_bear.py, tests/test_backtest_bear.py, .github/workflows/backtest-bear.yml]
+    types: [opened, synchronize]
+permissions:
+  contents: write
+concurrency:
+  group: backtest-bear-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        bot: [dt100, b1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - name: Hand-checked unit tests
+        run: python -m pytest -q tests/test_backtest_bear.py tests/test_meta_filter.py
+      - name: Run 12-month sweep
+        env:
+          # each bot downloads with its own key so the two jobs don't share one rate limit
+          ALPACA_API_KEY: ${{ matrix.bot == 'dt100' && secrets.DAYTRADE100_ALPACA_API_KEY || secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ matrix.bot == 'dt100' && secrets.DAYTRADE100_ALPACA_SECRET_KEY || secrets.ALPACA_SECRET_KEY }}
+        run: python backtest_bear.py --bot ${{ matrix.bot }} --folds 9 --fold-days 41 | tee state/backtest_bear_${{ matrix.bot }}.txt
+      - name: Save results
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/backtest_bear_${{ matrix.bot }}.* || true
+          git diff --cached --quiet && exit 0
+          git commit -m "bear-bar backtest results (${{ matrix.bot }}) [skip ci]"
+          for i in 1 2 3; do git pull --rebase -q origin "${{ github.head_ref || github.ref_name }}" && git push && break; sleep 5; done

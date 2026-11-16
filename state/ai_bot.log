@@ -26902,3 +26902,22 @@ symbols
 ── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 50.0% ──
 2026-11-16 14:40:50,631 [INFO]   ⏰ Before 9:45 ET — opening noise, no new buys yet
 2026-11-16 14:40:50,631 [INFO] Run complete — state saved
+2026-11-16 14:50:44,319 [INFO] Run mode: SCAN
+2026-11-16 14:50:44,319 [INFO] 📚 Loaded 12 trades from history
+2026-11-16 14:50:44,319 [INFO] Runtime state restored — watchlist ['NVDA', 'PANW', 'AVGO', 'SOFI', 'PLTR']
+2026-11-16 14:50:44,328 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=50.0%  precision=30.1%  walk-forward=31.1%  threshold=0.62  trained=2026-11-14
+2026-11-16 14:50:44,331 [INFO] 🧪 Meta filter loaded (shadow): keep top 100%, cut 0.00, trained 2026-11-14
+2026-11-16 14:50:44,617 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 50.0% ──
+2026-11-16 14:50:45,434 [INFO]   [NVDA] ML BUY  xgb=0.62 lgb=0.59 ens=0.61 | Drivers: atr_pct=0.009, hour_cos=-0.707, hour=9.000
+2026-11-16 14:50:45,561 [INFO]   NVDA : HOLD score=-0.012 ml=61% tv=STRONG_SELL     rsi=51 vol×6.7
+2026-11-16 14:50:45,673 [INFO]   [PANW] ML BUY  xgb=0.61 lgb=0.62 ens=0.62 | Drivers: atr_pct=0.005, hour_cos=-0.707, hour=9.000
+2026-11-16 14:50:45,765 [INFO]   PANW : HOLD score=-0.004 ml=62% tv=STRONG_SELL     rsi=41 vol×1.6
+2026-11-16 14:50:45,955 [INFO]   [AVGO] ML BUY  xgb=0.60 lgb=0.62 ens=0.61 | Drivers: atr_pct=0.007, hour_cos=-0.707, hour=9.000
+2026-11-16 14:50:46,070 [INFO]   AVGO : HOLD score=-0.013 ml=61% tv=STRONG_SELL     rsi=26 vol×4.9
+2026-11-16 14:50:46,277 [INFO]   [SOFI] ML BUY  xgb=0.65 lgb=0.68 ens=0.66 | Drivers: atr_pct=0.005, hour_cos=-0.707, hour=9.000
+2026-11-16 14:50:46,359 [INFO]   SOFI : HOLD score=+0.044 ml=66% tv=STRONG_SELL     rsi=17 vol×1.7
+2026-11-16 14:50:46,592 [INFO]   [PLTR] ML BUY  xgb=0.61 lgb=0.60 ens=0.61 | Drivers: atr_pct=0.006, hour_cos=-0.707, hour=9.000
+2026-11-16 14:50:46,699 [INFO]   PLTR : HOLD score=-0.014 ml=61% tv=STRONG_SELL     rsi=27 vol×2.5
+2026-11-16 14:50:46,699 [INFO]   No actionable signal this scan
+2026-11-16 14:50:46,700 [INFO] Run complete — state saved

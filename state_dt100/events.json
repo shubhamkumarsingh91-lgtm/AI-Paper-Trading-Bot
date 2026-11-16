@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-16T14:51:01Z",
+"generated": "2026-11-16T14:58:05Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -120,22 +120,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -0.91%)."
-},
-{
-"t": "2026-11-12T17:10:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: AMD 62%.",
-"count": 100
-},
-{
-"t": "2026-11-12T17:12:03Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked AMD (62% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "AMD"
 },
 {
 "t": "2026-11-12T17:21:01Z",
@@ -1143,6 +1127,22 @@
 },
 {
 "t": "2026-11-16T14:51:00Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked NVDA (60% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "NVDA"
+},
+{
+"t": "2026-11-16T14:57:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: NVDA 60%.",
+"count": 100
+},
+{
+"t": "2026-11-16T14:58:04Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

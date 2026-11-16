@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-16T18:01:15Z",
+"generated": "2026-11-16T18:11:00Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -120,22 +120,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -0.91%)."
-},
-{
-"t": "2026-11-12T20:20:42Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 29 passed all its checks: CVX 67%, COP 66%, OXY 66%….",
-"count": 100
-},
-{
-"t": "2026-11-12T20:22:35Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked CVX (67% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "CVX"
 },
 {
 "t": "2026-11-12T20:30:51Z",
@@ -1134,6 +1118,21 @@
 },
 {
 "t": "2026-11-16T18:00:54Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 58% confidence bar."
+},
+{
+"t": "2026-11-16T18:10:44Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). None cleared its 58% confidence bar (closest: ANET 54%).",
+"count": 100
+},
+{
+"t": "2026-11-16T18:10:44Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

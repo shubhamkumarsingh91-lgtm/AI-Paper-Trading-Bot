@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-16T17:31:14Z",
+"generated": "2026-11-16T17:41:01Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -120,22 +120,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -0.91%)."
-},
-{
-"t": "2026-11-12T19:51:01Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 21 passed all its checks: PM 64%, OXY 64%, JNJ 63%….",
-"count": 100
-},
-{
-"t": "2026-11-12T19:52:36Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked OXY (64% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "OXY"
 },
 {
 "t": "2026-11-12T20:01:01Z",
@@ -1137,6 +1121,21 @@
 },
 {
 "t": "2026-11-16T17:30:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 58% confidence bar."
+},
+{
+"t": "2026-11-16T17:40:44Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). None cleared its 58% confidence bar (closest: NVDA 56%).",
+"count": 100
+},
+{
+"t": "2026-11-16T17:40:44Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

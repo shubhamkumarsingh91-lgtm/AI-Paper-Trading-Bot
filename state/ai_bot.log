@@ -28177,3 +28177,25 @@ symbols
 2026-11-17 17:40:53,445 [INFO]   DAL  : HOLD score=-0.153 ml=47% tv=N/A(ML+)        rsi=34 vol×0.4
 2026-11-17 17:40:53,446 [INFO]   No actionable signal this scan
 2026-11-17 17:40:53,446 [INFO] Run complete — state saved
+2026-11-17 17:50:52,460 [INFO] Run mode: SCAN
+2026-11-17 17:50:52,461 [INFO] 📚 Loaded 12 trades from history
+2026-11-17 17:50:52,461 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-17 17:50:52,471 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=49.9%  precision=29.9%  walk-forward=31.0%  threshold=0.62  trained=2026-11-17
+2026-11-17 17:50:52,474 [INFO] 🧪 Meta filter loaded (shadow): keep top 100%, cut 0.00, trained 2026-11-17
+2026-11-17 17:50:52,792 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 49.9% ──
+2026-11-17 17:50:53,491 [INFO]   [AMD] ML BUY  xgb=0.65 lgb=0.68 ens=0.66 | Drivers: hour_cos=-1.000, atr_pct=0.016, hour=12.000
+2026-11-17 17:50:53,577 [INFO]   AMD  : HOLD score=+0.043 ml=66% tv=SELL            rsi=28 vol×0.5
+2026-11-17 17:50:53,722 [INFO]   [GS] ML HOLD  xgb=0.48 lgb=0.45 ens=0.47 | Drivers: hour_cos=-1.000, atr_pct=0.006, hour=12.000
+2026-11-17 17:50:53,827 [WARNING] TradingView error GS: Exchange or symbol not found.
+2026-11-17 17:50:53,828 [INFO]   GS   : HOLD score=-0.152 ml=47% tv=N/A(ML+)        rsi=36 vol×0.4
+2026-11-17 17:50:54,022 [INFO]   [FCX] ML BUY  xgb=0.58 lgb=0.60 ens=0.58 | Drivers: hour_cos=-1.000, atr_pct=0.010, hour=12.000
+2026-11-17 17:50:54,108 [WARNING] TradingView error FCX: Exchange or symbol not found.
+2026-11-17 17:50:54,109 [INFO]   FCX  : HOLD score=-0.035 ml=58% tv=N/A(ML+)        rsi=56 vol×0.7
+2026-11-17 17:50:54,318 [INFO]   [TSLA] ML HOLD  xgb=0.40 lgb=0.35 ens=0.38 | Drivers: hour_cos=-1.000, atr_pct=0.007, hour=12.000
+2026-11-17 17:50:54,390 [INFO]   TSLA : HOLD score=-0.238 ml=38% tv=NEUTRAL         rsi=46 vol×0.5
+2026-11-17 17:50:54,603 [INFO]   [DAL] ML HOLD  xgb=0.46 lgb=0.46 ens=0.46 | Drivers: hour_cos=-1.000, atr_pct=0.006, hour=12.000
+2026-11-17 17:50:54,701 [WARNING] TradingView error DAL: Exchange or symbol not found.
+2026-11-17 17:50:54,702 [INFO]   DAL  : HOLD score=-0.161 ml=46% tv=N/A(ML+)        rsi=33 vol×0.6
+2026-11-17 17:50:54,702 [INFO]   No actionable signal this scan
+2026-11-17 17:50:54,702 [INFO] Run complete — state saved

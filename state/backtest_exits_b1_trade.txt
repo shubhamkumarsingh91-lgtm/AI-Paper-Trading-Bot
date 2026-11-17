@@ -1,0 +1,33 @@
+Backtest b1: 17 training symbols, 5 traded, 1434 calendar days of 15-min bars
+  loaded 17 symbols in 124s
+  fold 1: test ['2025-11-13', '2025-12-24'] | cutoff 0.62 (val precision 49.7% vs base 45.8%) | calls 60 -> kept 60 (keep 30%)
+  fold 2: test ['2025-12-24', '2026-02-03'] | cutoff 0.64 (val precision 60.1% vs base 46.5%) | calls 6 -> kept 6 (keep 100%)
+  fold 3: test ['2026-02-03', '2026-03-16'] | cutoff 0.52 (val precision 47.5% vs base 46.0%) | calls 336 -> kept 81 (keep 30%)
+  fold 4: test ['2026-03-16', '2026-04-26'] | cutoff 0.62 (val precision 54.2% vs base 45.0%) | calls 42 -> kept 42 (keep 30%)
+  fold 5: test ['2026-04-26', '2026-06-06'] | cutoff 0.50 (val precision 47.5% vs base 45.6%) | calls 2379 -> kept 1209 (keep 50%)
+  fold 6: test ['2026-06-06', '2026-07-17'] | cutoff 0.50 (val precision 46.5% vs base 44.7%) | calls 2193 -> kept 957 (keep 40%)
+  fold 7: test ['2026-07-17', '2026-08-27'] | cutoff 0.52 (val precision 45.9% vs base 43.4%) | calls 1479 -> kept 375 (keep 30%)
+  fold 8: test ['2026-08-27', '2026-10-07'] | cutoff 0.56 (val precision 46.1% vs base 44.1%) | calls 462 -> kept 462 (keep 100%)
+  fold 9: test ['2026-10-07', '2026-11-17'] | cutoff 0.56 (val precision 47.9% vs base 45.7%) | calls 234 -> kept 84 (keep 30%)
+
+=== RESULT ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%)
+Without filter   trades  250 | hit 39.2% (break-even 35.6%) | avg win $236 / loss $-130 | per trade $13.23 | PF 1.17 | total +3.31% | max DD -5.66%
+With filter      trades  182 | hit 38.5% (break-even 42.8%) | avg win $168 / loss $-126 | per trade $-12.84 | PF 0.83 | total -2.34% | max DD -6.28%
+Filter helped profit per trade in 1 of 9 test periods
+Saved /tmp/tmp8dnqo7um/raw.json and /tmp/tmp8dnqo7um/raw_trades.csv (202s)
+
+=== EXIT / BUY-WINDOW GRID b1 label=trade ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%) | stocks AMD,GS,FCX,TSLA,DAL | traded 5, trained on 17
+buy window | exit                | trades    hit  $/trade    PF   total   maxDD |  worst   best >2% loss overnight | beats live
+all day | sell by close          |    299  47.5%    -4.62  0.93  -1.38%  -4.52% | -2.84%  5.74%       40         0 | 0 of 9
+                                   exits {'EOD': 253, 'PROFIT_LOCK': 6, 'STOP_LOSS': 40}
+all day | carry >= +1%           |    256  39.1%     5.25  1.07  +1.34%  -7.10% | -3.93% 16.79%       38        54 | 4 of 9
+                                   exits {'CARRY_EOD': 24, 'CARRY_STOP': 2, 'EOD': 162, 'GAP_STOP': 7, 'PROFIT_LOCK': 21, 'STOP_LOSS': 36, 'TRAILING_STOP': 4}
+all day | carry >= +0.5%         |    239  32.2%    17.09  1.18  +4.08%  -6.70% | -6.08% 16.79%       39        82 | 4 of 9
+                                   exits {'CARRY_EOD': 32, 'CARRY_STOP': 9, 'EOD': 118, 'GAP_STOP': 16, 'PROFIT_LOCK': 23, 'STOP_LOSS': 35, 'TRAILING_STOP': 6}
+mornings | sell by close         |    207  44.4%   -10.24  0.86  -2.12%  -4.13% | -2.84%  5.74%       36         0 | 5 of 9
+                                   exits {'EOD': 166, 'PROFIT_LOCK': 5, 'STOP_LOSS': 36}
+mornings | carry >= +1%          |    176  35.2%     8.88  1.09  +1.56%  -5.65% | -3.93% 16.79%       35        44 | 5 of 9
+                                   exits {'CARRY_EOD': 22, 'CARRY_STOP': 2, 'EOD': 94, 'GAP_STOP': 5, 'PROFIT_LOCK': 16, 'STOP_LOSS': 33, 'TRAILING_STOP': 4}
+mornings | carry >= +0.5%        |    170  30.0%     7.07  1.07  +1.20%  -5.48% | -3.93% 16.79%       36        59 | 6 of 9
+                                   exits {'CARRY_EOD': 25, 'CARRY_STOP': 5, 'EOD': 74, 'GAP_STOP': 12, 'PROFIT_LOCK': 16, 'STOP_LOSS': 33, 'TRAILING_STOP': 5}
+Saved state/backtest_exits_b1_trade.json (209s)

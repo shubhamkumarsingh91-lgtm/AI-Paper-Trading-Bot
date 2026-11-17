@@ -39,7 +39,7 @@ def test_subset_equals_live_rule():
     thr = 0.60
     everything = pd.DataFrame(ORIG('AAA', df, thr, bear, bear_min_conf=0.0))
     assert (everything['bear'] == 1).any() and (everything['bear'] == 0).any()
-    for bar in (0.68, 0.66, 0.64, 0.62, 0.0):
+    for bar in (0.68, 0.66, 0.64, 0.62, 0.0, 1.01):
         live = ORIG('AAA', df, thr, bear, bear_min_conf=bar)
         mine = bb.apply_bar(everything, bar)
         assert keys(live) == sorted(zip(mine['sym'], mine['t'])), bar
@@ -66,3 +66,10 @@ def test_bear_size_used_only_on_bear_days():
     # BEAR: $100k * 6% * 1% = $60.  BULL buys while BEAR is still open, so equity is still $100k:
     # $100k * 12% * 1% = $120
     assert pnl == {'BEAR': 60.0, 'BULL': 120.0}
+
+
+def test_no_bear_buys_means_zero_bear_calls():
+    df, bear = synthetic(seed=7)
+    everything = pd.DataFrame(ORIG('AAA', df, 0.60, bear, bear_min_conf=0.0))
+    kept = bb.apply_bar(everything, 1.01)
+    assert (kept['bear'] == 0).all() and len(kept) == (everything['bear'] == 0).sum()

@@ -23,6 +23,9 @@ HOW (one data download, every bar tested on the same calls)
   relabeling, meta filter not applied (it is in shadow mode live).
 
 Usage:  python backtest_bear.py --bot dt100            (12 months = 9 periods x 41 days)
+        python backtest_bear.py --bot b1 --watchlist JPM,XOM,LLY,COST,CAT --tag diverse-a
+                 (try Bot 1 on other stocks without editing watchlist.txt: they are traded AND
+                  added to the training stocks, exactly like the live bot does with watchlist.txt)
         python backtest_bear.py --bot dt100 --fake     (offline self-test on random data)
 """
 import argparse, json, sys, tempfile, time
@@ -34,7 +37,8 @@ import pandas as pd
 import meta_filter as mf
 import backtest_meta as bm
 
-BARS = [('68% (live now)', 0.68), ('66%', 0.66), ('64%', 0.64), ('62%', 0.62), ('no extra bar', 0.0)]
+BARS = [('68% (live now)', 0.68), ('66%', 0.66), ('64%', 0.64), ('62%', 0.62), ('no extra bar', 0.0),
+        ('no bear buys', 1.01)]   # 1.01 = no confidence can reach it -> zero buys on bear days
 BEAR_CAPS = [0.06, 0.12]          # 6% = live half size, 12% = normal size
 
 
@@ -60,7 +64,15 @@ def main():
     ap.add_argument('--folds', type=int, default=9)
     ap.add_argument('--fold-days', type=int, default=41)
     ap.add_argument('--fake', action='store_true')
+    ap.add_argument('--watchlist', default=None, help='Bot 1 only: comma-separated tickers to trade instead of watchlist.txt')
+    ap.add_argument('--tag', default=None, help='name used in the output file')
     a = ap.parse_args()
+    if a.watchlist:
+        if a.bot != 'b1':
+            ap.error('--watchlist is for Bot 1 (b1) only')
+        wl = [x.strip().upper() for x in a.watchlist.split(',') if x.strip()]
+        bm.bot.FALLBACK_WATCHLIST = list(wl)                      # what backtest_meta trades for b1
+        bm.bot.TRAINING_UNIVERSE = list(bm.bot.TRAINING_UNIVERSE) + [x for x in wl if x not in bm.bot.TRAINING_UNIVERSE]
     t0 = time.time()
 
     no_extra_bear_bar()
@@ -101,7 +113,8 @@ def main():
                                      f" of {len(folds)}")
 
     report = dict(
-        bot=a.bot, fake_data=a.fake, generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
+        bot=a.bot, fake_data=a.fake, watchlist=list(bm.bot.FALLBACK_WATCHLIST) if a.bot == 'b1' else 'top-100',
+        traded_symbols=raw['settings']['traded_symbols'], training_symbols=raw['settings']['training_symbols'], generated=pd.Timestamp.now(tz='America/New_York').isoformat(timespec='seconds'),
         question='Lower the bear-market confidence bar (live 68%) and/or bear position size (live 6%)?',
         test_period=raw.get('test_period'), spy_buy_hold_return=raw.get('spy_buy_hold_return'),
         bear_days_in_test=len(bear_days), bear_days=bear_days,
@@ -109,13 +122,15 @@ def main():
         disclaimer='Independent personal project, not tied to any employer or agency. Public market data and '
                    'paper money only. Backtest estimate with stated simplifications; not financial advice.',
     )
-    out = Path(f'state/backtest_bear_{a.bot}{"_fake" if a.fake else ""}.json')
+    out = Path(f'state/backtest_bear_{a.bot}{"_" + a.tag if a.tag else ""}{"_fake" if a.fake else ""}.json')
     out.write_text(json.dumps(report, indent=2, default=str))
 
     spy = report['spy_buy_hold_return']
     print(f'\n=== BEAR-BAR SWEEP {a.bot} {report["test_period"]}'
           + (f' (SPY buy & hold {spy:+.2%})' if spy is not None else '')
-          + f' | {len(bear_days)} bear days with calls')
+          + f' | {len(bear_days)} bear days with calls'
+          + (f' | stocks {",".join(report["watchlist"])}' if a.bot == 'b1' else '')
+          + f' | traded {report["traded_symbols"]}, trained on {report["training_symbols"]}')
     print(f'{"bear bar":15s} {"size":>4s} | {"trades":>6s} {"hit":>6s} {"per trade":>9s} {"PF":>5s} '
           f'{"total":>7s} {"maxDD":>7s} | {"bear trades":>11s} {"bear hit":>8s} {"bear $/tr":>9s} | beats live')
     for r in rows:

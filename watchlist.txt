@@ -2,8 +2,11 @@
 # the bot uses it from its next run. Lines starting with # are ignored.
 # When this file has tickers, the morning news re-ranking is skipped.
 # A new ticker is scored properly after the next nightly retrain (about 12:05 AM ET).
-NVDA
-PANW
-AVGO
-SOFI
-PLTR
+# Nov 16 2026: switched from NVDA PANW AVGO SOFI PLTR (all tech / high-beta) to 5 sectors.
+# 12-month backtest (Nov 2025 - Nov 2026, backtest_bear.py, PR #23): old list -3.58%, profit factor 0.46;
+# this list -1.13%, profit factor 0.76, better in 8 of 9 test periods. Still not profitable.
+AMD
+GS
+FCX
+TSLA
+DAL

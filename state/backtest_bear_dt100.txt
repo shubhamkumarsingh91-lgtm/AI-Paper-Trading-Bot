@@ -1,5 +1,5 @@
 Backtest dt100: 101 training symbols, 100 traded, 899 calendar days of 15-min bars
-  loaded 101 symbols in 670s
+  loaded 101 symbols in 975s
   fold 1: test ['2025-11-13', '2025-12-24'] | cutoff 0.66 (val precision 38.3% vs base 23.0%) | calls 1204 -> kept 618 (keep 50%)
   fold 2: test ['2025-12-24', '2026-02-03'] | cutoff 0.70 (val precision 38.1% vs base 22.2%) | calls 291 -> kept 232 (keep 50%)
   fold 3: test ['2026-02-03', '2026-03-16'] | cutoff 0.72 (val precision 40.2% vs base 21.6%) | calls 417 -> kept 166 (keep 60%)
@@ -14,9 +14,9 @@ Backtest dt100: 101 training symbols, 100 traded, 899 calendar days of 15-min ba
 Without filter   trades  521 | hit 45.1% (break-even 47.3%) | avg win $77 / loss $-69 | per trade $-3.16 | PF 0.92 | total -1.64% | max DD -4.25%
 With filter      trades  486 | hit 45.5% (break-even 46.3%) | avg win $80 / loss $-69 | per trade $-1.25 | PF 0.97 | total -0.61% | max DD -3.80%
 Filter helped profit per trade in 3 of 9 test periods
-Saved /tmp/tmp3iuchi1_/raw.json and /tmp/tmp3iuchi1_/raw_trades.csv (819s)
+Saved /tmp/tmpp268c67q/raw.json and /tmp/tmpp268c67q/raw_trades.csv (1184s)
 
-=== BEAR-BAR SWEEP dt100 ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%) | 43 bear days with calls
+=== BEAR-BAR SWEEP dt100 ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%) | 43 bear days with calls | traded 100, trained on 101
 bear bar        size | trades    hit per trade    PF   total   maxDD | bear trades bear hit bear $/tr | beats live
 68% (live now)    6% |    498  43.4%     -3.89  0.90  -1.94%  -4.49% |         123    34.1%    -16.14 | 0 of 9
 68% (live now)   12% |    498  43.4%     -7.81  0.83  -3.89%  -5.90% |         123    34.1%    -32.02 | 2 of 9
@@ -28,4 +28,6 @@ bear bar        size | trades    hit per trade    PF   total   maxDD | bear trad
 62%              12% |    521  45.1%     -6.36  0.86  -3.31%  -5.42% |         146    41.8%    -23.06 | 3 of 9
 no extra bar      6% |    521  45.1%     -3.16  0.92  -1.64%  -4.25% |         146    41.8%    -11.60 | 2 of 9
 no extra bar     12% |    521  45.1%     -6.36  0.86  -3.31%  -5.42% |         146    41.8%    -23.06 | 3 of 9
-Saved state/backtest_bear_dt100.json (827s)
+no bear buys      6% |    375  46.4%      0.11  1.00  +0.04%  -3.34% |           0        -         - | 6 of 9
+no bear buys     12% |    375  46.4%      0.11  1.00  +0.04%  -3.34% |           0        -         - | 6 of 9
+Saved state/backtest_bear_dt100.json (1197s)

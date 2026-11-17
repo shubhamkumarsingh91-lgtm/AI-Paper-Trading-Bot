@@ -57,7 +57,9 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python ai_trading_bot.py --mode ${{ steps.mode.outputs.m }}
+        # Nov 16 2026: Bot 1 runs through bot1_exits.py (carry winners overnight + Alpaca stop orders).
+        # ai_trading_bot.py itself is unchanged, so Day-Trade-100 (which imports it) is not affected.
+        run: python bot1_exits.py --mode ${{ steps.mode.outputs.m }}
       - name: Save learning back to repo
         if: always()
         run: |

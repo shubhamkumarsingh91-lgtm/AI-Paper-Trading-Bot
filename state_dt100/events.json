@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-17T18:21:20Z",
+"generated": "2026-11-17T18:31:35Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -129,40 +129,11 @@
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -1.31%)."
 },
 {
-"t": "2026-11-13T20:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 0 of 5 positions, balance $100,432).",
-"count": 0
-},
-{
-"t": "2026-11-13T20:50:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "Too close to the 3:50 close-out, so no new buys; it only checked what it holds."
-},
-{
-"t": "2026-11-13T20:51:39Z",
-"bot": "b3",
-"place": "vault",
-"kind": "eod",
-"text": "Market closed: no open positions to sell. Recorded the day’s balance."
-},
-{
 "t": "2026-11-13T20:55:00Z",
 "bot": "b3",
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -1.64%)."
-},
-{
-"t": "2026-11-14T05:20:46Z",
-"bot": "b3",
-"place": "lab",
-"kind": "retrain",
-"text": "Retrained its AI overnight on 650,090 price bars. When it says “buy”, it was right 30% of the time in testing (up 0.0 points from last time)."
 },
 {
 "t": "2026-11-16T13:30:55Z",
@@ -1136,6 +1107,21 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time. The AI liked CRM (63%) but a safety check said no; ORCL (58%) but a safety check said no."
+},
+{
+"t": "2026-11-17T18:31:10Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). The AI liked 14 above its 58% bar, but other checks said no.",
+"count": 100
+},
+{
+"t": "2026-11-17T18:31:10Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time. The AI liked CRM (63%) but a safety check said no; ORCL (60%) but a safety check said no."
 }
 ]
 }

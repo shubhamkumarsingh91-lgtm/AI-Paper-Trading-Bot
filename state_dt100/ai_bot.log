@@ -150985,3 +150985,156 @@
 2026-11-16 21:15:44,183 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=56.2%  precision=29.8%  walk-forward=30.2%  threshold=0.58  trained=2026-11-14
 2026-11-16 21:15:44,185 [INFO] 🧪 Meta filter loaded (shadow): keep top 100%, cut 0.00, trained 2026-11-14
 2026-11-16 21:15:44,391 [INFO] Run complete — state saved
+2026-11-17 05:20:41,234 [INFO] Run mode: RETRAIN
+2026-11-17 05:20:41,234 [INFO] 📚 Loaded 117 trades from history
+2026-11-17 05:20:41,234 [INFO] Runtime state restored — watchlist ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'GOOG', 'META', 'TSLA', 'AVGO', 'BRK.B', 'JPM', 'LLY', 'V', 'UNH', 'XOM', 'MA', 'COST', 'HD', 'PG', 'JNJ', 'NFLX', 'ABBV', 'BAC', 'CRM', 'ORCL', 'AMD', 'CVX', 'KO', 'WMT', 'MRK', 'PEP', 'ADBE', 'TMO', 'CSCO', 'ACN', 'LIN', 'MCD', 'ABT', 'WFC', 'INTC', 'QCOM', 'DIS', 'TXN', 'INTU', 'IBM', 'AMAT', 'CAT', 'GE', 'VZ', 'PFE', 'NOW', 'UBER', 'CMCSA', 'T', 'AMGN', 'ISRG', 'GS', 'MS', 'SPGI', 'BKNG', 'HON', 'LOW', 'UNP', 'RTX', 'NEE', 'BA', 'PLTR', 'MU', 'LRCX', 'PANW', 'ADI', 'KLAC', 'SBUX', 'C', 'SCHW', 'BLK', 'DE', 'AXP', 'MDT', 'GILD', 'CRWD', 'ANET', 'MRVL', 'DELL', 'SMCI', 'COIN', 'PYPL', 'F', 'GM', 'NKE', 'CVS', 'MO', 'PM', 'COP', 'SLB', 'OXY', 'FCX', 'DAL', 'CCL', 'WBD']
+2026-11-17 05:20:41,235 [INFO] 
+════════════════════════════════════════════════════════════
+🌙 NIGHTLY SELF-LEARNING RETRAIN
+════════════════════════════════════════════════════════════
+2026-11-17 05:20:41,235 [INFO]   Total trades ever: 59
+2026-11-17 05:20:41,235 [INFO]   Win rate:          49.2%
+2026-11-17 05:20:41,235 [INFO]   Cumulative P&L:    $+567.97
+2026-11-17 05:20:41,235 [INFO]   Old accuracy:      0.0%
+2026-11-17 05:20:41,235 [INFO] 🧠 Nightly retrain — fetching 365 days x 101 stocks...
+2026-11-17 05:20:41,235 [INFO]    Training universe: AAPL, MSFT, NVDA, AMZN, GOOGL, GOOG, META, TSLA, AVGO, BRK.B, JPM, LLY, V, UNH, XOM, MA, COST, HD, PG, JNJ, NFLX, ABBV, BAC, CRM, ORCL, AMD, CVX, KO, WMT, MRK, PEP, ADBE, TMO, CSCO, ACN, LIN, MCD, ABT, WFC, INTC, QCOM, DIS, TXN, INTU, IBM, AMAT, CAT, GE, VZ, PFE, NOW, UBER, CMCSA, T, AMGN, ISRG, GS, MS, SPGI, BKNG, HON, LOW, UNP, RTX, NEE, BA, PLTR, MU, LRCX, PANW, ADI, KLAC, SBUX, C, SCHW, BLK, DE, AXP, MDT, GILD, CRWD, ANET, MRVL, DELL, SMCI, COIN, PYPL, F, GM, NKE, CVS, MO, PM, COP, SLB, OXY, FCX, DAL, CCL, WBD, SPY
+2026-11-17 05:20:41,235 [INFO]    Trading watchlist: AAPL, MSFT, NVDA, AMZN, GOOGL, GOOG, META, TSLA, AVGO, BRK.B, JPM, LLY, V, UNH, XOM, MA, COST, HD, PG, JNJ, NFLX, ABBV, BAC, CRM, ORCL, AMD, CVX, KO, WMT, MRK, PEP, ADBE, TMO, CSCO, ACN, LIN, MCD, ABT, WFC, INTC, QCOM, DIS, TXN, INTU, IBM, AMAT, CAT, GE, VZ, PFE, NOW, UBER, CMCSA, T, AMGN, ISRG, GS, MS, SPGI, BKNG, HON, LOW, UNP, RTX, NEE, BA, PLTR, MU, LRCX, PANW, ADI, KLAC, SBUX, C, SCHW, BLK, DE, AXP, MDT, GILD, CRWD, ANET, MRVL, DELL, SMCI, COIN, PYPL, F, GM, NKE, CVS, MO, PM, COP, SLB, OXY, FCX, DAL, CCL, WBD
+2026-11-17 05:20:41,235 [INFO]   Fetching SPY market context...
+2026-11-17 05:20:42,681 [INFO]   SPY context: 7,810 bars loaded
+2026-11-17 05:20:44,031 [INFO]   ok AAPL: 7,001 bars | bullish rate 21.2%
+2026-11-17 05:20:45,481 [INFO]   ok MSFT: 7,058 bars | bullish rate 21.5%
+2026-11-17 05:20:46,676 [INFO]   ok NVDA: 7,293 bars | bullish rate 25.6%
+2026-11-17 05:20:47,955 [INFO]   ok AMZN: 6,619 bars | bullish rate 22.9%
+2026-11-17 05:20:49,194 [INFO]   ok GOOGL: 6,858 bars | bullish rate 22.6%
+2026-11-17 05:20:50,842 [INFO]   ok GOOG: 6,856 bars | bullish rate 22.3%
+2026-11-17 05:20:52,105 [INFO]   ok META: 6,809 bars | bullish rate 23.2%
+2026-11-17 05:20:53,718 [INFO]   ok TSLA: 7,216 bars | bullish rate 27.4%
+2026-11-17 05:20:55,232 [INFO]   ok AVGO: 7,058 bars | bullish rate 28.3%
+2026-11-17 05:20:56,731 [INFO]   ok BRK.B: 6,326 bars | bullish rate 13.6%
+2026-11-17 05:20:57,959 [INFO]   ok JPM: 6,323 bars | bullish rate 18.9%
+2026-11-17 05:20:58,899 [INFO]   ok LLY: 6,321 bars | bullish rate 22.7%
+2026-11-17 05:21:01,694 [INFO]   ok V: 6,306 bars | bullish rate 19.4%
+2026-11-17 05:21:02,919 [INFO]   ok UNH: 6,330 bars | bullish rate 23.3%
+2026-11-17 05:21:04,823 [INFO]   ok XOM: 6,347 bars | bullish rate 24.5%
+2026-11-17 05:21:05,894 [INFO]   ok MA: 6,295 bars | bullish rate 20.7%
+2026-11-17 05:21:06,724 [INFO]   ok COST: 6,287 bars | bullish rate 17.7%
+2026-11-17 05:21:07,884 [INFO]   ok HD: 6,299 bars | bullish rate 20.4%
+2026-11-17 05:21:09,116 [INFO]   ok PG: 6,290 bars | bullish rate 18.6%
+2026-11-17 05:21:10,113 [INFO]   ok JNJ: 6,294 bars | bullish rate 20.4%
+2026-11-17 05:21:11,264 [INFO]   ok NFLX: 6,831 bars | bullish rate 22.6%
+2026-11-17 05:21:12,284 [INFO]   ok ABBV: 6,283 bars | bullish rate 22.8%
+2026-11-17 05:21:13,739 [INFO]   ok BAC: 6,330 bars | bullish rate 20.9%
+2026-11-17 05:21:15,096 [INFO]   ok CRM: 6,336 bars | bullish rate 26.6%
+2026-11-17 05:21:16,979 [INFO]   ok ORCL: 7,051 bars | bullish rate 29.2%
+2026-11-17 05:21:18,135 [INFO]   ok AMD: 6,845 bars | bullish rate 30.6%
+2026-11-17 05:21:19,109 [INFO]   ok CVX: 6,316 bars | bullish rate 22.4%
+2026-11-17 05:21:20,567 [INFO]   ok KO: 6,326 bars | bullish rate 16.5%
+2026-11-17 05:21:21,978 [INFO]   ok WMT: 6,330 bars | bullish rate 22.1%
+2026-11-17 05:21:23,307 [INFO]   ok MRK: 6,296 bars | bullish rate 23.9%
+2026-11-17 05:21:24,450 [INFO]   ok PEP: 6,288 bars | bullish rate 18.4%
+2026-11-17 05:21:25,524 [INFO]   ok ADBE: 6,313 bars | bullish rate 26.7%
+2026-11-17 05:21:26,557 [INFO]   ok TMO: 6,279 bars | bullish rate 24.6%
+2026-11-17 05:21:27,797 [INFO]   ok CSCO: 6,340 bars | bullish rate 25.1%
+2026-11-17 05:21:28,708 [INFO]   ok ACN: 6,291 bars | bullish rate 28.0%
+2026-11-17 05:21:29,623 [INFO]   ok LIN: 6,287 bars | bullish rate 19.7%
+2026-11-17 05:21:30,870 [INFO]   ok MCD: 6,306 bars | bullish rate 16.1%
+2026-11-17 05:21:31,869 [INFO]   ok ABT: 6,286 bars | bullish rate 20.6%
+2026-11-17 05:21:33,246 [INFO]   ok WFC: 6,299 bars | bullish rate 22.8%
+2026-11-17 05:21:37,614 [INFO]   ok INTC: 7,229 bars | bullish rate 29.2%
+2026-11-17 05:21:41,836 [INFO]   ok QCOM: 6,375 bars | bullish rate 26.1%
+2026-11-17 05:21:43,060 [INFO]   ok DIS: 6,290 bars | bullish rate 20.6%
+2026-11-17 05:21:44,952 [INFO]   ok TXN: 6,316 bars | bullish rate 26.8%
+2026-11-17 05:21:49,244 [INFO]   ok INTU: 6,320 bars | bullish rate 28.1%
+2026-11-17 05:21:50,526 [INFO]   ok IBM: 6,342 bars | bullish rate 26.5%
+2026-11-17 05:21:54,542 [INFO]   ok AMAT: 6,432 bars | bullish rate 28.8%
+2026-11-17 05:21:55,782 [INFO]   ok CAT: 6,307 bars | bullish rate 27.5%
+2026-11-17 05:21:59,947 [INFO]   ok GE: 6,315 bars | bullish rate 24.8%
+2026-11-17 05:22:01,109 [INFO]   ok VZ: 6,322 bars | bullish rate 20.7%
+2026-11-17 05:22:05,233 [INFO]   ok PFE: 6,699 bars | bullish rate 20.4%
+2026-11-17 05:22:06,350 [INFO]   ok NOW: 6,593 bars | bullish rate 28.5%
+2026-11-17 05:22:10,513 [INFO]   ok UBER: 6,336 bars | bullish rate 25.2%
+2026-11-17 05:22:15,013 [INFO]   ok CMCSA: 6,316 bars | bullish rate 24.3%
+2026-11-17 05:22:16,477 [INFO]   ok T: 6,338 bars | bullish rate 20.4%
+2026-11-17 05:22:20,365 [INFO]   ok AMGN: 6,282 bars | bullish rate 23.3%
+2026-11-17 05:22:21,416 [INFO]   ok ISRG: 6,288 bars | bullish rate 22.8%
+2026-11-17 05:22:22,335 [INFO]   ok GS: 6,292 bars | bullish rate 25.8%
+2026-11-17 05:22:26,310 [INFO]   ok MS: 6,288 bars | bullish rate 25.0%
+2026-11-17 05:22:27,438 [INFO]   ok SPGI: 6,283 bars | bullish rate 21.9%
+2026-11-17 05:22:31,578 [INFO]   ok BKNG: 6,304 bars | bullish rate 24.2%
+2026-11-17 05:22:32,422 [INFO]   ok HON: 6,268 bars | bullish rate 21.9%
+2026-11-17 05:22:36,275 [INFO]   ok LOW: 6,276 bars | bullish rate 21.5%
+2026-11-17 05:22:36,964 [INFO]   ok UNP: 6,266 bars | bullish rate 19.6%
+2026-11-17 05:22:37,875 [INFO]   ok RTX: 6,284 bars | bullish rate 23.1%
+2026-11-17 05:22:42,096 [INFO]   ok NEE: 6,295 bars | bullish rate 18.8%
+2026-11-17 05:22:43,345 [INFO]   ok BA: 6,309 bars | bullish rate 24.3%
+2026-11-17 05:22:47,442 [INFO]   ok PLTR: 6,683 bars | bullish rate 27.9%
+2026-11-17 05:22:51,662 [INFO]   ok MU: 7,461 bars | bullish rate 31.2%
+2026-11-17 05:22:52,769 [INFO]   ok LRCX: 6,327 bars | bullish rate 30.8%
+2026-11-17 05:22:54,290 [INFO]   ok PANW: 6,302 bars | bullish rate 30.0%
+2026-11-17 05:22:58,457 [INFO]   ok ADI: 6,297 bars | bullish rate 27.3%
+2026-11-17 05:22:59,641 [INFO]   ok KLAC: 6,350 bars | bullish rate 30.4%
+2026-11-17 05:23:03,782 [INFO]   ok SBUX: 6,295 bars | bullish rate 24.2%
+2026-11-17 05:23:05,045 [INFO]   ok C: 6,303 bars | bullish rate 24.5%
+2026-11-17 05:23:09,438 [INFO]   ok SCHW: 6,286 bars | bullish rate 22.1%
+2026-11-17 05:23:10,226 [INFO]   ok BLK: 6,238 bars | bullish rate 23.2%
+2026-11-17 05:23:11,147 [INFO]   ok DE: 6,280 bars | bullish rate 24.6%
+2026-11-17 05:23:15,381 [INFO]   ok AXP: 6,286 bars | bullish rate 20.7%
+2026-11-17 05:23:16,716 [INFO]   ok MDT: 6,296 bars | bullish rate 20.1%
+2026-11-17 05:23:18,356 [INFO]   ok GILD: 6,282 bars | bullish rate 22.0%
+2026-11-17 05:23:22,888 [INFO]   ok CRWD: 6,337 bars | bullish rate 30.7%
+2026-11-17 05:23:23,922 [INFO]   ok ANET: 6,319 bars | bullish rate 30.8%
+2026-11-17 05:23:28,800 [INFO]   ok MRVL: 6,832 bars | bullish rate 29.0%
+2026-11-17 05:23:30,257 [INFO]   ok DELL: 6,378 bars | bullish rate 29.6%
+2026-11-17 05:23:34,697 [INFO]   ok SMCI: 6,646 bars | bullish rate 28.9%
+2026-11-17 05:23:36,407 [INFO]   ok COIN: 6,583 bars | bullish rate 27.5%
+2026-11-17 05:23:38,128 [INFO]   ok PYPL: 6,337 bars | bullish rate 23.9%
+2026-11-17 05:23:42,764 [INFO]   ok F: 6,492 bars | bullish rate 22.4%
+2026-11-17 05:23:43,920 [INFO]   ok GM: 6,290 bars | bullish rate 25.1%
+2026-11-17 05:23:48,252 [INFO]   ok NKE: 6,381 bars | bullish rate 24.6%
+2026-11-17 05:23:49,912 [INFO]   ok CVS: 6,293 bars | bullish rate 24.2%
+2026-11-17 05:23:54,323 [INFO]   ok MO: 6,289 bars | bullish rate 20.4%
+2026-11-17 05:23:55,304 [INFO]   ok PM: 6,285 bars | bullish rate 24.3%
+2026-11-17 05:23:56,787 [INFO]   ok COP: 6,290 bars | bullish rate 27.2%
+2026-11-17 05:24:01,156 [INFO]   ok SLB: 6,305 bars | bullish rate 26.2%
+2026-11-17 05:24:03,887 [INFO]   ok OXY: 6,359 bars | bullish rate 27.9%
+2026-11-17 05:24:08,355 [INFO]   ok FCX: 6,306 bars | bullish rate 30.2%
+2026-11-17 05:24:09,710 [INFO]   ok DAL: 6,303 bars | bullish rate 25.5%
+2026-11-17 05:24:13,948 [INFO]   ok CCL: 6,433 bars | bullish rate 26.8%
+2026-11-17 05:24:15,308 [INFO]   ok WBD: 5,570 bars | bullish rate 13.3%
+2026-11-17 05:24:19,593 [INFO]   ok SPY: 7,591 bars | bullish rate 8.7%
+2026-11-17 05:24:23,069 [INFO]   Self-learning: 59 real trade outcome(s) folded into training labels
+2026-11-17 05:24:23,070 [INFO]   Total: 650,089 samples | Bullish rate: 23.9%
+2026-11-17 05:24:23,072 [INFO]   Real-trade upweighting: 1570 row(s) weighted 8.0x so the model actually notices them
+2026-11-17 05:24:23,072 [INFO]   Time weights: oldest=0.06  newest=1.00
+2026-11-17 05:24:23,073 [INFO]   Class balance: 155,564 BUY / 494,525 HOLD  scale_pos_weight=3.18
+2026-11-17 05:24:23,073 [INFO] Walk-Forward Validation (3 folds — no future leakage)...
+2026-11-17 05:24:24,588 [INFO]   Fold 1: train=390,053 test=97,513 | precision=32.3%  accuracy=53.7%  BUYs=58071/97513
+2026-11-17 05:24:26,433 [INFO]   Fold 2: train=487,566 test=78,011 | precision=27.2%  accuracy=56.5%  BUYs=39398/78011
+2026-11-17 05:24:28,380 [INFO]   Fold 3: train=565,577 test=84,512 | precision=30.0%  accuracy=55.8%  BUYs=42394/84512
+2026-11-17 05:24:28,380 [INFO]   Walk-forward avg precision: 29.8% <-- this is your REAL expected precision trading live
+2026-11-17 05:24:28,380 [INFO]   Walk-forward tree counts: [9, 16, 8] -> final models use 100 trees
+2026-11-17 05:24:28,381 [INFO]   Training XGBoost (final model)...
+2026-11-17 05:24:30,946 [INFO]   XGBoost: precision=29.9%  accuracy=56.4%
+2026-11-17 05:24:30,948 [INFO]   Prob spread: min=0.05 median=0.50 max=0.73 (all 0.50 = model broken)
+2026-11-17 05:24:30,948 [INFO]   Training LightGBM...
+2026-11-17 05:24:34,684 [INFO]   LightGBM: precision=29.9%  accuracy=56.8%
+2026-11-17 05:24:34,834 [INFO]   Ensemble: precision=29.9%  <-- live bot uses this
+2026-11-17 05:24:37,440 [INFO]   Meta filter (shadow): 6582 replayed BUY calls, hit rate 47.4%, avg -0.04%/trade | best on unseen calls: keep top 100% (hit 47.2%, avg -0.09% vs all 47.2%, -0.09%) | top inputs: dow, minute, spy_day_ret
+2026-11-17 05:24:37,447 [INFO]   Calibrated decision threshold: 0.58 (precision 31.1% on 39207 signals in validation) <-- live trading now uses this cutoff, not 0.5
+2026-11-17 05:24:37,449 [INFO]   Learning history: 22 retrain(s) recorded -> state_dt100/learning_history.json
+2026-11-17 05:24:37,449 [INFO] 
+=== TRAINING COMPLETE ===
+  XGB precision:  29.9%
+  LGB precision:  29.9%
+  Walk-forward:   29.8%  <-- most honest number
+  Decision threshold: 0.58
+  Real trades folded in: 1570  (total ever: 59)
+  Trend vs last retrain: precision +0.1pp, walk-forward -0.4pp
+  Top 5 drivers:  hour_cos, hour, atr_pct, hour_sin, atr_expanding
+  Weakest feats:  doji, stoch_golden, spy_ret_1, spy_ret_5, spy_above_ema20
+  (weak features above 0.001 are still contributing — below means useless)
+2026-11-17 05:24:37,456 [INFO] Model saved -> state_dt100/ai_model.xgb
+2026-11-17 05:24:37,467 [INFO]   New accuracy:      56.4%
+2026-11-17 05:24:37,468 [INFO] ✅ Bot is smarter — ready for tomorrow
+════════════════════════════════════════════════════════════
+2026-11-17 05:24:37,468 [INFO] Run complete — state saved

@@ -1,0 +1,265 @@
+{
+  "bot": "b1",
+  "label": "classic",
+  "fake_data": false,
+  "watchlist": [
+    "AMD",
+    "GS",
+    "FCX",
+    "TSLA",
+    "DAL"
+  ],
+  "traded_symbols": 5,
+  "training_symbols": 17,
+  "test_period": [
+    "2025-11-13",
+    "2026-11-17"
+  ],
+  "spy_buy_hold_return": 0.09669675010003109,
+  "primary_cutoffs": [
+    0.6000000000000001,
+    0.5800000000000001,
+    0.6000000000000001,
+    0.6600000000000001,
+    0.6600000000000001,
+    0.6600000000000001,
+    0.6600000000000001,
+    0.7000000000000002,
+    0.6800000000000002
+  ],
+  "results": {
+    "all day | sell by close": {
+      "account": {
+        "trades": 148,
+        "wins": 55,
+        "losses": 93,
+        "hit_rate": 0.3716216216216216,
+        "avg_win": 66.59939602487665,
+        "avg_loss": -51.58161898540039,
+        "break_even_hit": 0.4364628191839006,
+        "profit_per_trade": -7.662998542392019,
+        "profit_factor": 0.7635809103966367,
+        "total_pnl": -1134.1237842740188,
+        "total_return": -0.011341237842740189,
+        "max_drawdown": -0.015711146469552295,
+        "exits": {
+          "EOD": 144,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 3
+        }
+      },
+      "worst_trade_pct": -2.2499622582163648,
+      "best_trade_pct": 2.2888167176106977,
+      "trades_losing_over_2pct": 3,
+      "overnight_holds": 0,
+      "per_fold_total_pnl": [
+        207.18,
+        -1040.27,
+        41.72,
+        -151.32,
+        -152.67,
+        51.0,
+        -146.04,
+        90.23,
+        -34.35
+      ],
+      "periods_beating_live": "0 of 9"
+    },
+    "all day | carry >= +1%": {
+      "account": {
+        "trades": 139,
+        "wins": 48,
+        "losses": 91,
+        "hit_rate": 0.34532374100719426,
+        "avg_win": 91.51973204667979,
+        "avg_loss": -49.37765430891271,
+        "break_even_hit": 0.3504511729145557,
+        "profit_per_trade": -0.722441754463502,
+        "profit_factor": 0.977651633150932,
+        "total_pnl": -100.41940387042678,
+        "total_return": -0.0010041940387042678,
+        "max_drawdown": -0.019526373432467214,
+        "exits": {
+          "CARRY_EOD": 5,
+          "EOD": 124,
+          "GAP_STOP": 1,
+          "PROFIT_LOCK": 6,
+          "STOP_LOSS": 3
+        }
+      },
+      "worst_trade_pct": -2.2499622582163648,
+      "best_trade_pct": 9.231211093400415,
+      "trades_losing_over_2pct": 3,
+      "overnight_holds": 11,
+      "per_fold_total_pnl": [
+        1817.81,
+        -1389.01,
+        -102.86,
+        -151.32,
+        -209.32,
+        51.0,
+        -146.04,
+        90.23,
+        -34.35
+      ],
+      "periods_beating_live": "1 of 9"
+    },
+    "all day | carry >= +0.5%": {
+      "account": {
+        "trades": 137,
+        "wins": 39,
+        "losses": 98,
+        "hit_rate": 0.2846715328467153,
+        "avg_win": 157.79735386441473,
+        "avg_loss": -53.9903759558263,
+        "break_even_hit": 0.25492683642084313,
+        "profit_per_trade": 6.299561730227734,
+        "profit_factor": 1.1631129625971686,
+        "total_pnl": 863.0399570411996,
+        "total_return": 0.008630399570411996,
+        "max_drawdown": -0.025826498759639938,
+        "exits": {
+          "CARRY_EOD": 10,
+          "CARRY_STOP": 3,
+          "EOD": 109,
+          "GAP_STOP": 4,
+          "PROFIT_LOCK": 8,
+          "STOP_LOSS": 3
+        }
+      },
+      "worst_trade_pct": -2.8423335258814575,
+      "best_trade_pct": 10.232925756751786,
+      "trades_losing_over_2pct": 4,
+      "overnight_holds": 24,
+      "per_fold_total_pnl": [
+        1386.1,
+        -504.89,
+        -430.61,
+        -151.32,
+        -209.32,
+        129.79,
+        -556.15,
+        1251.57,
+        -34.35
+      ],
+      "periods_beating_live": "4 of 9"
+    },
+    "mornings | sell by close": {
+      "account": {
+        "trades": 15,
+        "wins": 8,
+        "losses": 7,
+        "hit_rate": 0.5333333333333333,
+        "avg_win": 175.9941728295441,
+        "avg_loss": -122.63721308192126,
+        "break_even_hit": 0.41066417954567996,
+        "profit_per_trade": 36.63285940419361,
+        "profit_factor": 1.6400910658750918,
+        "total_pnl": 549.4928910629042,
+        "total_return": 0.005494928910629041,
+        "max_drawdown": -0.004401092366353998,
+        "exits": {
+          "EOD": 12,
+          "PROFIT_LOCK": 1,
+          "STOP_LOSS": 2
+        }
+      },
+      "worst_trade_pct": -2.235946835679592,
+      "best_trade_pct": 2.2888167176106977,
+      "trades_losing_over_2pct": 2,
+      "overnight_holds": 0,
+      "per_fold_total_pnl": [
+        -11.37,
+        584.64,
+        0.0,
+        0.0,
+        -1.69,
+        -21.88,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "periods_beating_live": "5 of 9"
+    },
+    "mornings | carry >= +1%": {
+      "account": {
+        "trades": 13,
+        "wins": 5,
+        "losses": 8,
+        "hit_rate": 0.38461538461538464,
+        "avg_win": 397.7306055706872,
+        "avg_loss": -87.52970034186042,
+        "break_even_hit": 0.1803767983397241,
+        "profit_per_trade": 99.10887885527328,
+        "profit_factor": 2.8399689192446282,
+        "total_pnl": 1288.4154251185525,
+        "total_return": 0.012884154251185526,
+        "max_drawdown": -0.003127997543034833,
+        "exits": {
+          "CARRY_EOD": 3,
+          "EOD": 3,
+          "GAP_STOP": 1,
+          "PROFIT_LOCK": 4,
+          "STOP_LOSS": 2
+        }
+      },
+      "worst_trade_pct": -2.235946835679592,
+      "best_trade_pct": 9.231211093400415,
+      "trades_losing_over_2pct": 2,
+      "overnight_holds": 7,
+      "per_fold_total_pnl": [
+        1201.16,
+        109.82,
+        0.0,
+        0.0,
+        -1.69,
+        -21.88,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "periods_beating_live": "6 of 9"
+    },
+    "mornings | carry >= +0.5%": {
+      "account": {
+        "trades": 13,
+        "wins": 5,
+        "losses": 8,
+        "hit_rate": 0.38461538461538464,
+        "avg_win": 397.7306055706872,
+        "avg_loss": -87.52970034186042,
+        "break_even_hit": 0.1803767983397241,
+        "profit_per_trade": 99.10887885527328,
+        "profit_factor": 2.8399689192446282,
+        "total_pnl": 1288.4154251185525,
+        "total_return": 0.012884154251185526,
+        "max_drawdown": -0.003127997543034833,
+        "exits": {
+          "CARRY_EOD": 3,
+          "EOD": 3,
+          "GAP_STOP": 1,
+          "PROFIT_LOCK": 4,
+          "STOP_LOSS": 2
+        }
+      },
+      "worst_trade_pct": -2.235946835679592,
+      "best_trade_pct": 9.231211093400415,
+      "trades_losing_over_2pct": 2,
+      "overnight_holds": 7,
+      "per_fold_total_pnl": [
+        1201.16,
+        109.82,
+        0.0,
+        0.0,
+        -1.69,
+        -21.88,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "periods_beating_live": "6 of 9"
+    }
+  },
+  "runtime_sec": 193,
+  "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and paper money only. Backtest estimate with stated simplifications; not financial advice."
+}

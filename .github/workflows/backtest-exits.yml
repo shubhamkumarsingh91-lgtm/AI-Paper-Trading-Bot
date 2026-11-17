@@ -1,0 +1,49 @@
+# Middle-ground exit / buy-window grid for Bot 1 (see backtest_exits.py). BACKTEST ONLY — no live changes.
+# Independent personal project, not tied to any employer or agency. Public market data, paper money only.
+name: Exit-Grid Backtest
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: [backtest_exits.py, tests/test_backtest_exits.py, .github/workflows/backtest-exits.yml]
+    types: [opened, synchronize]
+permissions:
+  contents: write
+concurrency:
+  group: backtest-exits-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - name: Hand-checked unit tests
+        run: python -m pytest -q tests/test_backtest_exits.py tests/test_meta_filter.py
+      - name: Run 12-month grid (Bot 1, live stocks), live label then trade-matched label
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          set -o pipefail
+          for L in classic trade; do
+            python backtest_exits.py --bot b1 --label $L --watchlist AMD,GS,FCX,TSLA,DAL --tag $L \
+              --folds 9 --fold-days 41 | tee state/backtest_exits_b1_$L.txt
+            sleep 30
+          done
+          if grep -h "^  skip " state/backtest_exits_*.txt; then echo "::error::some symbols were skipped"; exit 1; fi
+      - name: Save results
+        if: always()
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/backtest_exits_* || true
+          git diff --cached --quiet && exit 0
+          git commit -m "exit-grid backtest results (b1) [skip ci]"
+          for i in 1 2 3; do git pull --rebase -q origin "${{ github.head_ref || github.ref_name }}" && git push && break; sleep 5; done

@@ -1,0 +1,790 @@
+{
+  "bot": "b1",
+  "fake_data": false,
+  "watchlist": [
+    "JPM",
+    "XOM",
+    "LLY",
+    "COST",
+    "CAT"
+  ],
+  "traded_symbols": 5,
+  "training_symbols": 19,
+  "generated": "2026-11-16T19:36:32-05:00",
+  "question": "Lower the bear-market confidence bar (live 68%) and/or bear position size (live 6%)?",
+  "test_period": [
+    "2025-11-13",
+    "2026-11-17"
+  ],
+  "spy_buy_hold_return": 0.09669675010003109,
+  "bear_days_in_test": 41,
+  "bear_days": [
+    "2025-11-19",
+    "2025-11-20",
+    "2025-11-21",
+    "2025-12-18",
+    "2026-01-21",
+    "2026-02-06",
+    "2026-02-13",
+    "2026-02-17",
+    "2026-02-18",
+    "2026-02-19",
+    "2026-02-20",
+    "2026-02-24",
+    "2026-02-25",
+    "2026-03-03",
+    "2026-03-04",
+    "2026-03-06",
+    "2026-03-10",
+    "2026-03-11",
+    "2026-03-12",
+    "2026-03-13",
+    "2026-03-18",
+    "2026-03-19",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-07-21",
+    "2026-07-24",
+    "2026-09-11",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-23",
+    "2026-10-26",
+    "2026-10-27",
+    "2026-11-02",
+    "2026-11-03",
+    "2026-11-04",
+    "2026-11-10",
+    "2026-11-11",
+    "2026-11-12",
+    "2026-11-13"
+  ],
+  "results": [
+    {
+      "bar": "68% (live now)",
+      "bear_min_conf": 0.68,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 157,
+        "wins": 73,
+        "losses": 84,
+        "hit_rate": 0.46496815286624205,
+        "avg_win": 29.40666341739676,
+        "avg_loss": -35.11696753312649,
+        "break_even_hit": 0.5442497115522559,
+        "profit_per_trade": -5.115534033838611,
+        "profit_factor": 0.7277334184085263,
+        "total_pnl": -803.138843312662,
+        "total_return": -0.00803138843312662,
+        "max_drawdown": -0.009516104950122006,
+        "exits": {
+          "EOD": 157
+        }
+      },
+      "bear_day_trades": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "hit_rate": 0.5,
+        "avg_win": 16.127443481962654,
+        "avg_loss": -16.719326419972454,
+        "break_even_hit": 0.5090097586425832,
+        "profit_per_trade": -0.2959414690048998,
+        "profit_factor": 0.964598876584959,
+        "total_pnl": -0.5918829380097996,
+        "total_return": -5.918829380097996e-06,
+        "max_drawdown": -0.0001671932641997831,
+        "exits": {
+          "EOD": 2
+        }
+      },
+      "bear_day_calls": {
+        "n": 3,
+        "hit_rate": 0.6666666666666666,
+        "avg_ret": 0.0007856877978237309,
+        "profit_factor": 1.8450058510883849
+      },
+      "all_calls": {
+        "n": 497,
+        "hit_rate": 0.45875251509054327,
+        "avg_ret": -0.00033669605554631206,
+        "profit_factor": 0.7479508096733138
+      },
+      "per_fold_total_pnl": [
+        -81.18,
+        -647.16,
+        240.11,
+        -31.49,
+        -108.34,
+        -132.14,
+        -35.04,
+        31.99,
+        -40.55
+      ],
+      "periods_beating_live": "0 of 9"
+    },
+    {
+      "bar": "68% (live now)",
+      "bear_min_conf": 0.68,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 157,
+        "wins": 73,
+        "losses": 84,
+        "hit_rate": 0.46496815286624205,
+        "avg_win": 29.62265332231381,
+        "avg_loss": -35.31038789492351,
+        "break_even_hit": 0.5437969211512906,
+        "profit_per_trade": -5.118591660157114,
+        "profit_factor": 0.7290629719570693,
+        "total_pnl": -803.6188906446669,
+        "total_return": -0.008036188906446669,
+        "max_drawdown": -0.009681904332042635,
+        "exits": {
+          "EOD": 157
+        }
+      },
+      "bear_day_trades": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "hit_rate": 0.5,
+        "avg_win": 32.24948774405987,
+        "avg_loss": -33.43865283994491,
+        "break_even_hit": 0.5090515965691272,
+        "profit_per_trade": -0.5945825479425189,
+        "profit_factor": 0.9644374101559351,
+        "total_pnl": -1.1891650958850377,
+        "total_return": -1.1891650958850376e-05,
+        "max_drawdown": -0.00033438652839945515,
+        "exits": {
+          "EOD": 2
+        }
+      },
+      "bear_day_calls": {
+        "n": 3,
+        "hit_rate": 0.6666666666666666,
+        "avg_ret": 0.0007856877978237309,
+        "profit_factor": 1.8450058510883849
+      },
+      "all_calls": {
+        "n": 497,
+        "hit_rate": 0.45875251509054327,
+        "avg_ret": -0.00033669605554631206,
+        "profit_factor": 0.7479508096733138
+      },
+      "per_fold_total_pnl": [
+        -97.91,
+        -647.16,
+        240.11,
+        -31.49,
+        -108.34,
+        -132.14,
+        -35.04,
+        31.99,
+        -24.3
+      ],
+      "periods_beating_live": "1 of 9"
+    },
+    {
+      "bar": "66%",
+      "bear_min_conf": 0.66,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 181,
+        "wins": 78,
+        "losses": 103,
+        "hit_rate": 0.430939226519337,
+        "avg_win": 28.47549054864301,
+        "avg_loss": -32.03119063542329,
+        "break_even_hit": 0.5293827063160476,
+        "profit_per_trade": -5.956488246709636,
+        "profit_factor": 0.673217675917439,
+        "total_pnl": -1078.1243726544442,
+        "total_return": -0.010781243726544442,
+        "max_drawdown": -0.011510698214704407,
+        "exits": {
+          "EOD": 181
+        }
+      },
+      "bear_day_trades": {
+        "trades": 26,
+        "wins": 6,
+        "losses": 20,
+        "hit_rate": 0.23076923076923078,
+        "avg_win": 15.449507599812256,
+        "avg_loss": -18.443202580219893,
+        "break_even_hit": 0.5441642902633879,
+        "profit_per_trade": -10.621807923289396,
+        "profit_factor": 0.2513040921057007,
+        "total_pnl": -276.1670060055243,
+        "total_return": -0.002761670060055243,
+        "max_drawdown": -0.0028269725573951687,
+        "exits": {
+          "EOD": 26
+        }
+      },
+      "bear_day_calls": {
+        "n": 52,
+        "hit_rate": 0.25,
+        "avg_ret": -0.0019451890045681652,
+        "profit_factor": 0.20526646493957196
+      },
+      "all_calls": {
+        "n": 546,
+        "hit_rate": 0.43772893772893773,
+        "avg_ret": -0.0004960528044643459,
+        "profit_factor": 0.6564607484672789
+      },
+      "per_fold_total_pnl": [
+        -108.03,
+        -597.12,
+        78.12,
+        -81.26,
+        -108.34,
+        -132.14,
+        -22.24,
+        5.66,
+        -116.51
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "66%",
+      "bear_min_conf": 0.66,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 181,
+        "wins": 78,
+        "losses": 103,
+        "hit_rate": 0.430939226519337,
+        "avg_win": 29.628575024261174,
+        "avg_loss": -35.5727287934349,
+        "break_even_hit": 0.5455830897630028,
+        "profit_per_trade": -7.47492935818465,
+        "profit_factor": 0.630740853467623,
+        "total_pnl": -1352.9622138314216,
+        "total_return": -0.013529622138314216,
+        "max_drawdown": -0.013667516196013918,
+        "exits": {
+          "EOD": 181
+        }
+      },
+      "bear_day_trades": {
+        "trades": 26,
+        "wins": 6,
+        "losses": 20,
+        "hit_rate": 0.23076923076923078,
+        "avg_win": 30.859459012533637,
+        "avg_loss": -36.843376423037355,
+        "break_even_hit": 0.5441925169899146,
+        "profit_per_trade": -21.219645168674813,
+        "profit_factor": 0.25127549650882075,
+        "total_pnl": -551.7107743855452,
+        "total_return": -0.0055171077438554515,
+        "max_drawdown": -0.005647022380184108,
+        "exits": {
+          "EOD": 26
+        }
+      },
+      "bear_day_calls": {
+        "n": 52,
+        "hit_rate": 0.25,
+        "avg_ret": -0.0019451890045681652,
+        "profit_factor": 0.20526646493957196
+      },
+      "all_calls": {
+        "n": 546,
+        "hit_rate": 0.43772893772893773,
+        "avg_ret": -0.0004960528044643459,
+        "profit_factor": 0.6564607484672789
+      },
+      "per_fold_total_pnl": [
+        -151.59,
+        -547.08,
+        -83.68,
+        -131.02,
+        -108.34,
+        -132.14,
+        -9.44,
+        -20.66,
+        -176.21
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "64%",
+      "bear_min_conf": 0.64,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 214,
+        "wins": 88,
+        "losses": 126,
+        "hit_rate": 0.411214953271028,
+        "avg_win": 27.09602034057615,
+        "avg_loss": -29.36872627924397,
+        "break_even_hit": 0.5201249990013243,
+        "profit_per_trade": -6.149578136514201,
+        "profit_factor": 0.644365863959229,
+        "total_pnl": -1316.009721214039,
+        "total_return": -0.01316009721214039,
+        "max_drawdown": -0.013572643421278285,
+        "exits": {
+          "EOD": 214
+        }
+      },
+      "bear_day_trades": {
+        "trades": 59,
+        "wins": 16,
+        "losses": 43,
+        "hit_rate": 0.2711864406779661,
+        "avg_win": 16.103171352131113,
+        "avg_loss": -17.950188745645935,
+        "break_even_hit": 0.5271194588171549,
+        "profit_per_trade": -8.715379227604698,
+        "profit_factor": 0.33380583331605873,
+        "total_pnl": -514.2073744286772,
+        "total_return": -0.0051420737442867724,
+        "max_drawdown": -0.0058980221466162774,
+        "exits": {
+          "EOD": 59
+        }
+      },
+      "bear_day_calls": {
+        "n": 156,
+        "hit_rate": 0.27564102564102566,
+        "avg_ret": -0.0019412076197188842,
+        "profit_factor": 0.2099984072506326
+      },
+      "all_calls": {
+        "n": 650,
+        "hit_rate": 0.41384615384615386,
+        "avg_ret": -0.0007269590641171296,
+        "profit_factor": 0.5475849829880425
+      },
+      "per_fold_total_pnl": [
+        -134.7,
+        -583.83,
+        44.3,
+        -81.26,
+        -108.34,
+        -132.14,
+        -22.24,
+        -155.9,
+        -148.42
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "64%",
+      "bear_min_conf": 0.64,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 214,
+        "wins": 88,
+        "losses": 126,
+        "hit_rate": 0.411214953271028,
+        "avg_win": 29.969048030962792,
+        "avg_loss": -35.43265337268464,
+        "break_even_hit": 0.5417695963901723,
+        "profit_per_trade": -8.538495786138034,
+        "profit_factor": 0.5907196247487413,
+        "total_pnl": -1827.2380982335392,
+        "total_return": -0.01827238098233539,
+        "max_drawdown": -0.01838133602983172,
+        "exits": {
+          "EOD": 214
+        }
+      },
+      "bear_day_trades": {
+        "trades": 59,
+        "wins": 16,
+        "losses": 43,
+        "hit_rate": 0.2711864406779661,
+        "avg_win": 32.161391909464726,
+        "avg_loss": -35.834412672833324,
+        "break_even_hit": 0.5270091720065095,
+        "profit_per_trade": -17.394872447125373,
+        "profit_factor": 0.3339535562356297,
+        "total_pnl": -1026.297474380397,
+        "total_return": -0.010262974743803971,
+        "max_drawdown": -0.011765229724964299,
+        "exits": {
+          "EOD": 59
+        }
+      },
+      "bear_day_calls": {
+        "n": 156,
+        "hit_rate": 0.27564102564102566,
+        "avg_ret": -0.0019412076197188842,
+        "profit_factor": 0.2099984072506326
+      },
+      "all_calls": {
+        "n": 650,
+        "hit_rate": 0.41384615384615386,
+        "avg_ret": -0.0007269590641171296,
+        "profit_factor": 0.5475849829880425
+      },
+      "per_fold_total_pnl": [
+        -204.91,
+        -520.49,
+        -151.35,
+        -131.02,
+        -108.34,
+        -132.14,
+        -9.44,
+        -343.66,
+        -240.0
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "62%",
+      "bear_min_conf": 0.62,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 234,
+        "wins": 96,
+        "losses": 138,
+        "hit_rate": 0.41025641025641024,
+        "avg_win": 25.62214241769468,
+        "avg_loss": -28.950834483962293,
+        "break_even_hit": 0.5304976222230471,
+        "profit_per_trade": -6.561920883282512,
+        "profit_factor": 0.6156678862936683,
+        "total_pnl": -1535.4894866881077,
+        "total_return": -0.015354894866881076,
+        "max_drawdown": -0.01614927745873662,
+        "exits": {
+          "EOD": 234
+        }
+      },
+      "bear_day_trades": {
+        "trades": 79,
+        "wins": 24,
+        "losses": 55,
+        "hit_rate": 0.3037974683544304,
+        "avg_win": 13.99417271918106,
+        "avg_loss": -19.457045653464853,
+        "break_even_hit": 0.5816543193349117,
+        "profit_per_trade": -9.294650198483813,
+        "profit_factor": 0.3138476521257074,
+        "total_pnl": -734.2773656802212,
+        "total_return": -0.007342773656802213,
+        "max_drawdown": -0.008066211162777948,
+        "exits": {
+          "EOD": 79
+        }
+      },
+      "bear_day_calls": {
+        "n": 269,
+        "hit_rate": 0.2899628252788104,
+        "avg_ret": -0.0016689816813888563,
+        "profit_factor": 0.22088507654700734
+      },
+      "all_calls": {
+        "n": 763,
+        "hit_rate": 0.3984272608125819,
+        "avg_ret": -0.0008108139912104727,
+        "profit_factor": 0.5000229788754231
+      },
+      "per_fold_total_pnl": [
+        -134.7,
+        -592.9,
+        -181.33,
+        -81.26,
+        -108.34,
+        -132.14,
+        -22.24,
+        -179.76,
+        -112.32
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "62%",
+      "bear_min_conf": 0.62,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 234,
+        "wins": 96,
+        "losses": 138,
+        "hit_rate": 0.41025641025641024,
+        "avg_win": 29.02357579958012,
+        "avg_loss": -36.59333526477429,
+        "break_even_hit": 0.5576814676461229,
+        "profit_per_trade": -9.673576879398125,
+        "profit_factor": 0.5517483840600788,
+        "total_pnl": -2263.616989779161,
+        "total_return": -0.02263616989779161,
+        "max_drawdown": -0.02290811987640573,
+        "exits": {
+          "EOD": 234
+        }
+      },
+      "bear_day_trades": {
+        "trades": 79,
+        "wins": 24,
+        "losses": 55,
+        "hit_rate": 0.3037974683544304,
+        "avg_win": 27.892155459934475,
+        "avg_loss": -38.78663530024415,
+        "break_even_hit": 0.581693741863837,
+        "profit_per_trade": -18.529787474367094,
+        "profit_factor": 0.3137968088312174,
+        "total_pnl": -1463.8532104750004,
+        "total_return": -0.014638532104750005,
+        "max_drawdown": -0.01607308757437853,
+        "exits": {
+          "EOD": 79
+        }
+      },
+      "bear_day_calls": {
+        "n": 269,
+        "hit_rate": 0.2899628252788104,
+        "avg_ret": -0.0016689816813888563,
+        "profit_factor": 0.22088507654700734
+      },
+      "all_calls": {
+        "n": 763,
+        "hit_rate": 0.3984272608125819,
+        "avg_ret": -0.0008108139912104727,
+        "profit_factor": 0.5000229788754231
+      },
+      "per_fold_total_pnl": [
+        -204.91,
+        -538.63,
+        -601.36,
+        -131.02,
+        -108.34,
+        -132.14,
+        -9.44,
+        -391.29,
+        -167.87
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "no extra bar",
+      "bear_min_conf": 0.0,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 242,
+        "wins": 99,
+        "losses": 143,
+        "hit_rate": 0.4090909090909091,
+        "avg_win": 25.271586382615148,
+        "avg_loss": -28.951852933151528,
+        "break_even_hit": 0.5339361224313399,
+        "profit_per_trade": -6.7695368494288015,
+        "profit_factor": 0.604303762177142,
+        "total_pnl": -1638.22791756177,
+        "total_return": -0.0163822791756177,
+        "max_drawdown": -0.016597704120437484,
+        "exits": {
+          "EOD": 242
+        }
+      },
+      "bear_day_trades": {
+        "trades": 87,
+        "wins": 27,
+        "losses": 60,
+        "hit_rate": 0.3103448275862069,
+        "avg_win": 14.00280918911154,
+        "avg_loss": -20.250853970917078,
+        "break_even_hit": 0.5912025781390956,
+        "profit_per_trade": -9.62040678332199,
+        "profit_factor": 0.31116041546443657,
+        "total_pnl": -836.9753901490132,
+        "total_return": -0.008369753901490131,
+        "max_drawdown": -0.00913945286857687,
+        "exits": {
+          "EOD": 87
+        }
+      },
+      "bear_day_calls": {
+        "n": 305,
+        "hit_rate": 0.30491803278688523,
+        "avg_ret": -0.0016155511701825378,
+        "profit_factor": 0.23664886779427877
+      },
+      "all_calls": {
+        "n": 799,
+        "hit_rate": 0.3992490613266583,
+        "avg_ret": -0.0008290839923725436,
+        "profit_factor": 0.49301409913926847
+      },
+      "per_fold_total_pnl": [
+        -134.7,
+        -592.9,
+        -181.33,
+        -81.26,
+        -108.34,
+        -132.14,
+        -22.24,
+        -179.76,
+        -216.54
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "no extra bar",
+      "bear_min_conf": 0.0,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 242,
+        "wins": 99,
+        "losses": 143,
+        "hit_rate": 0.4090909090909091,
+        "avg_win": 28.988579233916973,
+        "avg_loss": -37.324969627619055,
+        "break_even_hit": 0.5628558608068815,
+        "profit_per_trade": -10.196699638808857,
+        "profit_factor": 0.5376833951356103,
+        "total_pnl": -2467.6013125917434,
+        "total_return": -0.024676013125917433,
+        "max_drawdown": -0.024995007400736124,
+        "exits": {
+          "EOD": 242
+        }
+      },
+      "bear_day_trades": {
+        "trades": 87,
+        "wins": 27,
+        "losses": 60,
+        "hit_rate": 0.3103448275862069,
+        "avg_win": 27.893544264624463,
+        "avg_loss": -40.34804957996891,
+        "break_even_hit": 0.5912530365550012,
+        "profit_per_trade": -19.16962390406061,
+        "profit_factor": 0.31109545689942325,
+        "total_pnl": -1667.7572796532731,
+        "total_return": -0.01667757279653273,
+        "max_drawdown": -0.018202327379827632,
+        "exits": {
+          "EOD": 87
+        }
+      },
+      "bear_day_calls": {
+        "n": 305,
+        "hit_rate": 0.30491803278688523,
+        "avg_ret": -0.0016155511701825378,
+        "profit_factor": 0.23664886779427877
+      },
+      "all_calls": {
+        "n": 799,
+        "hit_rate": 0.3992490613266583,
+        "avg_ret": -0.0008290839923725436,
+        "profit_factor": 0.49301409913926847
+      },
+      "per_fold_total_pnl": [
+        -204.91,
+        -538.63,
+        -601.36,
+        -131.02,
+        -108.34,
+        -132.14,
+        -9.44,
+        -391.29,
+        -376.23
+      ],
+      "periods_beating_live": "2 of 9"
+    },
+    {
+      "bar": "no bear buys",
+      "bear_min_conf": 1.01,
+      "bear_size": 0.06,
+      "account": {
+        "trades": 155,
+        "wins": 72,
+        "losses": 83,
+        "hit_rate": 0.4645161290322581,
+        "avg_win": 29.59602454432156,
+        "avg_loss": -35.3443127998997,
+        "break_even_hit": 0.5442582260168197,
+        "profit_per_trade": -5.178478678713047,
+        "profit_factor": 0.7263872971877214,
+        "total_pnl": -802.6641952005223,
+        "total_return": -0.008026641952005222,
+        "max_drawdown": -0.009350305568201156,
+        "exits": {
+          "EOD": 155
+        }
+      },
+      "bear_day_trades": {
+        "trades": 0
+      },
+      "bear_day_calls": {
+        "n": 0
+      },
+      "all_calls": {
+        "n": 494,
+        "hit_rate": 0.4574898785425101,
+        "avg_ret": -0.00034351215182183866,
+        "profit_factor": 0.7433221060053959
+      },
+      "per_fold_total_pnl": [
+        -64.46,
+        -647.16,
+        240.11,
+        -31.49,
+        -108.34,
+        -132.14,
+        -35.04,
+        31.99,
+        -56.8
+      ],
+      "periods_beating_live": "1 of 9"
+    },
+    {
+      "bar": "no bear buys",
+      "bear_min_conf": 1.01,
+      "bear_size": 0.12,
+      "account": {
+        "trades": 155,
+        "wins": 72,
+        "losses": 83,
+        "hit_rate": 0.4645161290322581,
+        "avg_win": 29.59602454432156,
+        "avg_loss": -35.3443127998997,
+        "break_even_hit": 0.5442582260168197,
+        "profit_per_trade": -5.178478678713047,
+        "profit_factor": 0.7263872971877214,
+        "total_pnl": -802.6641952005223,
+        "total_return": -0.008026641952005222,
+        "max_drawdown": -0.009350305568201156,
+        "exits": {
+          "EOD": 155
+        }
+      },
+      "bear_day_trades": {
+        "trades": 0
+      },
+      "bear_day_calls": {
+        "n": 0
+      },
+      "all_calls": {
+        "n": 494,
+        "hit_rate": 0.4574898785425101,
+        "avg_ret": -0.00034351215182183866,
+        "profit_factor": 0.7433221060053959
+      },
+      "per_fold_total_pnl": [
+        -64.46,
+        -647.16,
+        240.11,
+        -31.49,
+        -108.34,
+        -132.14,
+        -35.04,
+        31.99,
+        -56.8
+      ],
+      "periods_beating_live": "1 of 9"
+    }
+  ],
+  "runtime_sec": 412,
+  "disclaimer": "Independent personal project, not tied to any employer or agency. Public market data and paper money only. Backtest estimate with stated simplifications; not financial advice."
+}

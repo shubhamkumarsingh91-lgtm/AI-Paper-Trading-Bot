@@ -1,0 +1,33 @@
+Backtest b1: 19 training symbols, 5 traded, 1434 calendar days of 15-min bars
+  loaded 19 symbols in 322s
+  fold 1: test ['2025-11-13', '2025-12-24'] | cutoff 0.64 (val precision 36.6% vs base 27.0%) | calls 71 -> kept 71 (keep 30%)
+  fold 2: test ['2025-12-24', '2026-02-03'] | cutoff 0.62 (val precision 36.0% vs base 26.4%) | calls 128 -> kept 128 (keep 100%)
+  fold 3: test ['2026-02-03', '2026-03-16'] | cutoff 0.62 (val precision 38.0% vs base 25.5%) | calls 178 -> kept 43 (keep 30%)
+  fold 4: test ['2026-03-16', '2026-04-26'] | cutoff 0.66 (val precision 41.5% vs base 24.3%) | calls 8 -> kept 8 (keep 30%)
+  fold 5: test ['2026-04-26', '2026-06-06'] | cutoff 0.68 (val precision 47.1% vs base 24.2%) | calls 16 -> kept 16 (keep 100%)
+  fold 6: test ['2026-06-06', '2026-07-17'] | cutoff 0.68 (val precision 43.1% vs base 23.7%) | calls 13 -> kept 13 (keep 100%)
+  fold 7: test ['2026-07-17', '2026-08-27'] | cutoff 0.66 (val precision 39.1% vs base 24.6%) | calls 21 -> kept 21 (keep 30%)
+  fold 8: test ['2026-08-27', '2026-10-07'] | cutoff 0.62 (val precision 34.9% vs base 25.0%) | calls 139 -> kept 85 (keep 60%)
+  fold 9: test ['2026-10-07', '2026-11-17'] | cutoff 0.60 (val precision 35.6% vs base 25.7%) | calls 225 -> kept 225 (keep 100%)
+
+=== RESULT ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%)
+Without filter   trades  242 | hit 40.9% (break-even 53.4%) | avg win $25 / loss $-29 | per trade $-6.77 | PF 0.6 | total -1.64% | max DD -1.66%
+With filter      trades  203 | hit 41.9% (break-even 55.5%) | avg win $24 / loss $-31 | per trade $-7.53 | PF 0.58 | total -1.53% | max DD -1.55%
+Filter helped profit per trade in 1 of 9 test periods
+Saved /tmp/tmp4yiif3ae/raw.json and /tmp/tmp4yiif3ae/raw_trades.csv (404s)
+
+=== BEAR-BAR SWEEP b1 ['2025-11-13', '2026-11-17'] (SPY buy & hold +9.67%) | 41 bear days with calls | stocks JPM,XOM,LLY,COST,CAT | traded 5, trained on 19
+bear bar        size | trades    hit per trade    PF   total   maxDD | bear trades bear hit bear $/tr | beats live
+68% (live now)    6% |    157  46.5%     -5.12  0.73  -0.80%  -0.95% |           2    50.0%     -0.30 | 0 of 9
+68% (live now)   12% |    157  46.5%     -5.12  0.73  -0.80%  -0.97% |           2    50.0%     -0.59 | 1 of 9
+66%               6% |    181  43.1%     -5.96  0.67  -1.08%  -1.15% |          26    23.1%    -10.62 | 2 of 9
+66%              12% |    181  43.1%     -7.47  0.63  -1.35%  -1.37% |          26    23.1%    -21.22 | 2 of 9
+64%               6% |    214  41.1%     -6.15  0.64  -1.32%  -1.36% |          59    27.1%     -8.72 | 2 of 9
+64%              12% |    214  41.1%     -8.54  0.59  -1.83%  -1.84% |          59    27.1%    -17.39 | 2 of 9
+62%               6% |    234  41.0%     -6.56  0.62  -1.54%  -1.61% |          79    30.4%     -9.29 | 2 of 9
+62%              12% |    234  41.0%     -9.67  0.55  -2.26%  -2.29% |          79    30.4%    -18.53 | 2 of 9
+no extra bar      6% |    242  40.9%     -6.77  0.60  -1.64%  -1.66% |          87    31.0%     -9.62 | 2 of 9
+no extra bar     12% |    242  40.9%    -10.20  0.54  -2.47%  -2.50% |          87    31.0%    -19.17 | 2 of 9
+no bear buys      6% |    155  46.5%     -5.18  0.73  -0.80%  -0.94% |           0        -         - | 1 of 9
+no bear buys     12% |    155  46.5%     -5.18  0.73  -0.80%  -0.94% |           0        -         - | 1 of 9
+Saved state/backtest_bear_b1_steady.json (412s)

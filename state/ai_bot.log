@@ -28740,3 +28740,36 @@ symbols
 2026-11-18 14:50:56,606 [INFO]   DAL  : HOLD score=-0.086 ml=57% tv=N/A(ML+)        rsi=64 vol×2.9
 2026-11-18 14:50:56,606 [INFO]   No actionable signal this scan
 2026-11-18 14:50:56,607 [INFO] Run complete — state saved
+2026-11-18 15:01:03,449 [INFO] Run mode: SCAN
+2026-11-18 15:01:03,449 [INFO] 📚 Loaded 12 trades from history
+2026-11-18 15:01:03,449 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-18 15:01:03,457 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=49.4%  precision=29.7%  walk-forward=30.9%  threshold=0.66  trained=2026-11-18
+2026-11-18 15:01:03,462 [INFO] 🧪 Meta filter loaded (shadow): keep top 40%, cut 0.50, trained 2026-11-18
+2026-11-18 15:01:03,548 [INFO] 
+──────────────────────────────────────────────────────────────────
+2026-11-18 15:01:03,548 [INFO]   📡 INTRADAY NEWS UPDATE — 10:01 AM ET
+2026-11-18 15:01:03,548 [INFO]   Watchlist (5): ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-18 15:01:03,548 [INFO] ──────────────────────────────────────────────────────────────────
+2026-11-18 15:01:03,668 [INFO]   Alpaca News:    16 articles
+2026-11-18 15:01:04,641 [INFO]   Yahoo Finance:  20 articles
+2026-11-18 15:01:04,642 [INFO]   Articles (last 3 h): 36
+2026-11-18 15:01:04,642 [INFO]   Gemini not available — skipping intraday analysis
+2026-11-18 15:01:04,642 [INFO] ──────────────────────────────────────────────────────────────────
+
+2026-11-18 15:01:04,671 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 49.4% ──
+2026-11-18 15:01:05,909 [INFO]   [AMD] ML BUY  xgb=0.60 lgb=0.57 ens=0.59 | Drivers: hour_cos=-0.707, atr_pct=0.014, hour=9.000
+2026-11-18 15:01:06,012 [INFO]   AMD  : HOLD score=-0.072 ml=59% tv=NEUTRAL         rsi=68 vol×2.9
+2026-11-18 15:01:06,433 [INFO]   [GS] ML BUY  xgb=0.59 lgb=0.59 ens=0.59 | Drivers: hour_cos=-0.707, atr_pct=0.004, hour=9.000
+2026-11-18 15:01:06,464 [WARNING] TradingView error GS: Exchange or symbol not found.
+2026-11-18 15:01:06,465 [INFO]   GS   : HOLD score=-0.072 ml=59% tv=N/A(ML+)        rsi=52 vol×3.2
+2026-11-18 15:01:07,041 [INFO]   [FCX] ML BUY  xgb=0.63 lgb=0.64 ens=0.63 | Drivers: hour_cos=-0.707, atr_pct=0.011, hour=9.000
+2026-11-18 15:01:07,073 [WARNING] TradingView error FCX: Exchange or symbol not found.
+2026-11-18 15:01:07,074 [INFO]   FCX  : HOLD score=-0.027 ml=63% tv=N/A(ML+)        rsi=18 vol×3.9
+2026-11-18 15:01:07,625 [INFO]   [TSLA] ML BUY  xgb=0.55 lgb=0.53 ens=0.54 | Drivers: hour_cos=-0.707, atr_pct=0.006, hour=9.000
+2026-11-18 15:01:07,798 [INFO]   TSLA : HOLD score=-0.120 ml=54% tv=BUY             rsi=63 vol×2.6
+2026-11-18 15:01:08,252 [INFO]   [DAL] ML BUY  xgb=0.59 lgb=0.60 ens=0.59 | Drivers: hour_cos=-0.707, atr_pct=0.005, hour=9.000
+2026-11-18 15:01:08,303 [WARNING] TradingView error DAL: Exchange or symbol not found.
+2026-11-18 15:01:08,305 [INFO]   DAL  : HOLD score=-0.070 ml=59% tv=N/A(ML+)        rsi=63 vol×1.5
+2026-11-18 15:01:08,305 [INFO]   No actionable signal this scan
+2026-11-18 15:01:08,305 [INFO] Run complete — state saved

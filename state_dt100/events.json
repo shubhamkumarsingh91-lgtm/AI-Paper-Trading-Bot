@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-18T18:31:09Z",
+"generated": "2026-11-18T18:41:05Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -136,25 +136,11 @@
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -1.64%)."
 },
 {
-"t": "2026-11-16T20:50:50Z",
-"bot": "b3",
-"place": "vault",
-"kind": "eod",
-"text": "Market closed: no open positions to sell. Recorded the day’s balance."
-},
-{
 "t": "2026-11-16T20:55:00Z",
 "bot": "b3",
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
-},
-{
-"t": "2026-11-17T05:20:41Z",
-"bot": "b3",
-"place": "lab",
-"kind": "retrain",
-"text": "Retrained its AI overnight on 650,089 price bars. When it says “buy”, it was right 30% of the time in testing (down 0.4 points from last time)."
 },
 {
 "t": "2026-11-17T13:31:00Z",
@@ -1152,6 +1138,22 @@
 },
 {
 "t": "2026-11-18T18:31:09Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked PANW (59% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "PANW"
+},
+{
+"t": "2026-11-18T18:40:41Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 3 passed all its checks: PANW 59%, CRWD 59%, SMCI 59%.",
+"count": 100
+},
+{
+"t": "2026-11-18T18:41:05Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

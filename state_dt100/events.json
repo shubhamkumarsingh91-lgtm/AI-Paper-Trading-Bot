@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-19T17:21:04Z",
+"generated": "2026-11-19T17:31:08Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -141,22 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
-},
-{
-"t": "2026-11-17T19:41:09Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 8 passed all its checks: T 63%, RTX 63%, GILD 63%….",
-"count": 100
-},
-{
-"t": "2026-11-17T19:41:33Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked RTX (63% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "RTX"
 },
 {
 "t": "2026-11-17T19:50:51Z",
@@ -1193,6 +1177,22 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time. The AI liked NVDA (61%) but a safety check said no; AMZN (61%) but a safety check said no."
+},
+{
+"t": "2026-11-19T17:30:51Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 3 passed all its checks: CRWD 60%, INTC 58%, DELL 58%.",
+"count": 100
+},
+{
+"t": "2026-11-19T17:31:08Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked CRWD (60% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "CRWD"
 }
 ]
 }

@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-19T16:11:14Z",
+"generated": "2026-11-19T16:21:11Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -141,21 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
-},
-{
-"t": "2026-11-17T18:31:10Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). The AI liked 14 above its 58% bar, but other checks said no.",
-"count": 100
-},
-{
-"t": "2026-11-17T18:31:10Z",
-"bot": "b3",
-"place": "floor",
-"kind": "hold",
-"text": "No buy this time. The AI liked CRM (63%) but a safety check said no; ORCL (60%) but a safety check said no."
 },
 {
 "t": "2026-11-17T18:41:02Z",
@@ -1184,6 +1169,22 @@
 },
 {
 "t": "2026-11-19T16:11:13Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked CRWD (62% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "CRWD"
+},
+{
+"t": "2026-11-19T16:20:46Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 7 passed all its checks: CRWD 62%, PANW 61%, MU 60%….",
+"count": 100
+},
+{
+"t": "2026-11-19T16:21:10Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

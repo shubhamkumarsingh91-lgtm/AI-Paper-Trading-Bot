@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-19T14:51:19Z",
+"generated": "2026-11-19T15:01:12Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -141,21 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
-},
-{
-"t": "2026-11-17T17:10:41Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). The AI liked 15 above its 58% bar, but other checks said no.",
-"count": 100
-},
-{
-"t": "2026-11-17T17:10:41Z",
-"bot": "b3",
-"place": "floor",
-"kind": "hold",
-"text": "No buy this time. The AI liked CRM (61%) but a safety check said no; AMD (60%) but a safety check said no."
 },
 {
 "t": "2026-11-17T17:20:53Z",
@@ -1181,6 +1166,22 @@
 "kind": "skip",
 "text": "Picked GOOG (62% confident) but skipped it: in a falling market it needs 68% before buying.",
 "symbol": "GOOG"
+},
+{
+"t": "2026-11-19T15:00:56Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 12 passed all its checks: AMD 64%, GOOGL 63%, DIS 63%….",
+"count": 100
+},
+{
+"t": "2026-11-19T15:01:11Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked AMD (64% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "AMD"
 }
 ]
 }

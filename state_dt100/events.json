@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-19T18:11:02Z",
+"generated": "2026-11-19T18:21:07Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -141,22 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
-},
-{
-"t": "2026-11-17T20:31:03Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 4 passed all its checks: GILD 65%, RTX 62%, AVGO 61%….",
-"count": 100
-},
-{
-"t": "2026-11-17T20:31:29Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked GILD (65% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "GILD"
 },
 {
 "t": "2026-11-17T20:40:47Z",
@@ -1192,6 +1176,22 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time. The AI liked PANW (58%) but a safety check said no; CRWD (58%) but a safety check said no."
+},
+{
+"t": "2026-11-19T18:20:47Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 3 passed all its checks: CRWD 62%, INTC 59%, PANW 59%.",
+"count": 100
+},
+{
+"t": "2026-11-19T18:21:07Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked CRWD (62% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "CRWD"
 }
 ]
 }

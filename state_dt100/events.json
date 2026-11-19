@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-19T18:31:20Z",
+"generated": "2026-11-19T18:41:23Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -143,47 +143,11 @@
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -3.60%)."
 },
 {
-"t": "2026-11-17T20:50:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 0 of 5 positions, balance $100,432).",
-"count": 0
-},
-{
-"t": "2026-11-17T20:50:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "wait",
-"text": "Too close to the 3:50 close-out, so no new buys; it only checked what it holds."
-},
-{
-"t": "2026-11-17T20:51:48Z",
-"bot": "b3",
-"place": "vault",
-"kind": "eod",
-"text": "Market closed: no open positions to sell. Recorded the day’s balance."
-},
-{
 "t": "2026-11-17T20:55:00Z",
 "bot": "b3",
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -4.84%)."
-},
-{
-"t": "2026-11-18T05:20:51Z",
-"bot": "b3",
-"place": "lab",
-"kind": "retrain",
-"text": "Retrained its AI overnight on 650,146 price bars. When it says “buy”, it was right 30% of the time in testing (down 0.4 points from last time)."
-},
-{
-"t": "2026-11-18T13:31:03Z",
-"bot": "b3",
-"place": "newsroom",
-"kind": "premarket",
-"text": "Morning prep before the open: checked which companies report earnings soon, read the morning market news."
 },
 {
 "t": "2026-11-18T14:30:54Z",
@@ -1187,6 +1151,22 @@
 },
 {
 "t": "2026-11-19T18:31:19Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked CRWD (59% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "CRWD"
+},
+{
+"t": "2026-11-19T18:40:57Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 2 passed all its checks: INTC 59%, CRWD 59%.",
+"count": 100
+},
+{
+"t": "2026-11-19T18:41:22Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

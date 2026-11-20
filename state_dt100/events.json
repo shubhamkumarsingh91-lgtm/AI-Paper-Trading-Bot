@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-20T17:41:03Z",
+"generated": "2026-11-20T17:51:02Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -148,22 +148,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -4.84%)."
-},
-{
-"t": "2026-11-18T20:00:50Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 9 passed all its checks: RTX 63%, CSCO 62%, UBER 61%….",
-"count": 100
-},
-{
-"t": "2026-11-18T20:01:09Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked RTX (63% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "RTX"
 },
 {
 "t": "2026-11-18T20:10:51Z",
@@ -1165,6 +1149,21 @@
 },
 {
 "t": "2026-11-20T17:40:49Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 58% confidence bar."
+},
+{
+"t": "2026-11-20T17:50:46Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). None cleared its 58% confidence bar (closest: NOW 53%).",
+"count": 100
+},
+{
+"t": "2026-11-20T17:50:46Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

@@ -30664,3 +30664,33 @@ symbols
 2026-11-20 14:50:48,978 [INFO]   DAL  : HOLD score=-0.057 ml=60% tv=NEUTRAL         rsi=44 vol×1.1
 2026-11-20 14:50:48,978 [INFO]   No actionable signal this scan
 2026-11-20 14:50:48,979 [INFO] Run complete — state saved
+2026-11-20 15:01:06,064 [INFO] Run mode: SCAN
+2026-11-20 15:01:06,065 [INFO] 📚 Loaded 12 trades from history
+2026-11-20 15:01:06,065 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-20 15:01:06,076 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.9%  precision=29.4%  walk-forward=30.9%  threshold=0.66  trained=2026-11-20
+2026-11-20 15:01:06,081 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.50, trained 2026-11-20
+2026-11-20 15:01:06,154 [INFO] 
+──────────────────────────────────────────────────────────────────
+2026-11-20 15:01:06,154 [INFO]   📡 INTRADAY NEWS UPDATE — 10:01 AM ET
+2026-11-20 15:01:06,154 [INFO]   Watchlist (5): ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-20 15:01:06,154 [INFO] ──────────────────────────────────────────────────────────────────
+2026-11-20 15:01:06,293 [INFO]   Alpaca News:     9 articles
+2026-11-20 15:01:06,993 [INFO]   Yahoo Finance:  20 articles
+2026-11-20 15:01:06,994 [INFO]   Articles (last 3 h): 29
+2026-11-20 15:01:06,994 [INFO]   Gemini not available — skipping intraday analysis
+2026-11-20 15:01:06,994 [INFO] ──────────────────────────────────────────────────────────────────
+
+2026-11-20 15:01:07,074 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.9% ──
+2026-11-20 15:01:07,691 [INFO]   [AMD] ML BUY  xgb=0.65 lgb=0.57 ens=0.61 | Drivers: hour_cos=-0.707, atr_pct=0.020, hour=9.000
+2026-11-20 15:01:07,784 [INFO]   AMD  : HOLD score=-0.045 ml=62% tv=SELL            rsi=45 vol×2.0
+2026-11-20 15:01:07,965 [INFO]   [GS] ML BUY  xgb=0.62 lgb=0.61 ens=0.61 | Drivers: hour_cos=-0.707, atr_pct=0.007, hour=9.000
+2026-11-20 15:01:07,999 [INFO]   GS   : HOLD score=-0.046 ml=61% tv=SELL            rsi=20 vol×6.0
+2026-11-20 15:01:08,186 [INFO]   [FCX] ML BUY  xgb=0.60 lgb=0.62 ens=0.61 | Drivers: hour_cos=-0.707, atr_pct=0.009, hour=9.000
+2026-11-20 15:01:08,246 [INFO]   FCX  : HOLD score=-0.050 ml=61% tv=SELL            rsi=27 vol×1.8
+2026-11-20 15:01:08,423 [INFO]   [TSLA] ML BUY  xgb=0.59 lgb=0.57 ens=0.58 | Drivers: hour_cos=-0.707, atr_pct=0.009, hour=9.000
+2026-11-20 15:01:08,459 [INFO]   TSLA : HOLD score=-0.079 ml=58% tv=STRONG_SELL     rsi=42 vol×2.0
+2026-11-20 15:01:08,612 [INFO]   [DAL] ML BUY  xgb=0.58 lgb=0.56 ens=0.57 | Drivers: hour_cos=-0.707, atr_pct=0.005, hour=9.000
+2026-11-20 15:01:08,643 [INFO]   DAL  : HOLD score=-0.086 ml=57% tv=SELL            rsi=50 vol×0.7
+2026-11-20 15:01:08,643 [INFO]   No actionable signal this scan
+2026-11-20 15:01:08,644 [INFO] Run complete — state saved

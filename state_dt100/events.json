@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-20T18:41:18Z",
+"generated": "2026-11-20T18:51:02Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -155,38 +155,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -4.80%)."
-},
-{
-"t": "2026-11-19T14:30:46Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 0 of 5 positions, balance $100,432).",
-"count": 0
-},
-{
-"t": "2026-11-19T14:40:50Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned its stocks (holding 0 of 5 positions, balance $100,432).",
-"count": 0
-},
-{
-"t": "2026-11-19T14:50:54Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 5 passed all its checks: GOOG 62%, GOOGL 61%, PANW 60%….",
-"count": 100
-},
-{
-"t": "2026-11-19T14:51:19Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked GOOG (62% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "GOOG"
 },
 {
 "t": "2026-11-19T15:00:56Z",
@@ -1139,6 +1107,21 @@
 },
 {
 "t": "2026-11-20T18:40:54Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 58% confidence bar."
+},
+{
+"t": "2026-11-20T18:50:48Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). None cleared its 58% confidence bar (closest: COIN 57%).",
+"count": 100
+},
+{
+"t": "2026-11-20T18:50:48Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

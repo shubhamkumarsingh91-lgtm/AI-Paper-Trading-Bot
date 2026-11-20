@@ -31104,3 +31104,22 @@ symbols
 2026-11-20 18:30:57,667 [INFO]   DAL  : HOLD score=-0.150 ml=51% tv=SELL            rsi=6 vol×0.7
 2026-11-20 18:30:57,667 [INFO]   No actionable signal this scan
 2026-11-20 18:30:57,668 [INFO] Run complete — state saved
+2026-11-20 18:40:50,332 [INFO] Run mode: SCAN
+2026-11-20 18:40:50,333 [INFO] 📚 Loaded 12 trades from history
+2026-11-20 18:40:50,333 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-20 18:40:50,341 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.9%  precision=29.4%  walk-forward=30.9%  threshold=0.66  trained=2026-11-20
+2026-11-20 18:40:50,344 [INFO] 🧪 Meta filter loaded (shadow): keep top 30%, cut 0.50, trained 2026-11-20
+2026-11-20 18:40:50,395 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.9% ──
+2026-11-20 18:40:50,723 [INFO]   [AMD] ML HOLD  xgb=0.49 lgb=0.49 ens=0.49 | Drivers: hour_cos=-0.966, atr_pct=0.017, hour=13.000
+2026-11-20 18:40:50,806 [INFO]   AMD  : HOLD score=-0.167 ml=49% tv=SELL            rsi=17 vol×0.5
+2026-11-20 18:40:50,911 [INFO]   [GS] ML BUY  xgb=0.51 lgb=0.52 ens=0.52 | Drivers: hour_cos=-0.966, atr_pct=0.006, hour=13.000
+2026-11-20 18:40:50,993 [INFO]   GS   : HOLD score=-0.144 ml=52% tv=SELL            rsi=16 vol×0.8
+2026-11-20 18:40:51,140 [INFO]   [FCX] ML BUY  xgb=0.50 lgb=0.55 ens=0.52 | Drivers: hour_cos=-0.966, atr_pct=0.009, hour=13.000
+2026-11-20 18:40:51,218 [INFO]   FCX  : HOLD score=-0.136 ml=52% tv=SELL            rsi=16 vol×0.5
+2026-11-20 18:40:51,351 [INFO]   [TSLA] ML BUY  xgb=0.55 lgb=0.51 ens=0.53 | Drivers: hour_cos=-0.966, atr_pct=0.009, hour=13.000
+2026-11-20 18:40:51,411 [INFO]   TSLA : HOLD score=-0.126 ml=53% tv=SELL            rsi=2 vol×1.0
+2026-11-20 18:40:51,542 [INFO]   [DAL] ML BUY  xgb=0.49 lgb=0.54 ens=0.51 | Drivers: hour_cos=-0.966, atr_pct=0.006, hour=13.000
+2026-11-20 18:40:51,598 [INFO]   DAL  : HOLD score=-0.150 ml=51% tv=SELL            rsi=6 vol×0.7
+2026-11-20 18:40:51,598 [INFO]   No actionable signal this scan
+2026-11-20 18:40:51,599 [INFO] Run complete — state saved

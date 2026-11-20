@@ -15,6 +15,7 @@ import bot1_exits as bx           # noqa: E402
 from alpaca.trading.enums import OrderSide   # noqa: E402
 
 ORIG_MANAGE = bot.manage_open_positions      # the real live tiers
+ORIG_COMBINED = bot.combined_signal          # the real live buy decision
 
 
 class FakeAlpaca:
@@ -170,3 +171,82 @@ def test_bot2_code_untouched():
                          capture_output=True, text=True, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                          env={**os.environ, 'STATE_DIR': tempfile.mkdtemp()})
     assert out.stdout.split()[-2:] == ['ai_trading_bot', 'ai_trading_bot'], out.stderr[-500:]
+
+
+# ── Nov 19: TradingView exchange lookup + blocked-buy log ─────────────────
+from alpaca.trading.enums import AssetExchange   # noqa: E402
+
+
+def test_exchange_looked_up_once_and_remembered(acct, monkeypatch):
+    calls = []
+
+    def get_asset(sym):
+        calls.append(sym)
+        return NS(exchange={'GS': AssetExchange.NYSE, 'SPYG': AssetExchange.ARCA}[sym])
+    monkeypatch.setattr(acct.alpaca, 'get_asset', get_asset, raising=False)
+    m = bx.ExchangeMap({'AMD': 'NASDAQ'})
+    assert m.get('AMD', 'NASDAQ') == 'NASDAQ' and calls == []          # known: no lookup
+    assert m.get('GS', 'NASDAQ') == 'NYSE' and m.get('GS', 'NASDAQ') == 'NYSE'
+    assert calls == ['GS'] and bx.state['exchanges'] == {'GS': 'NYSE'}  # asked once, saved
+    assert m.get('SPYG', 'NASDAQ') == 'AMEX'                           # TradingView calls NYSE Arca "AMEX"
+    m2 = bx.ExchangeMap({})                                            # next run: comes from the saved state
+    assert m2.get('GS', 'NASDAQ') == 'NYSE' and calls == ['GS', 'SPYG']
+
+
+def test_exchange_lookup_failure_falls_back_and_is_not_saved(acct, monkeypatch):
+    def boom(sym):
+        raise RuntimeError('network down')
+    monkeypatch.setattr(acct.alpaca, 'get_asset', boom, raising=False)
+    assert bx.ExchangeMap({}).get('DAL', 'NASDAQ') == 'NASDAQ'
+    assert 'DAL' not in bx.state.get('exchanges', {})
+
+
+def test_install_swaps_exchange_map_and_get_tv_analysis_uses_it(acct, monkeypatch):
+    seen = {}
+
+    class FakeTA:
+        def __init__(self, symbol, screener, exchange, interval):
+            seen[symbol] = exchange
+
+        def get_analysis(self):
+            raise RuntimeError('stop here')
+    monkeypatch.setattr(bot, 'TA_Handler', FakeTA)
+    monkeypatch.setattr(bot, 'TV_EXCHANGE', dict(bot.TV_EXCHANGE))
+    monkeypatch.setattr(acct.alpaca, 'get_asset', lambda s: NS(exchange=AssetExchange.NYSE), raising=False)
+    bx._orig.pop('combined_signal', None)
+    for n in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions', 'combined_signal'):
+        monkeypatch.setattr(bot, n, getattr(bot, n))      # restore after the test
+    bx.install()
+    bot.get_tv_analysis('FCX')
+    bot.get_tv_analysis('AMD')
+    assert seen == {'FCX': 'NYSE', 'AMD': 'NASDAQ'}
+
+
+def _ml(conf, above=1.0, rsi=50, bb=0.5):
+    return {'confidence': conf, 'above_ema50': above, 'rsi': rsi, 'bb_pct': bb, 'vol_ratio': 1.0}
+
+
+def test_blocked_buy_is_logged_with_the_rule_in_words(acct, monkeypatch):
+    lines = []
+    monkeypatch.setattr(bx, 'log', NS(info=lines.append, warning=lines.append))
+    monkeypatch.setattr(bot, 'ML_DECISION_THRESHOLD', 0.66)
+    monkeypatch.setattr(bot, 'BUY_RULE', 'precision_first')
+    bx._orig['combined_signal'] = ORIG_COMBINED
+    sig = bx.combined_signal('FCX', _ml(0.70, above=0.0), None)        # cleared 66%, below its trend average
+    assert sig['signal'] == 'HOLD'
+    assert lines == ['  FCX  : ⛔ BUY BLOCKED — AI 70% cleared its 66% cutoff, but: price is below its 50-bar trend average']
+    sig = bx.combined_signal('AMD', _ml(0.67, rsi=80, bb=0.97), {'rec': 'STRONG_SELL', 'adx': 20})
+    assert 'overbought (RSI above 78); at the very top of its Bollinger band; TradingView says STRONG SELL' in lines[-1]
+    assert bx.state['blocked'] == {'2026-11-17': {'BELOW_EMA50': 1, 'RSI>78': 1, 'TOP_OF_BAND': 1, 'TV_STRONG_SELL': 1}}
+
+
+def test_not_blocked_cases_log_nothing(acct, monkeypatch):
+    lines = []
+    monkeypatch.setattr(bx, 'log', NS(info=lines.append, warning=lines.append))
+    monkeypatch.setattr(bot, 'ML_DECISION_THRESHOLD', 0.66)
+    monkeypatch.setattr(bot, 'BUY_RULE', 'precision_first')
+    bx._orig['combined_signal'] = ORIG_COMBINED
+    assert bx.combined_signal('GS', _ml(0.60, above=0.0), None)['signal'] == 'HOLD'   # under the cutoff anyway
+    sig = bx.combined_signal('GS', _ml(0.70), None)                                  # clean buy, unchanged
+    assert (sig['signal'], sig['score']) == ('BUY', 0.70)
+    assert lines == [] and bx.state.get('blocked', {}) == {}

@@ -19,6 +19,11 @@ WHAT THIS ADDS
      more than 2% - no stop order can prevent that).
   A sell done by an Alpaca stop order is written to trade_log.json like any other sell, so the
   nightly retrain still learns from it.
+  3. (Nov 19) TradingView exchange: the shared code assumed NASDAQ for any stock not in its list,
+     so NYSE stocks (GS, FCX, DAL) failed ~108 times a day. The real exchange is now asked from
+     Alpaca once per stock and remembered.
+  4. (Nov 19) Blocked-buy log: when the AI clears its cutoff but a safety rule stops the buy, the
+     log now says which rule, in plain words, and keeps a daily count in bot1_exits.json.
 
 HOW (ai_trading_bot.py is NOT changed - Day-Trade-100 imports that file and must stay as it is)
   This file imports ai_trading_bot, swaps in 4 functions (place_buy, place_sell,
@@ -48,7 +53,8 @@ def load_state():
     try:
         if STATE_FILE.exists():
             s = json.loads(STATE_FILE.read_text())
-            state = {'carried': s.get('carried', {}), 'stops': s.get('stops', {})}
+            state = {'carried': s.get('carried', {}), 'stops': s.get('stops', {}),
+                     'exchanges': s.get('exchanges', {}), 'blocked': s.get('blocked', {})}
     except Exception as e:
         log.warning(f'bot1_exits state not loaded: {e}')
 
@@ -269,13 +275,67 @@ def close_all_positions(reason='EOD'):
     save_state()
 
 
+# ── TradingView: the right exchange for every stock ───────────────────────
+ALPACA_TO_TV = {'NYSE': 'NYSE', 'NASDAQ': 'NASDAQ', 'AMEX': 'AMEX', 'ARCA': 'AMEX', 'NYSEARCA': 'AMEX'}
+
+
+class ExchangeMap(dict):
+    """Drop-in for ai_trading_bot.TV_EXCHANGE. A stock not in the shared list is looked up at
+    Alpaca once (e.g. GS -> NYSE) and remembered in bot1_exits.json, instead of guessing NASDAQ."""
+    def get(self, sym, default=None):
+        if sym in self:
+            return self[sym]
+        known = state.setdefault('exchanges', {})
+        ex = known.get(sym)
+        if ex is None:
+            try:
+                a = bot.trade_client.get_asset(sym)
+                ex = ALPACA_TO_TV.get(str(getattr(a.exchange, 'value', a.exchange)).upper())
+            except Exception as e:
+                log.warning(f'  {sym}: exchange lookup at Alpaca failed ({e}) — using {default}')
+            if ex:
+                known[sym] = ex
+                log.info(f'  {sym}: TradingView exchange = {ex} (from Alpaca)')
+        if ex:
+            self[sym] = ex
+            return ex
+        return default
+
+
+# ── say which safety rule blocked a buy ───────────────────────────────────
+VETO_WORDS = {
+    'BELOW_EMA50':    'price is below its 50-bar trend average',
+    'RSI>78':         'overbought (RSI above 78)',
+    'TOP_OF_BAND':    'at the very top of its Bollinger band',
+    'TV_STRONG_SELL': 'TradingView says STRONG SELL',
+}
+
+
+def combined_signal(symbol, ml, tv):
+    sig = _orig['combined_signal'](symbol, ml, tv)
+    vetoes = next((r[5:].split('+') for r in sig.get('reasons', []) if r.startswith('VETO:')), [])
+    conf = sig.get('confidence', ml.get('confidence', 0.0))
+    if vetoes and sig.get('signal') != 'BUY' and conf >= bot.ML_DECISION_THRESHOLD:
+        log.info(f'  {symbol:5s}: ⛔ BUY BLOCKED — AI {conf:.0%} cleared its {bot.ML_DECISION_THRESHOLD:.0%} cutoff, '
+                 f'but: ' + '; '.join(VETO_WORDS.get(v, v) for v in vetoes))
+        day = state.setdefault('blocked', {}).setdefault(today(), {})
+        for v in vetoes:
+            day[v] = day.get(v, 0) + 1           # counted per 10-minute scan
+        for old in sorted(state['blocked'])[:-30]:
+            state['blocked'].pop(old)              # keep 30 days
+    return sig
+
+
 def install():
-    for name in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions'):
+    for name in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions', 'combined_signal'):
         _orig.setdefault(name, getattr(bot, name))
     bot.place_buy = place_buy
     bot.place_sell = place_sell
     bot.manage_open_positions = manage_open_positions
     bot.close_all_positions = close_all_positions
+    bot.combined_signal = combined_signal
+    if not isinstance(bot.TV_EXCHANGE, ExchangeMap):
+        bot.TV_EXCHANGE = ExchangeMap(bot.TV_EXCHANGE)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-20T15:11:00Z",
+"generated": "2026-11-20T15:21:22Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -148,22 +148,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -4.84%)."
-},
-{
-"t": "2026-11-18T17:30:51Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 8 passed all its checks: SMCI 61%, AMAT 60%, MU 60%….",
-"count": 100
-},
-{
-"t": "2026-11-18T17:31:18Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked SMCI (61% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "SMCI"
 },
 {
 "t": "2026-11-18T17:40:55Z",
@@ -1204,6 +1188,22 @@
 "kind": "skip",
 "text": "Picked GOOGL (60% confident) but skipped it: in a falling market it needs 68% before buying.",
 "symbol": "GOOGL"
+},
+{
+"t": "2026-11-20T15:20:55Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $100,432). 1 passed all its checks: PANW 62%.",
+"count": 100
+},
+{
+"t": "2026-11-20T15:21:22Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked PANW (62% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "PANW"
 }
 ]
 }

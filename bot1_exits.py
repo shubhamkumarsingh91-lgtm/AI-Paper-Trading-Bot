@@ -24,6 +24,11 @@ WHAT THIS ADDS
      Alpaca once per stock and remembered.
   4. (Nov 19) Blocked-buy log: when the AI clears its cutoff but a safety rule stops the buy, the
      log now says which rule, in plain words, and keeps a daily count in bot1_exits.json.
+  5. (Nov 19) Learning from its own trades, fixed: the shared code found the trade's bar by
+     timestamp only, and every stock shares the same timestamps, so ONE trade result overwrote
+     the label of EVERY stock at the sell day's 3:45 PM bar (6 trades -> 56 rows, each weighted
+     8x). Now each sell is paired with its own buy and only that stock's bar at the moment of the
+     buy gets the real win/loss.
 
 HOW (ai_trading_bot.py is NOT changed - Day-Trade-100 imports that file and must stay as it is)
   This file imports ai_trading_bot, swaps in 4 functions (place_buy, place_sell,
@@ -33,6 +38,9 @@ HOW (ai_trading_bot.py is NOT changed - Day-Trade-100 imports that file and must
 """
 import json, time
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 
 import ai_trading_bot as bot
 from alpaca.trading.requests import StopOrderRequest, GetOrdersRequest
@@ -326,7 +334,68 @@ def combined_signal(symbol, ml, tv):
     return sig
 
 
+# ── learning from its own trades (fixed version) ──────────────────────────
+def to_utc(ts):
+    t = pd.Timestamp(ts)
+    return t.tz_localize('UTC') if t.tzinfo is None else t.tz_convert('UTC')   # the log is written in UTC
+
+
+def paired_trades(log_entries):
+    """[(buy, sell), ...] — each SELL matched to the oldest still-open BUY of the same stock."""
+    open_buys, pairs = {}, []
+    for e in log_entries:
+        sym = e.get('symbol')
+        if e.get('action') == 'BUY':
+            open_buys.setdefault(sym, []).append(e)
+        elif e.get('action') == 'SELL' and open_buys.get(sym):
+            pairs.append((open_buys[sym].pop(0), e))
+    return pairs
+
+
+def apply_real_trade_outcomes(all_data):
+    """Drop-in for ai_trading_bot.apply_real_trade_outcomes. For every closed trade, set the real
+    result (1 = win, 0 = loss) on exactly ONE row: that stock's last finished 15-min bar before the
+    buy (what the AI looked at when it decided), or the day's first bar if none had finished yet.
+    Rows are changed by position, never by timestamp, because all stocks share timestamps."""
+    all_data['real_outcome'] = False
+    pairs = paired_trades(bot.trade_log)
+    if not pairs or len(all_data) == 0:
+        return all_data
+    idx = pd.DatetimeIndex(all_data.index)
+    idx_utc = idx.tz_convert('UTC') if idx.tz is not None else idx.tz_localize('America/New_York').tz_convert('UTC')
+    day_et = idx_utc.tz_convert('America/New_York').normalize()
+    sym_ids = all_data['sym_id'].to_numpy()
+    t_col, r_col = all_data.columns.get_loc('target'), all_data.columns.get_loc('real_outcome')
+    bar_len = pd.Timedelta(minutes=15)
+    applied, skipped = 0, 0
+    for buy, sell in pairs:
+        sym = sell.get('symbol')
+        if sym not in bot.TRAINING_UNIVERSE:
+            skipped += 1
+            continue
+        try:
+            b_utc = to_utc(buy['timestamp'])
+        except Exception:
+            skipped += 1
+            continue
+        same_day = (sym_ids == bot.TRAINING_UNIVERSE.index(sym)) & (day_et == b_utc.tz_convert('America/New_York').normalize())
+        finished = np.flatnonzero(same_day & (idx_utc + bar_len <= b_utc))
+        rows = finished if len(finished) else np.flatnonzero(same_day)
+        if not len(rows):
+            skipped += 1
+            continue
+        p = rows[np.argmax(idx_utc[rows])] if len(finished) else rows[np.argmin(idx_utc[rows])]
+        all_data.iat[p, t_col] = int(bool(sell.get('win')))
+        all_data.iat[p, r_col] = True
+        applied += 1
+    log.info(f'  Self-learning (fixed): {applied} real trade(s) applied, 1 row each'
+             + (f' · {skipped} skipped (stock not in training set or no bar that day)' if skipped else ''))
+    return all_data
+
+
 def install():
+    _orig.setdefault('apply_real_trade_outcomes', bot.apply_real_trade_outcomes)
+    bot.apply_real_trade_outcomes = apply_real_trade_outcomes
     for name in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions', 'combined_signal'):
         _orig.setdefault(name, getattr(bot, name))
     bot.place_buy = place_buy

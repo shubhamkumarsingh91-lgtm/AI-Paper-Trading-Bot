@@ -16,6 +16,7 @@ from alpaca.trading.enums import OrderSide   # noqa: E402
 
 ORIG_MANAGE = bot.manage_open_positions      # the real live tiers
 ORIG_COMBINED = bot.combined_signal          # the real live buy decision
+ORIG_APPLY = bot.apply_real_trade_outcomes
 
 
 class FakeAlpaca:
@@ -214,7 +215,8 @@ def test_install_swaps_exchange_map_and_get_tv_analysis_uses_it(acct, monkeypatc
     monkeypatch.setattr(bot, 'TV_EXCHANGE', dict(bot.TV_EXCHANGE))
     monkeypatch.setattr(acct.alpaca, 'get_asset', lambda s: NS(exchange=AssetExchange.NYSE), raising=False)
     bx._orig.pop('combined_signal', None)
-    for n in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions', 'combined_signal'):
+    for n in ('place_buy', 'place_sell', 'manage_open_positions', 'close_all_positions', 'combined_signal',
+              'apply_real_trade_outcomes'):
         monkeypatch.setattr(bot, n, getattr(bot, n))      # restore after the test
     bx.install()
     bot.get_tv_analysis('FCX')
@@ -250,3 +252,88 @@ def test_not_blocked_cases_log_nothing(acct, monkeypatch):
     sig = bx.combined_signal('GS', _ml(0.70), None)                                  # clean buy, unchanged
     assert (sig['signal'], sig['score']) == ('BUY', 0.70)
     assert lines == [] and bx.state.get('blocked', {}) == {}
+
+
+# ── Nov 19: learning from its own trades, fixed ───────────────────────────
+import numpy as np      # noqa: E402
+import pandas as pd     # noqa: E402
+
+REAL_LOG = [   # Bot 1's real trade log entries for Oct 27-28 2026 (timestamps are UTC; EDT = UTC-4)
+    {'action': 'BUY',  'symbol': 'PANW', 'timestamp': '2026-10-27T18:50:51'},                 # 2:50 PM ET
+    {'action': 'SELL', 'symbol': 'PANW', 'timestamp': '2026-10-27T19:51:32', 'win': False},
+    {'action': 'BUY',  'symbol': 'PANW', 'timestamp': '2026-10-28T13:31:13'},                 # 9:31 AM ET
+    {'action': 'BUY',  'symbol': 'SOFI', 'timestamp': '2026-10-28T13:40:54'},                 # 9:40 AM ET
+    {'action': 'SELL', 'symbol': 'SOFI', 'timestamp': '2026-10-28T14:50:48', 'win': False},
+    {'action': 'SELL', 'symbol': 'PANW', 'timestamp': '2026-10-28T16:30:56', 'win': False},
+    {'action': 'BUY',  'symbol': 'PANW', 'timestamp': '2026-10-28T19:21:02'},                 # 3:21 PM ET
+    {'action': 'SELL', 'symbol': 'PANW', 'timestamp': '2026-10-28T19:51:56', 'win': True},
+]
+UNIVERSE = ['NVDA', 'PANW', 'SOFI']
+
+
+def training_table():
+    """Like train_model(): one frame per stock, 15-min regular-hours bars, concatenated and sorted,
+    so every timestamp appears once per stock. All labels start at 2 so changes are easy to see."""
+    idx = []
+    for d in ('2026-10-27', '2026-10-28'):
+        idx += list(pd.date_range(f'{d} 09:30', periods=26, freq='15min', tz='America/New_York'))
+    frames = [pd.DataFrame({'sym_id': i, 'target': 2}, index=pd.DatetimeIndex(idx)) for i in range(3)]
+    return pd.concat(frames).sort_index()
+
+
+def changed(df):
+    c = df[df['real_outcome']]
+    return sorted((UNIVERSE[s], t.strftime('%m-%d %H:%M'), y) for t, s, y in zip(c.index, c['sym_id'], c['target']))
+
+
+def test_each_trade_labels_exactly_its_own_buy_bar(monkeypatch):
+    monkeypatch.setattr(bot, 'trade_log', REAL_LOG)
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', UNIVERSE)
+    df = bx.apply_real_trade_outcomes(training_table())
+    assert changed(df) == [
+        ('PANW', '10-27 14:30', 0),   # bought 2:50 PM -> last finished bar 2:30-2:45; lost
+        ('PANW', '10-28 09:30', 0),   # bought 9:31 AM -> no finished bar yet -> first bar; lost (stop)
+        ('PANW', '10-28 15:00', 1),   # bought 3:21 PM -> bar 3:00-3:15; won
+        ('SOFI', '10-28 09:30', 0),   # bought 9:40 AM -> first bar; lost (stop)
+    ]
+    assert int(df['real_outcome'].sum()) == 4                       # 4 trades -> 4 rows
+    assert (df.loc[~df['real_outcome'], 'target'] == 2).all()        # nothing else touched (NVDA untouched)
+
+
+def test_old_shared_code_had_the_bug(monkeypatch):
+    # documents why this fix exists: the shared function smears each result across all stocks
+    monkeypatch.setattr(bot, 'trade_log', REAL_LOG)
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', UNIVERSE)
+    df = ORIG_APPLY(training_table())
+    assert int(df['real_outcome'].sum()) > 4
+    assert (df.loc[df['real_outcome'], 'sym_id'] == 0).any()          # NVDA got labels from PANW/SOFI trades
+
+
+def test_unpaired_or_unknown_trades_are_skipped(monkeypatch):
+    log = [{'action': 'SELL', 'symbol': 'PANW', 'timestamp': '2026-10-27T19:51:32', 'win': True},   # no buy
+           {'action': 'BUY', 'symbol': 'XYZ', 'timestamp': '2026-10-27T15:00:00'},                    # not trained
+           {'action': 'SELL', 'symbol': 'XYZ', 'timestamp': '2026-10-27T16:00:00', 'win': True},
+           {'action': 'BUY', 'symbol': 'SOFI', 'timestamp': '2026-11-02T15:00:00'},                   # no bars that day
+           {'action': 'SELL', 'symbol': 'SOFI', 'timestamp': '2026-11-02T16:00:00', 'win': True}]
+    monkeypatch.setattr(bot, 'trade_log', log)
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', UNIVERSE)
+    df = bx.apply_real_trade_outcomes(training_table())
+    assert int(df['real_outcome'].sum()) == 0 and (df['target'] == 2).all()
+
+
+def test_overnight_trade_labels_the_buy_day(monkeypatch):
+    log = [{'action': 'BUY', 'symbol': 'NVDA', 'timestamp': '2026-10-27T15:05:00'},    # 11:05 AM ET Oct 27
+           {'action': 'SELL', 'symbol': 'NVDA', 'timestamp': '2026-10-28T14:00:00', 'win': True}]   # sold next day
+    monkeypatch.setattr(bot, 'trade_log', log)
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', UNIVERSE)
+    assert changed(bx.apply_real_trade_outcomes(training_table())) == [('NVDA', '10-27 10:45', 1)]
+
+
+def test_two_open_buys_of_same_stock_pair_oldest_first(monkeypatch):
+    log = [{'action': 'BUY', 'symbol': 'SOFI', 'timestamp': '2026-10-27T14:20:00'},    # 10:20 AM ET
+           {'action': 'BUY', 'symbol': 'SOFI', 'timestamp': '2026-10-27T17:20:00'},    # 1:20 PM ET
+           {'action': 'SELL', 'symbol': 'SOFI', 'timestamp': '2026-10-27T18:00:00', 'win': False},   # closes the 10:20 buy
+           {'action': 'SELL', 'symbol': 'SOFI', 'timestamp': '2026-10-27T19:00:00', 'win': True}]    # closes the 1:20 buy
+    monkeypatch.setattr(bot, 'trade_log', log)
+    monkeypatch.setattr(bot, 'TRAINING_UNIVERSE', UNIVERSE)
+    assert changed(bx.apply_real_trade_outcomes(training_table())) == [('SOFI', '10-27 10:00', 0), ('SOFI', '10-27 13:00', 1)]

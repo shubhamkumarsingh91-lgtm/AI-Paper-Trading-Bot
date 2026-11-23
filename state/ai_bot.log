@@ -31502,3 +31502,24 @@ symbols
 ── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.9% ──
 2026-11-23 14:40:54,551 [INFO]   ⏰ Before 9:45 ET — opening noise, no new buys yet
 2026-11-23 14:40:54,551 [INFO] Run complete — state saved
+2026-11-23 14:50:47,681 [INFO] Run mode: SCAN
+2026-11-23 14:50:47,681 [INFO] 📚 Loaded 12 trades from history
+2026-11-23 14:50:47,681 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-23 14:50:47,687 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.9%  precision=29.4%  walk-forward=30.7%  threshold=0.64  trained=2026-11-21
+2026-11-23 14:50:47,689 [INFO] 🧪 Meta filter loaded (shadow): keep top 90%, cut 0.27, trained 2026-11-21
+2026-11-23 14:50:48,071 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.9% ──
+2026-11-23 14:50:49,046 [INFO]   [AMD] ML BUY  xgb=0.60 lgb=0.62 ens=0.61 | Drivers: atr_pct=0.018, hour_cos=-0.707, hour=9.000
+2026-11-23 14:50:49,185 [INFO]   AMD  : HOLD score=-0.031 ml=61% tv=BUY             rsi=67 vol×3.0
+2026-11-23 14:50:49,325 [INFO]   [GS] ML BUY  xgb=0.68 lgb=0.67 ens=0.68 | Drivers: atr_pct=0.010, hour_cos=-0.707, hour=9.000
+2026-11-23 14:50:49,443 [INFO]   GS   : ⛔ BUY BLOCKED — AI 68% cleared its 64% cutoff, but: price is below its 50-bar trend average; at the very top of its Bollinger band
+2026-11-23 14:50:49,443 [INFO]   GS   : HOLD score=+0.040 ml=68% tv=BUY             rsi=62 vol×3.3
+2026-11-23 14:50:49,659 [INFO]   [FCX] ML BUY  xgb=0.62 lgb=0.68 ens=0.64 | Drivers: atr_pct=0.018, hour_cos=-0.707, hour=9.000
+2026-11-23 14:50:49,778 [INFO]   FCX  : ⛔ BUY BLOCKED — AI 64% cleared its 64% cutoff, but: at the very top of its Bollinger band
+2026-11-23 14:50:49,778 [INFO]   FCX  : HOLD score=+0.004 ml=64% tv=BUY             rsi=69 vol×2.3
+2026-11-23 14:50:50,017 [INFO]   [TSLA] ML BUY  xgb=0.57 lgb=0.61 ens=0.59 | Drivers: atr_pct=0.011, hour_cos=-0.707, hour=9.000
+2026-11-23 14:50:50,144 [INFO]   TSLA : HOLD score=-0.050 ml=59% tv=STRONG_BUY      rsi=89 vol×6.1
+2026-11-23 14:50:50,285 [INFO]   [DAL] ML BUY  xgb=0.59 lgb=0.63 ens=0.61 | Drivers: atr_pct=0.008, hour_cos=-0.707, hour=9.000
+2026-11-23 14:50:50,409 [INFO]   DAL  : HOLD score=-0.032 ml=61% tv=BUY             rsi=59 vol×0.5
+2026-11-23 14:50:50,409 [INFO]   No actionable signal this scan
+2026-11-23 14:50:50,409 [INFO] Run complete — state saved

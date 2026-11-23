@@ -31873,3 +31873,25 @@ symbols
 2026-11-23 17:41:00,950 [INFO]   DAL  : HOLD score=-0.187 ml=45% tv=BUY             rsi=81 vol×0.6
 2026-11-23 17:41:00,951 [INFO]   No actionable signal this scan
 2026-11-23 17:41:00,952 [INFO] Run complete — state saved
+2026-11-23 17:50:51,579 [INFO] Run mode: SCAN
+2026-11-23 17:50:51,579 [INFO] 📚 Loaded 12 trades from history
+2026-11-23 17:50:51,579 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-23 17:50:51,587 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.9%  precision=29.4%  walk-forward=30.7%  threshold=0.64  trained=2026-11-21
+2026-11-23 17:50:51,590 [INFO] 🧪 Meta filter loaded (shadow): keep top 90%, cut 0.27, trained 2026-11-21
+2026-11-23 17:50:51,890 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.9% ──
+2026-11-23 17:50:52,738 [INFO]   [AMD] ML BUY  xgb=0.60 lgb=0.61 ens=0.60 | Drivers: atr_pct=0.021, hour_cos=-1.000, hour=12.000
+2026-11-23 17:50:52,845 [INFO]   AMD  : HOLD score=-0.039 ml=60% tv=NEUTRAL         rsi=48 vol×1.0
+2026-11-23 17:50:52,972 [INFO]   [GS] ML BUY  xgb=0.56 lgb=0.60 ens=0.58 | Drivers: atr_pct=0.010, hour_cos=-1.000, hour=12.000
+2026-11-23 17:50:53,021 [INFO]   GS   : HOLD score=-0.061 ml=58% tv=BUY             rsi=72 vol×0.3
+2026-11-23 17:50:53,226 [INFO]   [FCX] ML BUY  xgb=0.64 lgb=0.66 ens=0.65 | Drivers: atr_pct=0.018, hour_cos=-1.000, hour=12.000
+2026-11-23 17:50:53,279 [INFO]   FCX  : BUY  score=+0.650 ml=65% tv=BUY             rsi=67 vol×0.3
+2026-11-23 17:50:53,489 [INFO]   [TSLA] ML BUY  xgb=0.57 lgb=0.58 ens=0.57 | Drivers: atr_pct=0.011, hour_cos=-1.000, hour=12.000
+2026-11-23 17:50:53,569 [INFO]   TSLA : HOLD score=-0.066 ml=57% tv=BUY             rsi=75 vol×0.2
+2026-11-23 17:50:53,709 [INFO]   [DAL] ML HOLD  xgb=0.46 lgb=0.50 ens=0.47 | Drivers: atr_pct=0.008, hour_cos=-1.000, hour=12.000
+2026-11-23 17:50:53,895 [INFO]   DAL  : HOLD score=-0.167 ml=47% tv=BUY             rsi=80 vol×0.6
+2026-11-23 17:50:54,278 [INFO]   🧪 FILTER (shadow): FCX KEEP (win chance 28% vs cut 27%)
+2026-11-23 17:50:54,278 [INFO]   🎯 Best: FCX (score=0.650) — placing order
+2026-11-23 17:50:54,396 [INFO] VIX fear gauge: 27.2
+2026-11-23 17:50:54,397 [INFO]   FCX: 🐻 BEAR MARKET skip (ML 65% < 68% required)
+2026-11-23 17:50:54,397 [INFO] Run complete — state saved

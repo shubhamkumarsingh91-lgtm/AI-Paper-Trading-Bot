@@ -33059,3 +33059,27 @@ symbols
 2026-11-24 20:10:51,620 [INFO] VIX fear gauge: 27.3
 2026-11-24 20:10:51,621 [INFO]   DAL: 🐻 BEAR MARKET skip (ML 66% < 68% required)
 2026-11-24 20:10:51,627 [INFO] Run complete — state saved
+2026-11-24 20:21:01,371 [INFO] Run mode: SCAN
+2026-11-24 20:21:01,372 [INFO] 📚 Loaded 12 trades from history
+2026-11-24 20:21:01,372 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-24 20:21:01,377 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.7%  precision=29.2%  walk-forward=30.7%  threshold=0.64  trained=2026-11-24
+2026-11-24 20:21:01,380 [INFO] 🧪 Meta filter loaded (shadow): keep top 80%, cut 0.30, trained 2026-11-24
+2026-11-24 20:21:01,760 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.7% ──
+2026-11-24 20:21:02,732 [INFO]   [AMD] ML BUY  xgb=0.56 lgb=0.59 ens=0.57 | Drivers: hour_cos=-0.707, atr_pct=0.009, hour=15.000
+2026-11-24 20:21:02,956 [INFO]   AMD  : HOLD score=-0.070 ml=57% tv=SELL            rsi=66 vol×0.7
+2026-11-24 20:21:03,145 [INFO]   [GS] ML BUY  xgb=0.69 lgb=0.69 ens=0.69 | Drivers: hour_cos=-0.707, atr_pct=0.004, hour=15.000
+2026-11-24 20:21:03,253 [INFO]   GS   : ⛔ BUY BLOCKED — AI 69% cleared its 64% cutoff, but: price is below its 50-bar trend average
+2026-11-24 20:21:03,253 [INFO]   GS   : HOLD score=+0.047 ml=69% tv=SELL            rsi=65 vol×0.9
+2026-11-24 20:21:03,477 [INFO]   [FCX] ML BUY  xgb=0.69 lgb=0.71 ens=0.70 | Drivers: hour_cos=-0.707, atr_pct=0.005, hour=15.000
+2026-11-24 20:21:03,584 [INFO]   FCX  : ⛔ BUY BLOCKED — AI 70% cleared its 64% cutoff, but: price is below its 50-bar trend average
+2026-11-24 20:21:03,585 [INFO]   FCX  : HOLD score=+0.060 ml=70% tv=SELL            rsi=70 vol×0.8
+2026-11-24 20:21:03,823 [INFO]   [TSLA] ML BUY  xgb=0.64 lgb=0.66 ens=0.64 | Drivers: hour_cos=-0.707, atr_pct=0.005, hour=15.000
+2026-11-24 20:21:03,992 [INFO]   TSLA : BUY  score=+0.644 ml=64% tv=SELL            rsi=67 vol×0.6
+2026-11-24 20:21:04,190 [INFO]   [DAL] ML BUY  xgb=0.66 lgb=0.67 ens=0.66 | Drivers: hour_cos=-0.707, atr_pct=0.004, hour=15.000
+2026-11-24 20:21:04,244 [INFO]   DAL  : BUY  score=+0.664 ml=66% tv=NEUTRAL         rsi=64 vol×0.4
+2026-11-24 20:21:04,737 [INFO]   🧪 FILTER (shadow): DAL SKIP (win chance 23% vs cut 30%)
+2026-11-24 20:21:04,737 [INFO]   🎯 Best: DAL (score=0.664) — placing order
+2026-11-24 20:21:04,871 [INFO] VIX fear gauge: 27.4
+2026-11-24 20:21:04,872 [INFO]   DAL: 🐻 BEAR MARKET skip (ML 66% < 68% required)
+2026-11-24 20:21:04,872 [INFO] Run complete — state saved

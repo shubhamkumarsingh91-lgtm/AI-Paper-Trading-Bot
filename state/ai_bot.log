@@ -32363,3 +32363,22 @@ symbols
 ── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.7% ──
 2026-11-24 14:40:50,906 [INFO]   ⏰ Before 9:45 ET — opening noise, no new buys yet
 2026-11-24 14:40:50,907 [INFO] Run complete — state saved
+2026-11-24 14:50:49,840 [INFO] Run mode: SCAN
+2026-11-24 14:50:49,840 [INFO] 📚 Loaded 12 trades from history
+2026-11-24 14:50:49,840 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-24 14:50:49,846 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.7%  precision=29.2%  walk-forward=30.7%  threshold=0.64  trained=2026-11-24
+2026-11-24 14:50:49,848 [INFO] 🧪 Meta filter loaded (shadow): keep top 80%, cut 0.30, trained 2026-11-24
+2026-11-24 14:50:50,066 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.7% ──
+2026-11-24 14:50:50,641 [INFO]   [AMD] ML BUY  xgb=0.62 lgb=0.59 ens=0.61 | Drivers: hour_cos=-0.707, atr_pct=0.017, hour=9.000
+2026-11-24 14:50:50,842 [INFO]   AMD  : HOLD score=-0.034 ml=61% tv=STRONG_SELL     rsi=15 vol×4.1
+2026-11-24 14:50:50,957 [INFO]   [GS] ML BUY  xgb=0.59 lgb=0.57 ens=0.58 | Drivers: hour_cos=-0.707, atr_pct=0.004, hour=9.000
+2026-11-24 14:50:51,110 [INFO]   GS   : HOLD score=-0.060 ml=58% tv=SELL            rsi=37 vol×1.7
+2026-11-24 14:50:51,255 [INFO]   [FCX] ML BUY  xgb=0.62 lgb=0.60 ens=0.61 | Drivers: hour_cos=-0.707, atr_pct=0.009, hour=9.000
+2026-11-24 14:50:51,400 [INFO]   FCX  : HOLD score=-0.029 ml=61% tv=STRONG_SELL     rsi=27 vol×0.8
+2026-11-24 14:50:51,577 [INFO]   [TSLA] ML BUY  xgb=0.55 lgb=0.55 ens=0.55 | Drivers: hour_cos=-0.707, atr_pct=0.007, hour=9.000
+2026-11-24 14:50:51,653 [INFO]   TSLA : HOLD score=-0.091 ml=55% tv=BUY             rsi=46 vol×1.5
+2026-11-24 14:50:51,758 [INFO]   [DAL] ML BUY  xgb=0.57 lgb=0.57 ens=0.57 | Drivers: hour_cos=-0.707, atr_pct=0.005, hour=9.000
+2026-11-24 14:50:51,835 [INFO]   DAL  : HOLD score=-0.072 ml=57% tv=SELL            rsi=52 vol×0.7
+2026-11-24 14:50:51,835 [INFO]   No actionable signal this scan
+2026-11-24 14:50:51,836 [INFO] Run complete — state saved

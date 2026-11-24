@@ -32529,3 +32529,23 @@ symbols
 2026-11-24 16:01:06,228 [INFO]   DAL  : HOLD score=-0.073 ml=57% tv=SELL            rsi=39 vol×1.0
 2026-11-24 16:01:06,228 [INFO]   No actionable signal this scan
 2026-11-24 16:01:06,228 [INFO] Run complete — state saved
+2026-11-24 16:10:56,351 [INFO] Run mode: SCAN
+2026-11-24 16:10:56,352 [INFO] 📚 Loaded 12 trades from history
+2026-11-24 16:10:56,352 [INFO] Runtime state restored — watchlist ['AMD', 'GS', 'FCX', 'TSLA', 'DAL']
+2026-11-24 16:10:56,364 [INFO] 📦 Model loaded (XGB + LGB) — accuracy=48.7%  precision=29.2%  walk-forward=30.7%  threshold=0.64  trained=2026-11-24
+2026-11-24 16:10:56,367 [INFO] 🧪 Meta filter loaded (shadow): keep top 80%, cut 0.30, trained 2026-11-24
+2026-11-24 16:10:56,736 [INFO] 
+── Scan #1 | $98,795.01 equity | 0/5 positions | Model: 48.7% ──
+2026-11-24 16:10:57,766 [INFO]   [AMD] ML BUY  xgb=0.55 lgb=0.48 ens=0.52 | Drivers: hour_cos=-0.866, atr_pct=0.021, hour=10.000
+2026-11-24 16:10:57,900 [INFO]   AMD  : HOLD score=-0.119 ml=52% tv=SELL            rsi=11 vol×1.4
+2026-11-24 16:10:58,156 [INFO]   [GS] ML BUY  xgb=0.62 lgb=0.62 ens=0.62 | Drivers: hour_cos=-0.866, atr_pct=0.007, hour=10.000
+2026-11-24 16:10:58,272 [INFO]   GS   : HOLD score=-0.019 ml=62% tv=SELL            rsi=19 vol×2.4
+2026-11-24 16:10:58,514 [INFO]   [FCX] ML BUY  xgb=0.65 lgb=0.62 ens=0.64 | Drivers: hour_cos=-0.866, atr_pct=0.011, hour=10.000
+2026-11-24 16:10:58,631 [INFO]   FCX  : ⛔ BUY BLOCKED — AI 64% cleared its 64% cutoff, but: price is below its 50-bar trend average
+2026-11-24 16:10:58,631 [INFO]   FCX  : HOLD score=+0.002 ml=64% tv=SELL            rsi=15 vol×0.7
+2026-11-24 16:10:58,961 [INFO]   [TSLA] ML BUY  xgb=0.59 lgb=0.62 ens=0.61 | Drivers: hour_cos=-0.866, atr_pct=0.010, hour=10.000
+2026-11-24 16:10:59,129 [INFO]   TSLA : HOLD score=-0.033 ml=61% tv=NEUTRAL         rsi=40 vol×0.9
+2026-11-24 16:10:59,371 [INFO]   [DAL] ML BUY  xgb=0.57 lgb=0.57 ens=0.57 | Drivers: hour_cos=-0.866, atr_pct=0.006, hour=10.000
+2026-11-24 16:10:59,494 [INFO]   DAL  : HOLD score=-0.073 ml=57% tv=SELL            rsi=39 vol×1.0
+2026-11-24 16:10:59,494 [INFO]   No actionable signal this scan
+2026-11-24 16:10:59,494 [INFO] Run complete — state saved

@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-24T19:31:19Z",
+"generated": "2026-11-24T19:41:03Z",
 "events": [
 {
 "t": "2026-10-20T19:55:00Z",
@@ -162,22 +162,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T15:31:03Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 99 stocks (holding 1 of 5 positions, balance $100,433). 12 passed all its checks: GOOG 70%, AMD 68%, KLAC 68%….",
-"count": 99
-},
-{
-"t": "2026-11-23T15:31:29Z",
-"bot": "b3",
-"place": "broker",
-"kind": "buy",
-"text": "Bought 21 GOOG at $280.24 (about $5,885). The AI was 70% confident.",
-"symbol": "GOOG"
 },
 {
 "t": "2026-11-23T15:40:52Z",
@@ -1242,6 +1226,22 @@
 },
 {
 "t": "2026-11-24T19:31:18Z",
+"bot": "b3",
+"place": "floor",
+"kind": "skip",
+"text": "Picked SLB (65% confident) but skipped it: in a falling market it needs 68% before buying.",
+"symbol": "SLB"
+},
+{
+"t": "2026-11-24T19:40:49Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). 50 passed all its checks: VZ 65%, COP 65%, SLB 65%….",
+"count": 100
+},
+{
+"t": "2026-11-24T19:41:03Z",
 "bot": "b3",
 "place": "floor",
 "kind": "skip",

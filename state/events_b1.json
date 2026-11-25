@@ -1,23 +1,7 @@
 {
 "bot": "b1",
-"generated": "2026-11-25T15:10:51Z",
+"generated": "2026-11-25T15:21:03Z",
 "events": [
-{
-"t": "2026-11-23T15:20:56Z",
-"bot": "b1",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,795). 1 passed all its checks: GS 67%.",
-"count": 5
-},
-{
-"t": "2026-11-23T15:20:59Z",
-"bot": "b1",
-"place": "floor",
-"kind": "skip",
-"text": "Picked GS (67% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "GS"
-},
 {
 "t": "2026-11-23T15:30:58Z",
 "bot": "b1",
@@ -1210,6 +1194,21 @@
 "place": "floor",
 "kind": "hold",
 "text": "No buy this time: nothing reached its 64% confidence bar."
+},
+{
+"t": "2026-11-25T15:21:00Z",
+"bot": "b1",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 5 stocks (holding 0 of 5 positions, balance $98,795). The AI liked 1 above its 64% bar, but other checks said no.",
+"count": 5
+},
+{
+"t": "2026-11-25T15:21:00Z",
+"bot": "b1",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time. The AI liked FCX (65%) but a safety check said no."
 }
 ]
 }

@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T15:21:06Z",
+"generated": "2026-11-25T15:31:10Z",
 "events": [
 {
 "t": "2026-10-26T19:55:00Z",
@@ -141,22 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T17:40:48Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 95 stocks (holding 4 of 5 positions, balance $100,177). 1 passed all its checks: INTC 60%.",
-"count": 95
-},
-{
-"t": "2026-11-23T17:41:08Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked INTC (60% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "INTC"
 },
 {
 "t": "2026-11-23T17:50:47Z",
@@ -1237,6 +1221,21 @@
 },
 {
 "t": "2026-11-25T15:20:48Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-25T15:30:55Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: AVGO 59%).",
+"count": 100
+},
+{
+"t": "2026-11-25T15:30:55Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

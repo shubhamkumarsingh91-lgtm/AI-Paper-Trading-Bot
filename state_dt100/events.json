@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T16:51:14Z",
+"generated": "2026-11-25T17:01:16Z",
 "events": [
 {
 "t": "2026-10-21T19:55:00Z",
@@ -155,22 +155,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T18:50:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 96 stocks (holding 3 of 5 positions, balance $99,978). 5 passed all its checks: MU 60%, INTC 59%, SMCI 59%….",
-"count": 96
-},
-{
-"t": "2026-11-23T18:51:08Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked MU (60% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "MU"
 },
 {
 "t": "2026-11-23T19:00:52Z",
@@ -1227,6 +1211,21 @@
 },
 {
 "t": "2026-11-25T16:50:53Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-25T17:00:54Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: ORCL 62%).",
+"count": 100
+},
+{
+"t": "2026-11-25T17:00:54Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

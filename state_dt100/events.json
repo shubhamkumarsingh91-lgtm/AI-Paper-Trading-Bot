@@ -1,7 +1,21 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T17:01:16Z",
+"generated": "2026-11-25T17:11:15Z",
 "events": [
+{
+"t": "2026-10-19T19:55:00Z",
+"bot": "b3",
+"place": "vault",
+"kind": "balance",
+"text": "Day’s closing balance: $100,000 (+0.00% since its first recorded day; the market (SPY) +0.00%)."
+},
+{
+"t": "2026-10-20T19:55:00Z",
+"bot": "b3",
+"place": "vault",
+"kind": "balance",
+"text": "Day’s closing balance: $100,616 (+0.62% since its first recorded day; the market (SPY) +0.51%)."
+},
 {
 "t": "2026-10-21T19:55:00Z",
 "bot": "b3",
@@ -155,39 +169,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T19:00:52Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 96 stocks (holding 3 of 5 positions, balance $99,931). 1 passed all its checks: SMCI 61%.",
-"count": 96
-},
-{
-"t": "2026-11-23T19:00:53Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "MRVL",
-"pnl": -121.38,
-"text": "Sold MRVL (stop-loss): lost $121.38, -2.0%."
-},
-{
-"t": "2026-11-23T19:00:53Z",
-"bot": "b3",
-"place": "floor",
-"kind": "watch",
-"text": "Put MRVL on a dip watch: it will buy back only if the price turns up again.",
-"symbol": "MRVL"
-},
-{
-"t": "2026-11-23T19:01:12Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked SMCI (61% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "SMCI"
 },
 {
 "t": "2026-11-23T19:10:52Z",
@@ -1226,6 +1207,21 @@
 },
 {
 "t": "2026-11-25T17:00:54Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-25T17:10:51Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: ORCL 62%).",
+"count": 100
+},
+{
+"t": "2026-11-25T17:10:51Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

@@ -1,7 +1,21 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T16:41:19Z",
+"generated": "2026-11-25T16:51:14Z",
 "events": [
+{
+"t": "2026-10-21T19:55:00Z",
+"bot": "b3",
+"place": "vault",
+"kind": "balance",
+"text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) +0.90%)."
+},
+{
+"t": "2026-10-23T19:55:00Z",
+"bot": "b3",
+"place": "vault",
+"kind": "balance",
+"text": "Day’s closing balance: $100,709 (+0.71% since its first recorded day; the market (SPY) -0.84%)."
+},
 {
 "t": "2026-10-26T19:55:00Z",
 "bot": "b3",
@@ -141,39 +155,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T18:40:47Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 96 stocks (holding 4 of 5 positions, balance $99,973). 1 passed all its checks: INTC 61%.",
-"count": 96
-},
-{
-"t": "2026-11-23T18:40:47Z",
-"bot": "b3",
-"place": "broker",
-"kind": "sell",
-"symbol": "AMD",
-"pnl": -158.33,
-"text": "Sold AMD (stop-loss): lost $158.33, -2.6%."
-},
-{
-"t": "2026-11-23T18:40:47Z",
-"bot": "b3",
-"place": "floor",
-"kind": "watch",
-"text": "Put AMD on a dip watch: it will buy back only if the price turns up again.",
-"symbol": "AMD"
-},
-{
-"t": "2026-11-23T18:41:01Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked INTC (61% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "INTC"
 },
 {
 "t": "2026-11-23T18:50:53Z",
@@ -1231,6 +1212,21 @@
 },
 {
 "t": "2026-11-25T16:40:54Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-25T16:50:53Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: AMD 60%).",
+"count": 100
+},
+{
+"t": "2026-11-25T16:50:53Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

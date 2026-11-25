@@ -161,9 +161,10 @@ def day_events(bot: str, run: dict, threshold_default: float = 0.60) -> list[dic
              re.match(r"📈 REGIME CHANGE: (\w+) → (\w+) \(SPY \$([\d.,]+) vs SMA50 \$([\d.,]+)\)", m)
         if rc:
             add(t, "tower", "regime", f"Noticed the market turned {rc.group(2)}: SPY (${rc.group(3)}) is {'below' if rc.group(2) == 'BEAR' else 'above'} its 50-day average (${rc.group(4)}).")
-        bs = re.match(r"(\S+): 🐻 BEAR MARKET skip \(ML (\d+)% < (\d+)% required\)", m)
+        bs = re.match(r"(\S+): 🐻 BEAR MARKET skip \(ML ([\d.]+)% < ([\d.]+)% required\)", m)
         if bs:
-            near = bs.group(2) == bs.group(3)          # the log rounds, e.g. 67.6% shows as 68%
+            # Log shows one decimal (e.g. 67.5% < 68.0%); older logs were whole numbers.
+            near = float(bs.group(3)) - float(bs.group(2)) < 1.0
             add(t, "floor", "skip", f"Picked {bs.group(1)} ({'just under ' if near else ''}{bs.group(2)}% confident) but skipped it: in a falling market it needs {bs.group(3)}% before buying.", symbol=bs.group(1))
             did = True
         eb = re.match(r"(\S+)\s*: 📅 EARNINGS BLACKOUT \((\d+)d away\)", m)

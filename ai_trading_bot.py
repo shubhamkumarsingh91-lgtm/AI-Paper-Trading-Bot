@@ -2102,7 +2102,7 @@ def place_buy(symbol: str, price: float, equity: float, signal: dict) -> bool:
             if ml_conf < BEAR_MIN_CONF:
                 log.info(
                     f'  {symbol}: 🐻 BEAR MARKET skip '
-                    f'(ML {ml_conf:.0%} < {BEAR_MIN_CONF:.0%} required)'
+                    f'(ML {ml_conf:.1%} < {BEAR_MIN_CONF:.1%} required)'
                 )
                 return False
             cap = BEAR_POSITION_CAP

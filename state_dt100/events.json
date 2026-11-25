@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T18:01:28Z",
+"generated": "2026-11-25T18:11:04Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -169,22 +169,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T20:01:03Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 97 stocks (holding 2 of 5 positions, balance $99,984). 55 passed all its checks: MS 65%, CAT 64%, HON 64%….",
-"count": 97
-},
-{
-"t": "2026-11-23T20:01:28Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked MS (65% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "MS"
 },
 {
 "t": "2026-11-23T20:10:42Z",
@@ -1217,6 +1201,21 @@
 },
 {
 "t": "2026-11-25T18:01:03Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-25T18:10:49Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: NVDA 58%).",
+"count": 100
+},
+{
+"t": "2026-11-25T18:10:49Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",

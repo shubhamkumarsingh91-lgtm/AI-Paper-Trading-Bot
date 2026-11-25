@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-25T14:40:55Z",
+"generated": "2026-11-25T14:51:11Z",
 "events": [
 {
 "t": "2026-10-26T19:55:00Z",
@@ -141,22 +141,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $100,432 (+0.43% since its first recorded day; the market (SPY) -9.70%)."
-},
-{
-"t": "2026-11-23T17:01:10Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 95 stocks (holding 4 of 5 positions, balance $100,264). 13 passed all its checks: FCX 65%, NVDA 64%, PANW 62%….",
-"count": 95
-},
-{
-"t": "2026-11-23T17:01:30Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked FCX (65% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "FCX"
 },
 {
 "t": "2026-11-23T17:11:01Z",
@@ -1244,6 +1228,21 @@
 "kind": "scan",
 "text": "Scanned its stocks (holding 0 of 5 positions, balance $99,927).",
 "count": 0
+},
+{
+"t": "2026-11-25T14:50:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: ISRG 62%).",
+"count": 100
+},
+{
+"t": "2026-11-25T14:50:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
 }
 ]
 }

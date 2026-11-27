@@ -1,6 +1,6 @@
 {
 "bot": "b3",
-"generated": "2026-11-27T17:01:13Z",
+"generated": "2026-11-27T17:11:18Z",
 "events": [
 {
 "t": "2026-10-19T19:55:00Z",
@@ -176,22 +176,6 @@
 "place": "vault",
 "kind": "balance",
 "text": "Day’s closing balance: $99,934 (-0.07% since its first recorded day; the market (SPY) -5.77%)."
-},
-{
-"t": "2026-11-24T19:31:01Z",
-"bot": "b3",
-"place": "floor",
-"kind": "scan",
-"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). 50 passed all its checks: VZ 65%, COP 65%, SLB 65%….",
-"count": 100
-},
-{
-"t": "2026-11-24T19:31:18Z",
-"bot": "b3",
-"place": "floor",
-"kind": "skip",
-"text": "Picked SLB (65% confident) but skipped it: in a falling market it needs 68% before buying.",
-"symbol": "SLB"
 },
 {
 "t": "2026-11-24T19:40:49Z",
@@ -1172,6 +1156,21 @@
 },
 {
 "t": "2026-11-27T17:00:56Z",
+"bot": "b3",
+"place": "floor",
+"kind": "hold",
+"text": "No buy this time: nothing reached its 66% confidence bar."
+},
+{
+"t": "2026-11-27T17:10:52Z",
+"bot": "b3",
+"place": "floor",
+"kind": "scan",
+"text": "Scanned 100 stocks (holding 0 of 5 positions, balance $99,927). None cleared its 66% confidence bar (closest: SMCI 62%).",
+"count": 100
+},
+{
+"t": "2026-11-27T17:10:52Z",
 "bot": "b3",
 "place": "floor",
 "kind": "hold",
